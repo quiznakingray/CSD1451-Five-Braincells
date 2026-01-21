@@ -100,6 +100,12 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="sprite.cpp" />
+    <ClCompile Include="utils_collision_check.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sprite.h" />
+    <ClInclude Include="utils_collision_check.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
