@@ -1,6 +1,24 @@
 ﻿  Main.cpp
-  Project1.vcxproj -> C:\school\Year 1 Tri 2 (Spring)\Software Engineering 2\CSD1451-Five-Braincells\bin\Debug-x64\Project1.exe
-  8 File(s) copied
+  MapManager.cpp
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(14,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(15,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(20,40): warning C4018: '<': signed/unsigned mismatch
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(26,44): warning C4018: '<': signed/unsigned mismatch
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(42,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(43,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(45,40): warning C4018: '<': signed/unsigned mismatch
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(51,44): warning C4018: '<': signed/unsigned mismatch
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(61,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(62,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(64,40): warning C4018: '<': signed/unsigned mismatch
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(70,44): warning C4018: '<': signed/unsigned mismatch
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(79,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(80,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(82,40): warning C4018: '<': signed/unsigned mismatch
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(88,44): warning C4018: '<': signed/unsigned mismatch
+  Generating Code...
+  Project1.vcxproj -> C:\Users\konxi\CSD1451-Five-Braincells\bin\Debug-x64\Project1.exe
+  13 File(s) copied
   1 File(s) copied
   1 File(s) copied
   1 File(s) copied
