@@ -1,10 +1,11 @@
 #include "MapManager.h"
 #include "SpriteManager.h"
+#include <array>
 
 #pragma region MapFuncs
 
 rapidcsv::Document map;
-Tile arrMapInfo[MAX_LEVELS][MAX_YAXIS][MAX_XAXIS];
+std::vector<std::vector<std::vector<Tile>>> arrMapInfo;
 AEGfxVertexList* mesh;
 
 void InitMap(std::string fileName, unsigned int currLevel)
@@ -13,8 +14,7 @@ void InitMap(std::string fileName, unsigned int currLevel)
     // Read a row from the CSV file
     int x = (map.GetRow<std::string>(0)).size();
     int y = (map.GetColumn<std::string>(0)).size();
-    // Read a row from the CSV file
-    std::vector<std::string> row = map.GetRow<std::string>(0);
+    arrMapInfo.resize(MAX_LEVELS, std::vector<std::vector<Tile>>(y, std::vector<Tile>(x)));
 
     // Read the rows and columns of CSV data into arrMapInfo
     for (unsigned int uiRow = 0; uiRow < y; uiRow++)
@@ -25,15 +25,7 @@ void InitMap(std::string fileName, unsigned int currLevel)
         // Load a particular CSV value into the arrMapInfo
         for (unsigned int uiCol = 0; uiCol < x; ++uiCol)
         {
-            try {
-                arrMapInfo[currLevel][uiRow][uiCol].currID = (int)stoi(row[uiCol]);
-                if (arrMapInfo[currLevel][uiRow][uiCol].currID) {
-                    InitTile(currLevel, arrMapInfo[currLevel][uiRow][uiCol].currID, uiCol, uiRow);
-                }
-            }
-            catch (...) {
-                arrMapInfo[currLevel][uiRow][uiCol].currID = 0;
-            }
+            arrMapInfo[currLevel][uiRow][uiCol] = InitTile(currLevel, (int)stoi(row[uiCol]), uiCol, uiRow);
         }
     }
 }
@@ -128,20 +120,20 @@ void DrawTile(Shape shape, AEMtx33 transform)
     AEGfxMeshDraw(shape.mesh, AE_GFX_MDM_TRIANGLES);
 }
 
-void InitTile(int mapIndex, int currID, unsigned int col, unsigned int row)
+Tile InitTile(int mapIndex, int currID, unsigned int col, unsigned int row)
 {
     // saves first int as current currID of tile
-    arrMapInfo[mapIndex][row][col].currID = currID;
+    Tile newTile;
+    newTile.currID = currID;
     // sets size, position, row, col of tile
-    AEVec2Set(&(arrMapInfo[mapIndex][row][col].shape.size), tileSize, tileSize);
-    AEVec2 size = arrMapInfo[mapIndex][row][col].shape.size;
-
+    AEVec2Set(&newTile.shape.size, tileSize, tileSize);
+    AEVec2 size = newTile.shape.size;
     f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-
     f32 y = -((f32)AEGfxGetWindowHeight() * 0.5f) + ((size.y) * (row + 1));
-    AEVec2Set(&(arrMapInfo[mapIndex][row][col].shape.pos), x,y);
-    arrMapInfo[mapIndex][row][col].row = row;
-    arrMapInfo[mapIndex][row][col].col = col;
+    AEVec2Set(&newTile.shape.pos, x, y);
+
+    newTile.row = row;
+    newTile.col = col;
     AEGfxMeshStart();
     AEGfxTriAdd(
         -0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
@@ -154,9 +146,10 @@ void InitTile(int mapIndex, int currID, unsigned int col, unsigned int row)
         -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
 
     // Saving the mesh (list of triangles) in pMesh
-    arrMapInfo[mapIndex][row][col].shape.mesh = AEGfxMeshEnd();
-    arrMapInfo[mapIndex][row][col].shape.tex = SetTileTexture(currID);
-    TransformShape(arrMapInfo[mapIndex][row][col].shape.mesh, arrMapInfo[mapIndex][row][col].transform, arrMapInfo[mapIndex][row][col].shape);
+    newTile.shape.mesh = AEGfxMeshEnd();
+    newTile.shape.tex = SetTileTexture(currID);
+    TransformShape(newTile.shape.mesh, newTile.transform, newTile.shape);
+    return newTile;
 }
 
 AEGfxTexture* SetTileTexture(unsigned int currID)

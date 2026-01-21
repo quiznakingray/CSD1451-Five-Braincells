@@ -106,6 +106,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="Header.h" />
     <ClInclude Include="Library\rapidcsv.h" />
     <ClInclude Include="MapManager.h" />
     <ClInclude Include="SpriteManager.h" />

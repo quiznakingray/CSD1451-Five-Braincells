@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "AEEngine.h"
 #include "SpriteManager.h"
 #include <rapidcsv.h>
@@ -7,7 +7,7 @@
 #define MAX_YAXIS 100
 #define MAX_LEVELS 5
 
-typedef struct Tile {
+struct Tile {
 	Shape shape;
 	AEMtx33 transform;
 	int currID;
@@ -17,16 +17,18 @@ typedef struct Tile {
 	bool isTrigger;
 	bool isCollidable;
 	bool isCenter;
-}Tile;
+};
+using Tile = struct Tile;
 
-typedef enum TILE_ID {
+enum TILE_ID {
 	EMPTY = 0,
 	GROUND = 100,
 	WALL = 101,
 	CRATE = 102,
 	PLAYER = 200,
 	GOAL = 300,
-} TILE_ID;
+};
+using TILE_ID = enum TILE_ID;
 
 static float tileSize = 37.5f;
 
@@ -48,7 +50,7 @@ void FreeMap();
 void DrawTile(Shape shape, AEMtx33 transform);
 
 // Inits tile variables
-void InitTile(int mapIndex, int currID, unsigned int col, unsigned int row);
+Tile InitTile(int mapIndex, int currID, unsigned int col, unsigned int row);
 
 // Sets tile variables
 AEGfxTexture* SetTileTexture(unsigned int currID);
@@ -64,12 +66,6 @@ Tile* GetTile(unsigned int col, unsigned int row);
 
 // Sets map info
 void SetTile(unsigned int col, unsigned int row, unsigned int currID, unsigned int tag);
-
-// Assigns each end tile to the corresponding gate tile
-void AssignEndTile();
-
-//// Checks if player has stepped on an interactive tile
-//void CheckInteractiveTile(Tile* tile, Player* player);
 
 // Finds all tiles on the map with provided tag
 Tile** GetTaggedTiles(int size, Tile* tile);

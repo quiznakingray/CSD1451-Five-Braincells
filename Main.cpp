@@ -66,9 +66,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-
-	
-
 	// Initialization of your own variables go here
 	
 	// Using custom window procedure
@@ -88,6 +85,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// Game Loop
 	while (gGameRunning)
 	{
+		GameUpdate();
+
 		//// Informing the system about the loop's start
 		//AESysFrameStart();
 
@@ -97,7 +96,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		//	gGameRunning = 0;
 
 		//// Your own update logic goes here
-		GameUpdate();
+		
 
 		//// Your own rendering logic goes here
 		//AEGfxMeshStart();
@@ -173,7 +172,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		//AESysFrameEnd();
 
 	}
-
+	FreeMap();
 	//AEGfxMeshFree(pMesh);
 	//AEGfxTextureUnload(pTex);
 	// free the system
