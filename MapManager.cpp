@@ -28,6 +28,19 @@ void InitMap(std::string fileName, unsigned int currLevel)
             arrMapInfo[currLevel][uiRow][uiCol] = InitTile(currLevel, (int)stoi(row[uiCol]), uiCol, uiRow);
         }
     }
+    AEGfxMeshStart();
+    AEGfxTriAdd(
+        -0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+
+    AEGfxTriAdd(
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+
+    // Saving the mesh (list of triangles) in pMesh
+    mesh = AEGfxMeshEnd();
 }
 
 void PrintMap(unsigned int currLevel) {
@@ -55,9 +68,6 @@ void LoopMap(void* (mapfunc)())
     // Read the rows and columns of CSV data into arrMapInfo
     for (unsigned int uiRow = 0; uiRow < y; uiRow++)
     {
-        // Read a row from the CSV file
-        std::vector<std::string> row = map.GetRow<std::string>(uiRow);
-
         // Load a particular CSV value into the arrMapInfo
         for (unsigned int uiCol = 0; uiCol < x; ++uiCol)
         {
@@ -73,9 +83,6 @@ void DrawMap(int currLevel)
     // Read the rows and columns of CSV data into arrMapInfo
     for (unsigned int uiRow = 0; uiRow < y; uiRow++)
     {
-        // Read a row from the CSV file
-        std::vector<std::string> row = map.GetRow<std::string>(uiRow);
-
         // Load a particular CSV value into the arrMapInfo
         for (unsigned int uiCol = 0; uiCol < x; uiCol++) 
         {
@@ -117,7 +124,7 @@ void DrawTile(Shape shape, AEMtx33 transform)
     AEGfxSetTransform(transform.m);
 
         // Tell Alpha Engine to draw the mesh with the above settings.
-    AEGfxMeshDraw(shape.mesh, AE_GFX_MDM_TRIANGLES);
+    AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 }
 
 Tile InitTile(int mapIndex, int currID, unsigned int col, unsigned int row)
@@ -134,21 +141,8 @@ Tile InitTile(int mapIndex, int currID, unsigned int col, unsigned int row)
 
     newTile.row = row;
     newTile.col = col;
-    AEGfxMeshStart();
-    AEGfxTriAdd(
-        -0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
-        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-
-    AEGfxTriAdd(
-        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-
-    // Saving the mesh (list of triangles) in pMesh
-    newTile.shape.mesh = AEGfxMeshEnd();
     newTile.shape.tex = SetTileTexture(currID);
-    TransformShape(newTile.shape.mesh, newTile.transform, newTile.shape);
+    TransformShape(mesh, newTile.transform, newTile.shape);
     return newTile;
 }
 
