@@ -91,8 +91,47 @@ void HandleSpriteInteraction(std::vector<Sprite*>& spriteArr)
 		}
 	}
 
-	for (Sprite* & s : spriteArr)
+	for (Sprite*& s : spriteArr)
 	{
-		s->isHovering = highestInteractionZ == s->pos.z && IsCursorOverRect(s->pos.x, s->pos.y, s->scale.x, s->scale.y);
+		if (!s->hasCollision) continue;
+
+		bool isHover = highestInteractionZ == s->pos.z && IsCursorOverRect(s->pos.x, s->pos.y, s->scale.x, s->scale.y);
+		if (!s->isHovering && isHover)
+		{
+			if (s->OnMouseEnter)s->OnMouseEnter();
+		}
+		else if (s->isHovering)
+		{
+			if (isHover)
+			{
+				if (s->OnMouseOver) s->OnMouseOver();
+			}
+			else {
+				if (s->OnMouseExit) s->OnMouseExit();
+			}
+		}
+		s->isHovering = isHover;
+
+
+		if (s->isHovering && AEInputCheckTriggered(AEVK_LBUTTON) && !s->isInteracting)
+		{
+			if (s->OnMouseDown) s->OnMouseDown();
+			s->isInteracting = true;
+		}
+		else if (s->isInteracting)
+		{
+			if (AEInputCheckCurr(AEVK_LBUTTON))
+			{
+				if (s->OnClick) s->OnClick();
+			}
+			else if (AEInputCheckReleased(AEVK_LBUTTON))
+			{
+				if (s->OnMouseUp) s->OnMouseUp();
+				s->isInteracting = false;
+			}
+		}
+
+		//if(isHover && s->blockCollision) 
+
 	}
 }

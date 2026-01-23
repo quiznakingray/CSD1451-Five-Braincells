@@ -3,6 +3,7 @@
 
 #include <crtdbg.h> // To check for memory leaks
 #include <vector>
+#include <iostream>
 #include "AEEngine.h"
 #include "sprite.h"
 #include "utils_collision_check.h"
@@ -40,11 +41,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	//AEGfxTexture* pTex;
 	
 	std::vector<Sprite *> spriteArray;
-	Sprite * player = new Sprite(100.f, 100.f, 0.f, 0.f, 0.f , 0.f, 0xFF0000FF, AEGfxTextureLoad("Assets/PlanetTexture.png"));
+	Sprite * player = new Sprite(300.f, 200.f, 200.f, 0.f, 0.f , 0.f, 0xFF0000FF, AEGfxTextureLoad("Assets/PlanetTexture.png"));
 	AddSpriteToArray(spriteArray, player);
 	Sprite * player1 = new Sprite( 100.f, 100.f, 0.f, 90.f, 2.f, 0.f, 0xFFFF0000);
+	player1->OnMouseUp = []() {
+		std::cout << "Mouse Up" << std::endl;
+		};
+	player1->OnClick = []() {
+		std::cout << "Clicking" << std::endl;
+		};
+	player1->OnMouseDown = []() {
+		std::cout << "Mouse Down" << std::endl;
+		};
 	AddSpriteToArray(spriteArray, player1);
-	Sprite * player2 = new Sprite( 100.f, 100.f, 0.f, 10.f, 1.f);
+	Sprite * player2 = new Sprite( 100.f, 100.f, 0.f, 10.f, 2.f);
 	AddSpriteToArray(spriteArray, player2);
 	
 
