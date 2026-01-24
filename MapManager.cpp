@@ -12,18 +12,18 @@ void InitMap(std::string fileName, unsigned int currLevel)
 {
     map = rapidcsv::Document(fileName);
     // Read a row from the CSV file
-    int x = (map.GetRow<std::string>(0)).size();
-    int y = (map.GetColumn<std::string>(0)).size();
+    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t y = (map.GetColumn<std::string>(0)).size();
     arrMapInfo.resize(MAX_LEVELS, std::vector<std::vector<Tile>>(y, std::vector<Tile>(x)));
 
     // Read the rows and columns of CSV data into arrMapInfo
-    for (unsigned int uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Read a row from the CSV file
         std::vector<std::string> row = map.GetRow<std::string>(uiRow);
 
         // Load a particular CSV value into the arrMapInfo
-        for (unsigned int uiCol = 0; uiCol < x; ++uiCol)
+        for (size_t uiCol = 0; uiCol < x; ++uiCol)
         {
             arrMapInfo[currLevel][uiRow][uiCol] = InitTile(currLevel, (int)stoi(row[uiCol]), uiCol, uiRow);
         }
@@ -44,16 +44,16 @@ void InitMap(std::string fileName, unsigned int currLevel)
 }
 
 void PrintMap(unsigned int currLevel) {
-    int x = (map.GetRow<std::string>(0)).size();
-    int y = (map.GetColumn<std::string>(0)).size();
+    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
-    for (unsigned int uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Read a row from the CSV file
         std::vector<std::string> row = map.GetRow<std::string>(uiRow);
 
         // Load a particular CSV value into the arrMapInfo
-        for (unsigned int uiCol = 0; uiCol < x; ++uiCol)
+        for (size_t uiCol = 0; uiCol < x; ++uiCol)
         {
             std::cout << arrMapInfo[currLevel][uiRow][uiCol].currID << ' ';
 
@@ -63,13 +63,13 @@ void PrintMap(unsigned int currLevel) {
 }
 void LoopMap(void* (mapfunc)())
 {    
-    int x = (map.GetRow<std::string>(0)).size();
-    int y = (map.GetColumn<std::string>(0)).size();
+    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
-    for (unsigned int uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (unsigned int uiCol = 0; uiCol < x; ++uiCol)
+        for (size_t uiCol = 0; uiCol < x; ++uiCol)
         {
             mapfunc();
         }
@@ -78,16 +78,16 @@ void LoopMap(void* (mapfunc)())
 }
 void DrawMap(int currLevel)
 {
-    int x = (map.GetRow<std::string>(0)).size();
-    int y = (map.GetColumn<std::string>(0)).size();
+    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
-    for (unsigned int uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (unsigned int uiCol = 0; uiCol < x; uiCol++) 
+        for (size_t uiCol = 0; uiCol < x; uiCol++)
         {
             if (arrMapInfo[currLevel][uiRow][uiCol].currID) {
-                DrawTile(arrMapInfo[currLevel][uiRow][uiCol].shape, arrMapInfo[currLevel][uiRow][uiCol].transform);
+                RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].sprite, mesh);
             }
         }
     }
@@ -99,7 +99,7 @@ void FreeMap()
 #pragma endregion
 
 #pragma region TileFuncs
-void DrawTile(Shape shape, AEMtx33 transform)
+void DrawTile(Sprite sprite, AEMtx33 transform)
 {
     // Tell the engine to get ready to draw something with texture.
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -117,7 +117,7 @@ void DrawTile(Shape shape, AEMtx33 transform)
     AEGfxSetTransparency(1.0f);
 
     // Set the texture to pTex
-    AEGfxTextureSet(shape.tex, 0, 0);
+    AEGfxTextureSet(sprite.texture, 0, 0);
 
         // Tell Alpha Engine to use the matrix in 'transform' to apply onto all
         // the vertices of the mesh that we are about to choose to draw in the next line.
@@ -127,22 +127,21 @@ void DrawTile(Shape shape, AEMtx33 transform)
     AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 }
 
-Tile InitTile(int mapIndex, int currID, unsigned int col, unsigned int row)
+Tile InitTile(int mapIndex, int currID, size_t col, size_t row)
 {
     // saves first int as current currID of tile
     Tile newTile;
     newTile.currID = currID;
     // sets size, position, row, col of tile
-    AEVec2Set(&newTile.shape.size, tileSize, tileSize);
-    AEVec2 size = newTile.shape.size;
+    AEVec2Set(&newTile.sprite.scale, tileSize, tileSize);
+    AEVec2 size = newTile.sprite.scale;
     f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
     f32 y = -((f32)AEGfxGetWindowHeight() * 0.5f) + ((size.y) * (row + 1));
-    AEVec2Set(&newTile.shape.pos, x, y);
+    AEVec2Set(&newTile.sprite.pos, x, y);
 
     newTile.row = row;
     newTile.col = col;
-    newTile.shape.tex = SetTileTexture(currID);
-    TransformShape(mesh, newTile.transform, newTile.shape);
+    newTile.sprite.texture = SetTileTexture(currID);
     return newTile;
 }
 

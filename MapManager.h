@@ -8,15 +8,14 @@
 #define MAX_LEVELS 5
 
 struct Tile {
-	Shape shape;
-	AEMtx33 transform;
-	int currID;
-	int ogID;
-	int row;
-	int col;
-	bool isTrigger;
-	bool isCollidable;
-	bool isCenter;
+	Sprite sprite{};
+	int currID{};
+	int ogID{};
+	size_t row{};
+	size_t col{};
+	bool isTrigger{};
+	bool isCollidable{};
+	bool isCenter{};
 };
 using Tile = struct Tile;
 
@@ -47,10 +46,10 @@ void FreeMap();
 
 #pragma region TileFuncs
 // Draws a tile on screen
-void DrawTile(Shape shape, AEMtx33 transform);
+void DrawTile(Sprite sprite, AEMtx33 transform);
 
 // Inits tile variables
-Tile InitTile(int mapIndex, int currID, unsigned int col, unsigned int row);
+Tile InitTile(int mapIndex, int currID, size_t col, size_t row);
 
 // Sets tile variables
 AEGfxTexture* SetTileTexture(unsigned int currID);
