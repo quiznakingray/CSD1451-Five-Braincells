@@ -11,6 +11,8 @@ struct Tile {
 	Sprite sprite{};
 	int currID{};
 	int ogID{};
+	int tag{};
+	int ogTag{};
 	size_t row{};
 	size_t col{};
 	bool isTrigger{};
@@ -22,8 +24,8 @@ using Tile = struct Tile;
 enum TILE_ID {
 	EMPTY = 0,
 	GROUND = 100,
-	WALL = 101,
-	CRATE = 102,
+	CRATE = 101,
+	WALL = 102,
 	PLAYER = 200,
 	GOAL = 300,
 };
