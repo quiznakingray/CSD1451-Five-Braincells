@@ -1,6 +1,7 @@
 #include "MapManager.h"
 #include "SpriteManager.h"
 #include <array>
+#include <algorithm>
 
 #pragma region MapFuncs
 
@@ -25,7 +26,8 @@ void InitMap(std::string fileName, unsigned int currLevel)
         // Load a particular CSV value into the arrMapInfo
         for (size_t uiCol = 0; uiCol < x; ++uiCol)
         {
-            arrMapInfo[currLevel][uiRow][uiCol] = InitTile(currLevel, (int)stoi(row[uiCol]), uiCol, uiRow);
+
+            arrMapInfo[currLevel][uiRow][uiCol] = InitTile(currLevel, row[uiCol], uiCol, uiRow);
         }
     }
     AEGfxMeshStart();
@@ -87,7 +89,11 @@ void DrawMap(int currLevel)
         for (size_t uiCol = 0; uiCol < x; uiCol++)
         {
             if (arrMapInfo[currLevel][uiRow][uiCol].currID) {
-                RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].sprite, mesh);
+                if (arrMapInfo[currLevel][uiRow][uiCol].currID != arrMapInfo[currLevel][uiRow][uiCol].bgID) 
+                {
+                    RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].bgSprite, mesh);
+                }
+                RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].currSprite, mesh);
             }
         }
     }
@@ -127,21 +133,56 @@ void DrawTile(Sprite sprite, AEMtx33 transform)
     AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 }
 
-Tile InitTile(int mapIndex, int currID, size_t col, size_t row)
+Tile InitTile(int mapIndex, std::string cell, size_t col, size_t row)
 {
     // saves first int as current currID of tile
     Tile newTile;
-    newTile.currID = currID;
-    // sets size, position, row, col of tile
-    AEVec2Set(&newTile.sprite.scale, tileSize, tileSize);
-    AEVec2 size = newTile.sprite.scale;
-    f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-    f32 y = -((f32)AEGfxGetWindowHeight() * 0.5f) + ((size.y) * (row + 1));
-    AEVec2Set(&newTile.sprite.pos, x, y);
+    int currID = stoi(cell);
+    int bgID = currID;
+    int currTag = 0;
 
+    int n = 0;
+
+    while (std::count(cell.begin(), cell.end(), delimiter)) {
+        std::string first = cell.substr(0, cell.find(delimiter));
+        currID = stoi(first);
+        cell.erase(0, cell.find(delimiter) + 1);
+        if (cell.length() == 1) {
+            currTag = stoi(cell);
+        }
+        else {
+            bgID = stol(cell);
+        }
+        if (n == 1) {
+            std::string third = cell.substr(0, cell.find(delimiter));
+            bgID = stoi(third);
+        }
+        n++;
+    }
+
+    newTile.currID = currID;
+    newTile.bgID = bgID;
+    newTile.currTag = currTag;
+    newTile.ogTag = currTag;
+    // sets size, position, row, col of tile
+    AEVec2Set(&newTile.currSprite.scale, tileSize, tileSize);
+    AEVec2 size = newTile.currSprite.scale;
+    f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
+    f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
+    AEVec2Set(&newTile.currSprite.pos, x, y);
+    // if bg tile sprite is present
+    if (bgID != currID) 
+    {
+        AEVec2Set(&newTile.bgSprite.scale, tileSize, tileSize);
+        AEVec2 size = newTile.bgSprite.scale;
+        f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
+        f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
+        AEVec2Set(&newTile.bgSprite.pos, x, y);
+        newTile.bgSprite.texture = SetTileTexture(bgID);
+    }
     newTile.row = row;
     newTile.col = col;
-    newTile.sprite.texture = SetTileTexture(currID);
+    newTile.currSprite.texture = SetTileTexture(currID);
     return newTile;
 }
 
@@ -164,8 +205,8 @@ AEGfxTexture* SetTileTexture(unsigned int currID)
     case GOAL:
         tTex = AEGfxTextureLoad("Assets/Environment/goal.png");
         break;
-    case CRATE:
-        tTex = AEGfxTextureLoad("Assets/Environment/crate.png");
+    case SPIKE:
+        tTex = AEGfxTextureLoad("Assets/Environment/spike.png");
         break;
     default:
         tTex = AEGfxTextureLoad("Assets/PlanetTexture.png");

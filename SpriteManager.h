@@ -10,11 +10,20 @@ struct AEVec3 : AEVec2 {
 	f32 z;
 };
 
+struct Color {
+	u32 r;
+	u32 g;
+	u32 b;
+	u32 a;
+};
+
+using Color = struct Color;
+
 struct Sprite {
 	AEVec3 pos{};
 	AEVec2 scale{};
 	f32 rotation{};
-	u32 color{};
+	Color color{};
 	AEGfxVertexList* mesh = nullptr;
 	AEGfxTexture* texture = nullptr;
 
@@ -38,11 +47,13 @@ struct Sprite {
 
 
 	Sprite() = default;
-	Sprite(f32 scale_x, f32 scale_y, f32 pos_x, f32 pos_y, f32 pos_z = 0.f, f32 rot = 0.f, u32 c = 0xFF000000, AEGfxTexture* t = nullptr)
-		: color(c), rotation(rot), texture(t)
+	Sprite(f32 scale_x, f32 scale_y, f32 pos_x, f32 pos_y, f32 pos_z = 0.f, f32 rot = 0.f, u32 r = 0xFF000000, u32 g = 0xFF000000, u32 b = 0xFF000000, u32 a = 0xFF000000,
+		AEGfxTexture* t = nullptr)
+		: rotation(rot), texture(t)
 	{
 		AEVec2Set(&pos, pos_x, pos_y);
 		pos.z = pos_z;
+		color = { r,g,b,a };
 		AEVec2Set(&scale, scale_x, scale_y);
 	}
 

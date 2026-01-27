@@ -8,10 +8,11 @@
 #define MAX_LEVELS 5
 
 struct Tile {
-	Sprite sprite{};
+	Sprite currSprite{};
+	Sprite bgSprite{};
 	int currID{};
-	int ogID{};
-	int tag{};
+	int bgID{};
+	int currTag{};
 	int ogTag{};
 	size_t row{};
 	size_t col{};
@@ -24,7 +25,7 @@ using Tile = struct Tile;
 enum TILE_ID {
 	EMPTY = 0,
 	GROUND = 100,
-	CRATE = 101,
+	SPIKE = 101,
 	WALL = 102,
 	PLAYER = 200,
 	GOAL = 300,
@@ -32,6 +33,7 @@ enum TILE_ID {
 using TILE_ID = enum TILE_ID;
 
 static float tileSize = 37.5f;
+static char delimiter = ',';
 
 #pragma region MapFuncs
 // Loads a map
@@ -48,15 +50,15 @@ void FreeMap();
 
 #pragma region TileFuncs
 // Draws a tile on screen
-void DrawTile(Sprite sprite, AEMtx33 transform);
+void DrawTile(Sprite currSprite, AEMtx33 transform);
 
 // Inits tile variables
-Tile InitTile(int mapIndex, int currID, size_t col, size_t row);
+Tile InitTile(int mapIndex, std::string cell, size_t col, size_t row);
 
 // Sets tile variables
 AEGfxTexture* SetTileTexture(unsigned int currID);
 
-// Resets tile currID back to ogID
+// Resets tile currID back to bgID
 void ResetTile(unsigned int col, unsigned int row);
 
 // Returns true if tile currID is on map regardless of position
@@ -66,9 +68,9 @@ bool FindTile(unsigned int* col, unsigned int* row, unsigned int currID);
 Tile* GetTile(unsigned int col, unsigned int row);
 
 // Sets map info
-void SetTile(unsigned int col, unsigned int row, unsigned int currID, unsigned int tag);
+void SetTile(unsigned int col, unsigned int row, unsigned int currID, unsigned int currTag);
 
-// Finds all tiles on the map with provided tag
+// Finds all tiles on the map with provided currTag
 Tile** GetTaggedTiles(int size, Tile* tile);
 
 // compares row of tiles in ascending order

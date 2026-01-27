@@ -40,7 +40,7 @@ void GameInit()
 	// Clears game background
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 
-	InitMap("C:/Users/konxi/CSD1451-Five-Braincells/Maps/Map_Level_01.csv", 0);
+	InitMap("Assets/Maps/Map_Level_01.csv", 0);
 	PrintMap(0);
 }
 void GameUpdate() {
