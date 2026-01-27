@@ -2,13 +2,22 @@
 // includes
 
 #include <crtdbg.h> // To check for memory leaks
+#include <vector>
+#include <iostream>
 #include "AEEngine.h"
 #include "MapManager.h"
+#include "SpriteManager.h"
+#include "CollisionManager.h"
+#include "GameObjectManager.h"
 
 
 int gGameRunning = 1;
 AEGfxVertexList* pMesh = 0;
 AEGfxTexture* pTex = 0;
+
+std::vector<Sprite*> spriteArr{};
+GameObject* player{};
+Collider* playerCollider{};
 
 #pragma region tempFuncs
 // temporary functions
@@ -19,11 +28,14 @@ void RenderGraphics() {
 	// Your own rendering logic goes here
 	// Set the background to black.
 	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
-	DrawMap(0);
+	//DrawMap(0);
 
 	// check if forcing the application to quit
 	if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
 		gGameRunning = 0;
+
+	//RenderSpriteArray(spriteArr);
+	player->Render();
 
 	if (AEInputCheckCurr(AEVK_1))
 		AESysSetFullScreen(1);
@@ -40,11 +52,22 @@ void GameInit()
 	// Clears game background
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 
-	InitMap("C:/Users/konxi/CSD1451-Five-Braincells/Maps/Map_Level_01.csv", 0);
-	PrintMap(0);
+	//InitMap("C:/Users/konxi/CSD1451-Five-Braincells/Maps/Map_Level_01.csv", 0);
+	//PrintMap(0);
+
+	player = new GameObject(100.f,100.f, 0.f, 0.f);
+	player->AddComponent(
+		new Sprite(100.f, 100.f, 0.f, 0.f, 0.f,0.f, 0xFFFFFF00));
+
+	Collider* c = player->AddComponent(
+		new Collider(BOX_COLLIDER, 25)
+	);
+	//AddSpriteToArray(spriteArr, player);
 }
 void GameUpdate() {
 	RenderGraphics();
+	//UpdateSpriteArray(spriteArr);
+	player->Update();
 }
 #pragma endregion
 
@@ -81,7 +104,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	{
 		GameUpdate();
 	}
-	FreeMap();
+	//FreeMap();
 	// free the system
+	//FreeSprite(player);
 	AESysExit();
 }

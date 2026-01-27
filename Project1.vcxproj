@@ -100,16 +100,23 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CollisionManager.cpp" />
+    <ClCompile Include="ComponentBase.cpp" />
+    <ClCompile Include="Extern\AlphaEngine\include\AEGraphics.cpp" />
+    <ClCompile Include="GameObjectManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MapManager.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="ComponentBase.h" />
+    <ClInclude Include="GameObjectManager.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="Library\rapidcsv.h" />
     <ClInclude Include="MapManager.h" />
     <ClInclude Include="SpriteManager.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
