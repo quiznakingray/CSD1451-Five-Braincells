@@ -44,14 +44,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)Extern\AlphaEngine\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Extern\AlphaEngine\include;$(SolutionDir)Library;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Extern\AlphaEngine\lib;$(LibraryPath)</LibraryPath>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir).tmp\$(Configuration)-$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)Extern\AlphaEngine\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Extern\AlphaEngine\include;$(SolutionDir)Library;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Extern\AlphaEngine\lib;$(LibraryPath)</LibraryPath>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
@@ -99,13 +99,17 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="sprite.cpp" />
-    <ClCompile Include="utils_collision_check.cpp" />
+    <ClCompile Include="MapManager.cpp" />
+    <ClCompile Include="SpriteManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sprite.h" />
-    <ClInclude Include="utils_collision_check.h" />
+    <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="Header.h" />
+    <ClInclude Include="Library\rapidcsv.h" />
+    <ClInclude Include="MapManager.h" />
+    <ClInclude Include="SpriteManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
