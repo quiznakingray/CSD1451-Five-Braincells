@@ -1,6 +1,7 @@
 #include "MapManager.h"
 #include "SpriteManager.h"
 #include <array>
+#include <algorithm>
 
 #pragma region MapFuncs
 
@@ -25,7 +26,8 @@ void InitMap(std::string fileName, unsigned int currLevel)
         // Load a particular CSV value into the arrMapInfo
         for (size_t uiCol = 0; uiCol < x; ++uiCol)
         {
-            arrMapInfo[currLevel][uiRow][uiCol] = InitTile(currLevel, (int)stoi(row[uiCol]), uiCol, uiRow);
+
+            arrMapInfo[currLevel][uiRow][uiCol] = InitTile(currLevel, row[uiCol], uiCol, uiRow);
         }
     }
     AEGfxMeshStart();
@@ -76,7 +78,7 @@ void LoopMap(void* (mapfunc)())
         std::cout << '\n';
     }
 }
-void DrawMap(int currLevel)
+void DrawMapSprite(int currLevel)
 {
     size_t x = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
@@ -87,11 +89,42 @@ void DrawMap(int currLevel)
         for (size_t uiCol = 0; uiCol < x; uiCol++)
         {
             if (arrMapInfo[currLevel][uiRow][uiCol].currID) {
-                RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].sprite, mesh);
+                if (arrMapInfo[currLevel][uiRow][uiCol].currID != arrMapInfo[currLevel][uiRow][uiCol].bgID && 
+                     arrMapInfo[currLevel][uiRow][uiCol].isBGActive)
+                {
+                    RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].bgSprite, mesh);
+                }
+                if (arrMapInfo[currLevel][uiRow][uiCol].isCurrActive) {
+                    RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].currSprite, mesh);
+                }
             }
         }
     }
 }
+void DrawMapCollision(int currLevel)
+{
+    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t y = (map.GetColumn<std::string>(0)).size();
+    // Read the rows and columns of CSV data into arrMapInfo
+    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    {
+        // Load a particular CSV value into the arrMapInfo
+        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        {
+            //if (arrMapInfo[currLevel][uiRow][uiCol].currID) {
+            //    if (arrMapInfo[currLevel][uiRow][uiCol].currID != arrMapInfo[currLevel][uiRow][uiCol].bgID &&
+            //        arrMapInfo[currLevel][uiRow][uiCol].isBGActive)
+            //    {
+            //        RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].bgSprite, mesh);
+            //    }
+            //    if (arrMapInfo[currLevel][uiRow][uiCol].isCurrActive) {
+            //        RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].currSprite, mesh);
+            //    }
+            //}
+        }
+    }
+}
+
 void FreeMap()
 {
     AEGfxMeshFree(mesh);
@@ -127,21 +160,78 @@ void DrawTile(Sprite sprite, AEMtx33 transform)
     AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 }
 
-Tile InitTile(int mapIndex, int currID, size_t col, size_t row)
+Tile InitTile(int mapIndex, std::string cell, size_t col, size_t row)
 {
     // saves first int as current currID of tile
     Tile newTile;
-    newTile.currID = currID;
-    // sets size, position, row, col of tile
-    AEVec2Set(&newTile.sprite.scale, tileSize, tileSize);
-    AEVec2 size = newTile.sprite.scale;
-    f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-    f32 y = -((f32)AEGfxGetWindowHeight() * 0.5f) + ((size.y) * (row + 1));
-    AEVec2Set(&newTile.sprite.pos, x, y);
+    int currID = stoi(cell);
+    cell.erase(0, 4);
+    int bgID = currID;
+    int currTag = 0;
+    bool bgActive = true;
+    bool currActive = true;
 
+    int delimitCount = 0;
+    while (!cell.empty()) {
+        if (delimitCount == 0) {
+            if (cell.length() == 1) {
+                currTag = stoi(cell);
+                cell.erase(0, cell.find(delimiter) + 1);
+            }
+            else {
+                bgID = stoi(cell);
+                cell.erase(0, cell.find(delimiter) + 1);
+            }
+        }
+        if (delimitCount == 1) {
+            std::string third = cell.substr(0, cell.find(delimiter));
+            if (third.length() == 1) {
+                currTag = stoi(cell);
+                cell.erase(0, cell.find(delimiter) + 1);
+            }
+            else {
+                cell.erase(0, cell.find(delimiter) + 1);
+                currActive = stoi(third);
+            }
+        }
+        else if (delimitCount == 2) {
+            std::string fourth = cell.substr(0, cell.find(delimiter));
+            cell.erase(0, cell.find(delimiter) + 1);
+            currActive = stoi(fourth);
+        }
+        else if (delimitCount == 3) {
+            std::string fifth = cell.substr(0, cell.find(delimiter));
+            cell.erase(0, cell.length());
+            bgActive = stoi(fifth);
+        }
+        delimitCount++;
+    }
+
+    newTile.currID = currID;
+    newTile.bgID = bgID;
+    newTile.currTag = currTag;
+    newTile.ogTag = currTag;
+    newTile.isBGActive = bgActive;
+    newTile.isCurrActive = currActive;
+    // sets size, position, row, col of tile
+    AEVec2Set(&newTile.currSprite.scale, tileSize, tileSize);
+    AEVec2 size = newTile.currSprite.scale;
+    f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
+    f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
+    AEVec2Set(&newTile.currSprite.pos, x, y);
+    // if bg tile sprite is present
+    if (bgID != currID) 
+    {
+        AEVec2Set(&newTile.bgSprite.scale, tileSize, tileSize);
+        AEVec2 size = newTile.bgSprite.scale;
+        f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
+        f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
+        AEVec2Set(&newTile.bgSprite.pos, x, y);
+        newTile.bgSprite.texture = SetTileTexture(bgID);
+    }
     newTile.row = row;
     newTile.col = col;
-    newTile.sprite.texture = SetTileTexture(currID);
+    newTile.currSprite.texture = SetTileTexture(currID);
     return newTile;
 }
 
@@ -164,8 +254,8 @@ AEGfxTexture* SetTileTexture(unsigned int currID)
     case GOAL:
         tTex = AEGfxTextureLoad("Assets/Environment/goal.png");
         break;
-    case CRATE:
-        tTex = AEGfxTextureLoad("Assets/Environment/crate.png");
+    case SPIKE:
+        tTex = AEGfxTextureLoad("Assets/Environment/spike.png");
         break;
     default:
         tTex = AEGfxTextureLoad("Assets/PlanetTexture.png");
