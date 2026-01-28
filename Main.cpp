@@ -9,6 +9,7 @@
 #include "SpriteManager.h"
 #include "CollisionManager.h"
 #include "GameObjectManager.h"
+#include "PlayerGameObject.h"
 
 
 int gGameRunning = 1;
@@ -16,8 +17,9 @@ AEGfxVertexList* pMesh = 0;
 AEGfxTexture* pTex = 0;
 
 std::vector<Sprite*> spriteArr{};
-GameObject* player{};
-Collider* playerCollider{};
+Player* player{};
+GameObject* player1{};
+std::vector<GameObject* > go{};
 
 #pragma region tempFuncs
 // temporary functions
@@ -35,7 +37,7 @@ void RenderGraphics() {
 		gGameRunning = 0;
 
 	//RenderSpriteArray(spriteArr);
-	player->Render();
+	RenderGameObjects(go);
 
 	if (AEInputCheckCurr(AEVK_1))
 		AESysSetFullScreen(1);
@@ -55,19 +57,39 @@ void GameInit()
 	//InitMap("C:/Users/konxi/CSD1451-Five-Braincells/Maps/Map_Level_01.csv", 0);
 	//PrintMap(0);
 
-	player = new GameObject(100.f,100.f, 0.f, 0.f);
-	player->AddComponent(
-		new Sprite(100.f, 100.f, 0.f, 0.f, 0.f,0.f, 0xFFFFFF00));
+	//player = new GameObject(100.f,100.f, 0.f, 0.f, 1.f);
+	//player->AddComponent(
+	//	new Sprite(100.f, 100.f, 0.f, 0.f, 0.f,0.f, 0xFFFFFF00));
 
-	Collider* c = player->AddComponent(
-		new Collider(BOX_COLLIDER, 25)
+	//Collider* c = player->AddComponent(
+	//	new Collider(COLLIDER_TYPE::BOX_COLLIDER, 25)
+	//);
+	//player->showColliders = true;
+	player = new Player();
+	//AddGameObjectToVector(player, go);
+	go.push_back(player);
+	player1 = new GameObject(100.f,100.f, 150.f, 100.f);
+	player1->AddComponent(
+		new Sprite(100.f, 100.f, 150.f, 100.f, 0.f,0.f, 0xFF0000FF));
+
+	player1->AddComponent(
+		new Collider(COLLIDER_TYPE::BOX_COLLIDER, -25)
 	);
+	
+	player1->showColliders = true;
+	AddGameObjectToVector(player1, go);
 	//AddSpriteToArray(spriteArr, player);
+
+	for (GameObject* g : go)
+	{
+		g->Init();
+	}
 }
 void GameUpdate() {
 	RenderGraphics();
 	//UpdateSpriteArray(spriteArr);
-	player->Update();
+	//player->Update();
+	UpdateGameObjects(go);
 }
 #pragma endregion
 

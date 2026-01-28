@@ -4,10 +4,16 @@
 #include "AEEngine.h"
 #include "Utils.h"
 #include "CollisionManager.h"
+#include "GameObjectManager.h"
 #include "ComponentBase.h"
 
 #define COLORSIZE 4
 
+enum class SPRITE_DRAW_MODE {
+	SIMPLE,
+	TILED,
+	SLICED
+};
 
 struct Sprite : ComponentBase{
 	AEVec3 pos{};
@@ -19,7 +25,11 @@ struct Sprite : ComponentBase{
 	AEGfxTexture* texture = nullptr;
 
 	//std::array <f64, COLORSIZE > color{ };
-
+	struct SpriteSheet {
+		bool isSpriteSheet = false;
+		s32 rows = 1, columns = 1;
+		int currentFrame = 0;
+	} spriteSheet;
 
 
 	Sprite() : color(0xFF000000), rotation(0.f), texture(nullptr) {
@@ -34,6 +44,7 @@ struct Sprite : ComponentBase{
 
 	}
 
+	void Update() override;
 	void Render() override;
 	void Free() override;
 

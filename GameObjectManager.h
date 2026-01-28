@@ -4,10 +4,9 @@
 
 
 #include <vector>
-
+#include "ComponentBase.h"
 #include "Utils.h"
 #include "SpriteManager.h"
-#include "ComponentBase.h"
 
 struct GameObject {
 	AEVec3 pos{};
@@ -36,16 +35,18 @@ struct GameObject {
 		std::vector<T*> result;
 		for (ComponentBase* c : components)
 		{
-			if (auto* casted = dynamic_cast<T*>(c))
+			if (T* casted = dynamic_cast<T*>(c))
 				result.push_back(casted);
 		}
 		return result;
 	}
-	void Init();
-	void Update();
-	void Render();
-	void Free();
 
+	virtual void Init();
+	virtual void Update();
+	virtual void Render();
+	virtual void Free();
+
+	GameObject() = default;
 	GameObject(f32 scale_x, f32 scale_y, f32 pos_x, f32 pos_y, f32 pos_z = 0.f, f32 rot = 0.f)
 	{
 		AEVec2Set(&pos, pos_x, pos_y);
@@ -55,5 +56,7 @@ struct GameObject {
 
 };
 
-void UpdateGameObjects(std::vector<GameObject*> gos);
+void AddGameObjectToVector(GameObject*  &go, std::vector<GameObject*>& gos);
+void UpdateGameObjects(std::vector<GameObject*> &gos);
+void RenderGameObjects(std::vector<GameObject*>& gos);
 #endif // !GAME_OBJECT_MANAGER_H

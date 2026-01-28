@@ -3,8 +3,23 @@
 
 #include <algorithm>
 
-void Sprite::Render()  { 
+void Sprite::Update()
+{
+	AEVec2Set(&pos, owner->pos.x, owner->pos.y);
+	pos.z = owner->pos.z;
+	AEVec2Set(&scale, owner->scale.x, owner->scale.y);
+}
+
+void Sprite::Render()  {
+
+	// calculate row and columns 
+
+
 	AEGfxMeshStart();
+
+	//f32 row = spriteSheet.isSpriteSheet ?  spriteSheet.currentFrame / spriteSheet.rows : 1.f;
+	//f32 column = spriteSheet.isSpriteSheet ? column * spriteSheet.currentFrame / spriteSheet.columns : 1.f;
+
 	AEGfxTriAdd(
 		-0.5f, -0.5f, color, 0.0f, 1.0f,
 		0.5f, -0.5f, color, 1.0f, 1.0f,
