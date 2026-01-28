@@ -78,7 +78,7 @@ void LoopMap(void* (mapfunc)())
         std::cout << '\n';
     }
 }
-void DrawMap(int currLevel)
+void DrawMapSprite(int currLevel)
 {
     size_t x = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
@@ -89,15 +89,42 @@ void DrawMap(int currLevel)
         for (size_t uiCol = 0; uiCol < x; uiCol++)
         {
             if (arrMapInfo[currLevel][uiRow][uiCol].currID) {
-                if (arrMapInfo[currLevel][uiRow][uiCol].currID != arrMapInfo[currLevel][uiRow][uiCol].bgID) 
+                if (arrMapInfo[currLevel][uiRow][uiCol].currID != arrMapInfo[currLevel][uiRow][uiCol].bgID && 
+                     arrMapInfo[currLevel][uiRow][uiCol].isBGActive)
                 {
                     RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].bgSprite, mesh);
                 }
-                RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].currSprite, mesh);
+                if (arrMapInfo[currLevel][uiRow][uiCol].isCurrActive) {
+                    RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].currSprite, mesh);
+                }
             }
         }
     }
 }
+void DrawMapCollision(int currLevel)
+{
+    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t y = (map.GetColumn<std::string>(0)).size();
+    // Read the rows and columns of CSV data into arrMapInfo
+    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    {
+        // Load a particular CSV value into the arrMapInfo
+        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        {
+            //if (arrMapInfo[currLevel][uiRow][uiCol].currID) {
+            //    if (arrMapInfo[currLevel][uiRow][uiCol].currID != arrMapInfo[currLevel][uiRow][uiCol].bgID &&
+            //        arrMapInfo[currLevel][uiRow][uiCol].isBGActive)
+            //    {
+            //        RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].bgSprite, mesh);
+            //    }
+            //    if (arrMapInfo[currLevel][uiRow][uiCol].isCurrActive) {
+            //        RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].currSprite, mesh);
+            //    }
+            //}
+        }
+    }
+}
+
 void FreeMap()
 {
     AEGfxMeshFree(mesh);
@@ -138,32 +165,54 @@ Tile InitTile(int mapIndex, std::string cell, size_t col, size_t row)
     // saves first int as current currID of tile
     Tile newTile;
     int currID = stoi(cell);
+    cell.erase(0, 4);
     int bgID = currID;
     int currTag = 0;
+    bool bgActive = true;
+    bool currActive = true;
 
-    int n = 0;
-
-    while (std::count(cell.begin(), cell.end(), delimiter)) {
-        std::string first = cell.substr(0, cell.find(delimiter));
-        currID = stoi(first);
-        cell.erase(0, cell.find(delimiter) + 1);
-        if (cell.length() == 1) {
-            currTag = stoi(cell);
+    int delimitCount = 0;
+    while (!cell.empty()) {
+        if (delimitCount == 0) {
+            if (cell.length() == 1) {
+                currTag = stoi(cell);
+                cell.erase(0, cell.find(delimiter) + 1);
+            }
+            else {
+                bgID = stoi(cell);
+                cell.erase(0, cell.find(delimiter) + 1);
+            }
         }
-        else {
-            bgID = stol(cell);
-        }
-        if (n == 1) {
+        if (delimitCount == 1) {
             std::string third = cell.substr(0, cell.find(delimiter));
-            bgID = stoi(third);
+            if (third.length() == 1) {
+                currTag = stoi(cell);
+                cell.erase(0, cell.find(delimiter) + 1);
+            }
+            else {
+                cell.erase(0, cell.find(delimiter) + 1);
+                currActive = stoi(third);
+            }
         }
-        n++;
+        else if (delimitCount == 2) {
+            std::string fourth = cell.substr(0, cell.find(delimiter));
+            cell.erase(0, cell.find(delimiter) + 1);
+            currActive = stoi(fourth);
+        }
+        else if (delimitCount == 3) {
+            std::string fifth = cell.substr(0, cell.find(delimiter));
+            cell.erase(0, cell.length());
+            bgActive = stoi(fifth);
+        }
+        delimitCount++;
     }
 
     newTile.currID = currID;
     newTile.bgID = bgID;
     newTile.currTag = currTag;
     newTile.ogTag = currTag;
+    newTile.isBGActive = bgActive;
+    newTile.isCurrActive = currActive;
     // sets size, position, row, col of tile
     AEVec2Set(&newTile.currSprite.scale, tileSize, tileSize);
     AEVec2 size = newTile.currSprite.scale;

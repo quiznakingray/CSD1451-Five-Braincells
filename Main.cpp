@@ -19,7 +19,7 @@ void RenderGraphics() {
 	// Your own rendering logic goes here
 	// Set the background to black.
 	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
-	DrawMap(0);
+	DrawMapSprite(0);
 
 	// check if forcing the application to quit
 	if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())

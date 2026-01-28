@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "AEEngine.h"
 #include "SpriteManager.h"
+#include "TileData.h"
 #include <rapidcsv.h>
 
 #define MAX_XAXIS 100
@@ -19,6 +20,11 @@ struct Tile {
 	bool isTrigger{};
 	bool isCollidable{};
 	bool isCenter{};
+	bool isCurrActive{ true };
+	bool isBGActive{ true };
+	union {
+		Spike spike{};
+	};
 };
 using Tile = struct Tile;
 
@@ -43,7 +49,9 @@ void PrintMap(unsigned int currLevel);
 
 void LoopMap(void* (mapfunc)());
 
-void DrawMap(int currLevel);
+void DrawMapSprite(int currLevel);
+
+void DrawMapCollision(int currLevel);
 
 void FreeMap();
 #pragma endregion

@@ -1,0 +1,2 @@
+Tiles should be written as:
+(Tile ID, Background Tile ID, Tag, bool currentActive, bool bgActive)
