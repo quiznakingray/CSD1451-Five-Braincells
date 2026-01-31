@@ -9,7 +9,7 @@ rapidcsv::Document map;
 std::vector<std::vector<std::vector<Tile>>> arrMapInfo;
 AEGfxVertexList* mesh;
 
-void InitMap(std::string fileName, unsigned int currLevel)
+void MapManager::InitMap(std::string fileName, unsigned int currLevel)
 {
     map = rapidcsv::Document(fileName);
     // Read a row from the CSV file
@@ -43,9 +43,10 @@ void InitMap(std::string fileName, unsigned int currLevel)
 
     // Saving the mesh (list of triangles) in pMesh
     mesh = AEGfxMeshEnd();
+    mapCurrLevel = currLevel;
 }
 
-void PrintMap(unsigned int currLevel) {
+void MapManager::PrintMap(unsigned int currLevel) {
     size_t x = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
@@ -63,7 +64,7 @@ void PrintMap(unsigned int currLevel) {
         std::cout << '\n';
     }
 }
-void LoopMap(void* (mapfunc)())
+void MapManager::LoopMap(void* (mapfunc)())
 {    
     size_t x = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
@@ -78,7 +79,7 @@ void LoopMap(void* (mapfunc)())
         std::cout << '\n';
     }
 }
-void DrawMapSprite(int currLevel)
+void MapManager::DrawMapSprite(int currLevel)
 {
     size_t x = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
@@ -101,7 +102,7 @@ void DrawMapSprite(int currLevel)
         }
     }
 }
-void DrawMapCollision(int currLevel)
+void MapManager::DrawMapCollision(int currLevel)
 {
     size_t x = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
@@ -125,14 +126,14 @@ void DrawMapCollision(int currLevel)
     }
 }
 
-void FreeMap()
+void MapManager::FreeMap()
 {
     AEGfxMeshFree(mesh);
 }
 #pragma endregion
 
 #pragma region TileFuncs
-void DrawTile(Sprite sprite, AEMtx33 transform)
+void MapManager::DrawTile(Sprite sprite, AEMtx33 transform)
 {
     // Tell the engine to get ready to draw something with texture.
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -160,7 +161,7 @@ void DrawTile(Sprite sprite, AEMtx33 transform)
     AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 }
 
-Tile InitTile(int mapIndex, std::string cell, size_t col, size_t row)
+Tile MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t row)
 {
     // saves first int as current currID of tile
     Tile newTile;
@@ -235,7 +236,7 @@ Tile InitTile(int mapIndex, std::string cell, size_t col, size_t row)
     return newTile;
 }
 
-AEGfxTexture* SetTileTexture(unsigned int currID)
+AEGfxTexture* MapManager::SetTileTexture(unsigned int currID)
 {
 	AEGfxTexture* tTex;
 	switch (currID) 
@@ -252,7 +253,7 @@ AEGfxTexture* SetTileTexture(unsigned int currID)
         tTex = AEGfxTextureLoad("Assets/Environment/wall.png");
         break;
     case GOAL:
-        tTex = AEGfxTextureLoad("Assets/Environment/goal.png");
+        tTex = AEGfxTextureLoad("Assets/Environment/doorclose.png");
         break;
     case SPIKE:
         tTex = AEGfxTextureLoad("Assets/Environment/spike.png");
@@ -263,4 +264,9 @@ AEGfxTexture* SetTileTexture(unsigned int currID)
 	}
 	return tTex;
 }
+Tile* MapManager::GetTile(unsigned int col, unsigned int row)
+{
+    return &arrMapInfo[mapCurrLevel][col][row];
+}
 #pragma endregion
+

@@ -4,11 +4,14 @@
 #include <crtdbg.h> // To check for memory leaks
 #include "AEEngine.h"
 #include "MapManager.h"
+#include <filesystem>
 
 
 int gGameRunning = 1;
 AEGfxVertexList* pMesh = 0;
 AEGfxTexture* pTex = 0;
+
+MapManager mapManager;
 
 #pragma region tempFuncs
 // temporary functions
@@ -19,7 +22,7 @@ void RenderGraphics() {
 	// Your own rendering logic goes here
 	// Set the background to black.
 	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
-	DrawMapSprite(0);
+	mapManager.DrawMapSprite(0);
 
 	// check if forcing the application to quit
 	if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
@@ -39,9 +42,10 @@ void GameInit()
 	s32 windowHeight = AEGfxGetWindowHeight();
 	// Clears game background
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
+	//mapManager.GetInstance();
 
-	InitMap("Assets/Maps/Map_Level_01.csv", 0);
-	PrintMap(0);
+	mapManager.InitMap("Assets/Maps/Map_Level_01.csv", 0);
+	mapManager.PrintMap(0);
 }
 void GameUpdate() {
 	RenderGraphics();
@@ -81,7 +85,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	{
 		GameUpdate();
 	}
-	FreeMap();
+	mapManager.FreeMap();
 	// free the system
 	AESysExit();
 }

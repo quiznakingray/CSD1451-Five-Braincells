@@ -53,5 +53,8 @@
     <ClInclude Include="TileData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SingletonTemplate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
