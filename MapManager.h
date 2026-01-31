@@ -32,12 +32,23 @@ using Tile = struct Tile;
 enum TILE_ID {
 	EMPTY = 0,
 	GROUND = 100,
-	SPIKE = 101,
-	WALL = 102,
+	SPIKEDOWN = 101,
+	SPIKEUP = 102,
+	SPIKELEFT = 103,
+	SPIKERIGHT = 104,
+	WALL = 110,
+	LEVERREDOFF = 120,
+	LEVERREDON = 121,
+	LEVERGREENOFF = 122,
+	LEVERGREENON = 123,
+	LASERRED = 130,
+	LASERGREEN = 131,
 	PLAYER = 200,
 	GOAL = 300,
 };
 using TILE_ID = enum TILE_ID;
+
+static std::array<TILE_ID,4> spikes = {SPIKEDOWN , SPIKEUP, SPIKELEFT, SPIKERIGHT};
 
 //template <typename S>
 struct MapManager {
@@ -75,6 +86,12 @@ struct MapManager {
 
 	// Sets tile variables
 	AEGfxTexture* SetTileTexture(unsigned int currID);
+	
+	// Checks if tile needs to have special properties applied
+	void CheckTileToInit(Tile* tile);
+
+	// rotates tile based on given rotation
+	void RotateTile(double rotation, Tile tile);
 
 	// Resets tile currID back to bgID
 	void ResetTile(unsigned int col, unsigned int row);
@@ -89,7 +106,10 @@ struct MapManager {
 	void SetTile(unsigned int col, unsigned int row, unsigned int currID, unsigned int currTag);
 
 	// Finds all tiles on the map with provided currTag
-	Tile** GetTaggedTiles(int size, Tile* tile);
+	std::vector<Tile*> GetTaggedTiles(int tag);
+
+	// Finds all tiles on the map with provided currTag and id
+	std::vector<Tile*> GetTaggedTiles(int tag, int id);
 
 	// compares row of tiles in ascending order
 	int compRowAsc(const Tile** t1, const Tile** t2);
@@ -104,6 +124,9 @@ struct MapManager {
 	int compColDsc(const Tile** t1, const Tile** t2);
 
 #pragma endregion
+
+#pragma region LaserFuncs
+	void SetLaserActive(Tile tile, bool active);
 };
 
 
