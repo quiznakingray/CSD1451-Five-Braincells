@@ -1,2 +1,8 @@
 Tiles should be written as:
-(Tile ID, Background Tile ID, Tag, bool currentActive, bool bgActive)
+(Tile ID, Background Tile ID, Tag, currentActive, bgActive)
+for currentActive and bgActive:
+true = 1
+false = 0
+currentActive and bgActive will be set as true if no value is detected
+tag will be set as 0 if no value is detected
+background tile will not be present if no background tile id is detected

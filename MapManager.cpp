@@ -9,7 +9,7 @@ rapidcsv::Document map;
 std::vector<std::vector<std::vector<Tile>>> arrMapInfo;
 AEGfxVertexList* mesh;
 
-void InitMap(std::string fileName, unsigned int currLevel)
+void MapManager::InitMap(std::string fileName, unsigned int currLevel)
 {
     map = rapidcsv::Document(fileName);
     // Read a row from the CSV file
@@ -43,9 +43,10 @@ void InitMap(std::string fileName, unsigned int currLevel)
 
     // Saving the mesh (list of triangles) in pMesh
     mesh = AEGfxMeshEnd();
+    mapCurrLevel = currLevel;
 }
 
-void PrintMap(unsigned int currLevel) {
+void MapManager::PrintMap(unsigned int currLevel) {
     size_t x = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
@@ -63,7 +64,7 @@ void PrintMap(unsigned int currLevel) {
         std::cout << '\n';
     }
 }
-void LoopMap(void* (mapfunc)())
+void MapManager::LoopMap(void* (mapfunc)())
 {    
     size_t x = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
@@ -78,7 +79,7 @@ void LoopMap(void* (mapfunc)())
         std::cout << '\n';
     }
 }
-void DrawMapSprite(int currLevel)
+void MapManager::DrawMapSprite(int currLevel)
 {
     size_t x = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
@@ -101,7 +102,9 @@ void DrawMapSprite(int currLevel)
         }
     }
 }
-void DrawMapCollision(int currLevel)
+
+// change this function to turn on/off tile collision
+void MapManager::DrawMapCollision(int currLevel)
 {
     size_t x = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
@@ -125,14 +128,14 @@ void DrawMapCollision(int currLevel)
     }
 }
 
-void FreeMap()
+void MapManager::FreeMap()
 {
     AEGfxMeshFree(mesh);
 }
 #pragma endregion
 
 #pragma region TileFuncs
-void DrawTile(Sprite sprite, AEMtx33 transform)
+void MapManager::DrawTile(Sprite sprite, AEMtx33 transform)
 {
     // Tell the engine to get ready to draw something with texture.
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -160,7 +163,7 @@ void DrawTile(Sprite sprite, AEMtx33 transform)
     AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 }
 
-Tile InitTile(int mapIndex, std::string cell, size_t col, size_t row)
+Tile MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t row)
 {
     // saves first int as current currID of tile
     Tile newTile;
@@ -219,6 +222,8 @@ Tile InitTile(int mapIndex, std::string cell, size_t col, size_t row)
     f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
     f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
     AEVec2Set(&newTile.currSprite.pos, x, y);
+    CheckTileToInit(&newTile);
+
     // if bg tile sprite is present
     if (bgID != currID) 
     {
@@ -235,7 +240,7 @@ Tile InitTile(int mapIndex, std::string cell, size_t col, size_t row)
     return newTile;
 }
 
-AEGfxTexture* SetTileTexture(unsigned int currID)
+AEGfxTexture* MapManager::SetTileTexture(unsigned int currID)
 {
 	AEGfxTexture* tTex;
 	switch (currID) 
@@ -252,15 +257,125 @@ AEGfxTexture* SetTileTexture(unsigned int currID)
         tTex = AEGfxTextureLoad("Assets/Environment/wall.png");
         break;
     case GOAL:
-        tTex = AEGfxTextureLoad("Assets/Environment/goal.png");
+        tTex = AEGfxTextureLoad("Assets/Environment/doorClose.png");
         break;
-    case SPIKE:
-        tTex = AEGfxTextureLoad("Assets/Environment/spike.png");
+    case LASERRED:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserRedVertical.png");
+        break;
+    case LASERGREEN:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserGreenVertical.png");
+        break;
+    case LEVERREDON:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
+        break;
+    case LEVERREDOFF:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOff.png");
+        break;
+    case LEVERGREENON:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOn.png");
+        break;
+    case LEVERGREENOFF:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
         break;
     default:
         tTex = AEGfxTextureLoad("Assets/PlanetTexture.png");
         break;
 	}
+    if (std::find(spikes.begin(), spikes.end(), currID) != spikes.end()) {
+        tTex = AEGfxTextureLoad("Assets/Environment/spike.png");
+    }
 	return tTex;
+}
+void MapManager::CheckTileToInit(Tile* tile)
+{
+    if ((std::find(spikes.begin(), spikes.end(), tile->currID) != spikes.end())) 
+    {
+        switch (tile->currID){
+        case SPIKEDOWN:
+        {
+            tile->currSprite.rotation = 0;
+            break;
+        }
+        case SPIKEUP:
+        {
+            tile->currSprite.rotation = PI;
+            break;
+        }
+        case SPIKELEFT:
+        {
+            tile->currSprite.rotation = 270 * (PI / 180);
+            break;
+        }
+        case SPIKERIGHT:
+        {
+            tile->currSprite.rotation = PI / 2;
+            break;
+        }
+    }
+    }
+}
+void MapManager::RotateTile(double rotation, Tile tile)
+{
+
+}
+Tile* MapManager::GetTile(unsigned int col, unsigned int row)
+{
+    return &arrMapInfo[mapCurrLevel][col][row];
+}
+std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
+{
+    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t y = (map.GetColumn<std::string>(0)).size();
+    int i = 0;
+    std::vector<Tile*> taggedTiles;
+    //taggedTiles.resize(size, 0);
+    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        {
+            if (arrMapInfo[mapCurrLevel][uiCol][uiRow].currTag == tag)
+            {
+                taggedTiles.push_back(&arrMapInfo[mapCurrLevel][uiCol][uiRow]);
+                i++;
+            }
+
+        }
+    }
+    return taggedTiles;
+    
+}
+
+std::vector<Tile*> MapManager::GetTaggedTiles(int tag, int id)
+{
+    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t y = (map.GetColumn<std::string>(0)).size();
+    int i = 0;
+    std::vector<Tile*> taggedTiles;
+    //taggedTiles.resize(size, 0);
+    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        {
+            if (arrMapInfo[mapCurrLevel][uiCol][uiRow].currTag == tag && 
+                arrMapInfo[mapCurrLevel][uiCol][uiRow].currID == id)
+            {
+                taggedTiles.push_back(&arrMapInfo[mapCurrLevel][uiCol][uiRow]);
+                i++;
+            }
+
+        }
+    }
+    return taggedTiles;
+}
+
+#pragma endregion
+
+#pragma region LaserFuncs
+void MapManager::SetLaserActive(Tile tile, bool active)
+{
+    std::vector<Tile*> lasers = GetTaggedTiles(tile.currTag, tile.currID);
+    for (Tile* laser : lasers) {
+        laser->isCurrActive = active;
+    }
 }
 #pragma endregion
