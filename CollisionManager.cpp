@@ -163,9 +163,9 @@ void Collider::Render()
 		owner->pos.y + center.y,
 		owner->pos.z,
 		0.f,
-		0xFFFF0000
+		0xFF000000
 		);
-	s->opacity = 0.25f;
+	s->opacity = 0.5f;
 
 	s->Render();
 }

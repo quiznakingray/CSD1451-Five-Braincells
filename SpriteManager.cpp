@@ -22,14 +22,14 @@ void Sprite::Render()  {
 
 	// add tri for rects
 	AEGfxTriAdd(
-		-0.5f, -0.5f, sprite->color.r, 0.0f, 1.0f,
-		0.5f, -0.5f, sprite->color.g, 1.0f, 1.0f,
-		-0.5f, 0.5f, sprite->color.b, 0.0f, 0.0f);
+		-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+		0.5f, -0.5f, 0xFFFFFFFF, 1.25f, 1.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
 
 	AEGfxTriAdd(
-		0.5f, -0.5f, sprite->color.r, 1.0f, 1.0f,
-		0.5f, 0.5f, sprite->color.g, 1.0f, 0.0f,
-		-0.5f, 0.5f, sprite->color.b, 0.0f, 0.0f);
+		0.5f, -0.5f, 0xFFFFFFFF, 1.25f, 1.0f,
+		0.5f, 0.5f, 0xFFFFFFFF, 1.25f, 0.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
 
 
 	mesh = AEGfxMeshEnd(); // set to ui->mesh
@@ -51,22 +51,12 @@ void Sprite::Render()  {
 	AEMtx33Concat(&transform, &translateMtx, &transform);
 
 	AEGfxSetRenderMode(texture == nullptr  ? AE_GFX_RM_COLOR: AE_GFX_RM_TEXTURE);
-	AEGfxSetColorToMultiply(1, 1, 1, 1);
-	AEGfxSetColorToAdd(0, 0, 0, 0);
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+	AEGfxSetColorToMultiply(multiplyColor.r, multiplyColor.g, multiplyColor.b, multiplyColor.a);
+	AEGfxSetColorToAdd(addColor.r, addColor.g, addColor.b, addColor.a);
+	AEGfxSetBlendMode(blendMode);
 	AEGfxSetTransparency(opacity);
-	if (texture != nullptr )AEGfxTextureSet(texture, 0, 0);
 	AEGfxSetTransform(transform.m);
-	AEGfxSetColorToMultiply(0,
-		0,
-		0,
-		0);
-	// Set the color to add to nothing, so that we don't alter the sprite's color
-	AEGfxSetColorToAdd((float)sprite->color.r,
-		(float)sprite->color.g,
-		(float)sprite->color.b,
-		(float)sprite->color.a);
-	AEGfxTextureSet(sprite->texture, 0, 0);
+	if (texture != nullptr) AEGfxTextureSet(texture, 0, 0);
 	// Tell Alpha Engine to draw the mesh with the above settings.
 	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 
@@ -89,7 +79,7 @@ void RenderSprite(Sprite sprite, AEGfxVertexList* mesh)
 	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// Set the color to add to nothing, so that we don't alter the sprite's color
-	AEGfxSetColorToAdd(sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a);
+	AEGfxSetColorToAdd(sprite.addColor.r, sprite.addColor.g, sprite.addColor.b, sprite.addColor.a);
 
 	// Set blend mode to AE_GFX_BM_BLEND
 	// This will allow transparency.

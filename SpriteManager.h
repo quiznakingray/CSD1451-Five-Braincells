@@ -15,11 +15,16 @@ enum class SPRITE_DRAW_MODE {
 	SLICED
 };
 
-struct Color {
-	u32 r;
-	u32 g;
-	u32 b;
-	u32 a;
+struct Color { // range form 0 to 1
+	f32 r{};
+	f32 g{};
+	f32 b{};
+	f32 a{};
+
+	Color(f32 red = 1.f, f32 green = 1.f, f32 blue = 1.f, f32 alpha = 1.f)
+		:r(red), g(green), b(blue), a(alpha) {
+	}
+
 };
 
 using Color = struct Color;
@@ -28,7 +33,10 @@ struct Sprite : ComponentBase{
 	AEVec3 pos{};
 	AEVec2 scale{};
 	f32 rotation{};
-	u32 color{};
+	u32 meshColor{};
+	Color multiplyColor = Color(1.f, 1.f, 1.f, 1.f);
+	Color addColor = Color(0.f, 0.f, 0.f, 0.f);
+	AEGfxBlendMode blendMode = AE_GFX_BM_BLEND;
 	f32 opacity = 1.f;
 	AEGfxVertexList* mesh = nullptr;
 	AEGfxTexture* texture = nullptr;
@@ -41,16 +49,19 @@ struct Sprite : ComponentBase{
 	} spriteSheet;
 
 
-	Sprite() : color(0xFF000000), rotation(0.f), texture(nullptr) {
+	Sprite() : meshColor(0x00000000), rotation(0.f), texture(nullptr) {
 
 	}
-	Sprite(f32 scale_x, f32 scale_y, f32 pos_x, f32 pos_y, f32 pos_z = 0.f, f32 rot = 0.f, u32 r = 0xFF000000, u32 g = 0xFF000000, u32 b = 0xFF000000, u32 a = 0xFF000000,
+	Sprite(
+		f32 scale_x, f32 scale_y, 
+		f32 pos_x, f32 pos_y, f32 pos_z = 0.f, 
+		f32 rot = 0.f, 
+		u32 c = 0xFF000000,
 		AEGfxTexture* t = nullptr)
-		: rotation(rot), texture(t)
+		: meshColor(c), rotation(rot), texture(t)
 	{
 		AEVec2Set(&pos, pos_x, pos_y);
 		pos.z = pos_z;
-		color = { r,g,b,a };
 		AEVec2Set(&scale, scale_x, scale_y);
 
 	}

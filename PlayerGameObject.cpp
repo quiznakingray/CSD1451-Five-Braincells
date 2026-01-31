@@ -13,8 +13,9 @@ void Player::Init()
 	AEVec2Set(&scale, 100.f, 100.f);
 
 	// set components
-	AddComponent(
-		new Sprite(100.f, 100.f, 0.f, 0.f, 0.f, 0.f, 0xFFFFFF00));
+	Sprite * s = AddComponent(
+		new Sprite(100.f, 100.f, 0.f, 0.f, 0.f, 0.f));
+
 
 	Collider * c = AddComponent(
 		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 25)
