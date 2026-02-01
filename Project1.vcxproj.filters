@@ -30,7 +30,22 @@
     <ClCompile Include="CollisionManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerGameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="TileData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RigidBodyComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,13 +62,28 @@
     <ClInclude Include="CollisionManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Header.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerGameObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SingletonTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TileData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SingletonTemplate.h">
+    <ClInclude Include="RigidBodyComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
