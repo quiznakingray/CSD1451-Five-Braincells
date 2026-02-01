@@ -82,13 +82,13 @@ void Collider::AddToOvelappingVector(Collider* c)
 	// if not in list , call on collison enter & add to list
 	if (it == overlappingColliders.end()) // cant find
 	{
-		if (OnCollisionEnter) OnCollisionEnter();
+		if (OnCollisionEnter) OnCollisionEnter(c);
 		overlappingColliders.push_back(c);
 	}
 	// if still in list, keep calling oncollisionover
 	else {
 
-		if (OnCollisionOver) OnCollisionOver();
+		if (OnCollisionOver) OnCollisionOver(c);
 	}
 }
 
@@ -100,7 +100,7 @@ void Collider::RemoveFromOverlappingVector(Collider* c)
 	if (it == overlappingColliders.end()) return;
 
 	// if still in list but no colliion, call oncollision exit and remove from list
-	if (OnCollisionExit) OnCollisionExit();
+	if (OnCollisionExit) OnCollisionExit(c);
 	overlappingColliders.erase(it);
 	//delete* it;
 }
@@ -108,64 +108,39 @@ void Collider::RemoveFromOverlappingVector(Collider* c)
 void Collider::Update()
 {
 
-	//bool isHover = IsCursorOverRect(
-	//	owner->pos.x + center.x,
-	//	owner->pos.y + center.y,
-	//	owner->scale.x * size.x,
-	//	owner->scale.y * size.y);
-	//if (!isHovering && isHover)
-	//{
-	//	if (OnMouseEnter)OnMouseEnter();
-	//}
-	//else if (isHovering)
-	//{
-	//	if (isHover)
-	//	{
-	//		if (OnMouseOver) OnMouseOver();
-	//	}
-	//	else {
-	//		if (OnMouseExit) OnMouseExit();
-	//	}
-	//}
-	//isHovering = isHover;
-
-
-	//if (isHovering && AEInputCheckTriggered(AEVK_LBUTTON) && !isInteracting)
-	//{
-	//	if (OnMouseDown) OnMouseDown();
-	//	isInteracting = true;
-	//}
-	//else if (isInteracting)
-	//{
-	//	if (AEInputCheckCurr(AEVK_LBUTTON))
-	//	{
-	//		if (OnClick) OnClick();
-	//	}
-	//	else if (AEInputCheckReleased(AEVK_LBUTTON))
-	//	{
-	//		if (OnMouseUp) OnMouseUp();
-	//		isInteracting = false;
-	//	}
-	//}
-
-	//if (isTrigger) return;
-
 
 }
 
 void Collider::Render()
 {
 	if (!owner->showColliders) return;
-	Sprite* s = new Sprite(
-		owner->scale.x * size.x,
-		owner->scale.y * size.y,
-		owner->pos.x + center.x,
-		owner->pos.y + center.y,
-		owner->pos.z,
-		0.f,
-		0xFF000000
-		);
+
+	GameObject* c = new GameObject(	
+			owner->scale.x * size.x,
+			owner->scale.y * size.y,
+			owner->pos.x + center.x,
+			owner->pos.y + center.y,
+			owner->pos.z);
+
+	Sprite* s = c->AddComponent(
+		new Sprite()
+	);
+
+	s->meshColor = 0xFFFF0000;
 	s->opacity = 0.5f;
 
-	s->Render();
+	c->Render();
+
+	//Sprite* s = new Sprite(
+	//	owner->scale.x * size.x,
+	//	owner->scale.y * size.y,
+	//	owner->pos.x + center.x,
+	//	owner->pos.y + center.y,
+	//	owner->pos.z,
+	//	0.f,
+	//	0xFF000000
+	//	);
+	//s->opacity = 0.5f;
+
+	//s->Render();
 }

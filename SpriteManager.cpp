@@ -3,11 +3,16 @@
 
 #include <algorithm>
 
+void Sprite::Init()
+{
+
+}
+
 void Sprite::Update()
 {
-	AEVec2Set(&pos, owner->pos.x, owner->pos.y);
-	pos.z = owner->pos.z;
-	AEVec2Set(&scale, owner->scale.x, owner->scale.y);
+	//AEVec2Set(&pos, owner->pos.x, owner->pos.y);
+	//pos.z = owner->pos.z;
+	//AEVec2Set(&scale, owner->scale.x, owner->scale.y);
 }
 
 void Sprite::Render()  {
@@ -22,28 +27,28 @@ void Sprite::Render()  {
 
 	// add tri for rects
 	AEGfxTriAdd(
-		-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
-		0.5f, -0.5f, 0xFFFFFFFF, 1.25f, 1.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+		-0.5f, -0.5f, meshColor, 0.0f, 1.0f,
+		0.5f, -0.5f, meshColor, 1.0f, 1.0f,
+		-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
 
 	AEGfxTriAdd(
-		0.5f, -0.5f, 0xFFFFFFFF, 1.25f, 1.0f,
-		0.5f, 0.5f, 0xFFFFFFFF, 1.25f, 0.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+		0.5f, -0.5f, meshColor, 1.0f, 1.0f,
+		0.5f, 0.5f, meshColor, 1.0f, 0.0f,
+		-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
 
 
 	mesh = AEGfxMeshEnd(); // set to ui->mesh
 
 	AEMtx33 scaleMtx = { 0 };
-	AEMtx33Scale(&scaleMtx, scale.x, scale.y);
+	AEMtx33Scale(&scaleMtx, owner->scale.x, owner->scale.y);
 
 
 	AEMtx33 rotateMtx = { 0 };
-	AEMtx33Rot(&rotateMtx, rotation);
+	AEMtx33Rot(&rotateMtx, owner->rotation);
 
 
 	AEMtx33 translateMtx = { 0 };
-	AEMtx33Trans(&translateMtx, pos.x, pos.y);
+	AEMtx33Trans(&translateMtx, owner->pos.x, owner->pos.y);
 
 
 	AEMtx33 transform = { 0 };
@@ -90,15 +95,15 @@ void RenderSprite(Sprite sprite, AEGfxVertexList* mesh)
 	AEGfxTextureSet(sprite.texture, 0, 0);
 
 	AEMtx33 scale = { 0 };
-	AEMtx33Scale(&scale, sprite.scale.x, sprite.scale.y);
+	AEMtx33Scale(&scale, sprite.owner->scale.x, sprite.owner->scale.y);
 
 
 	AEMtx33 rotate = { 0 };
-	AEMtx33Rot(&rotate, sprite.rotation);
+	AEMtx33Rot(&rotate, sprite.owner->rotation);
 
 
 	AEMtx33 translate = { 0 };
-	AEMtx33Trans(&translate, sprite.pos.x, sprite.pos.y);
+	AEMtx33Trans(&translate, sprite.owner->pos.x, sprite.owner->pos.y);
 
 
 	AEMtx33 transform = { 0 };
@@ -203,7 +208,7 @@ void AddSpriteToArray(std::vector<Sprite*>& spriteArr, Sprite*& s)
 	std::sort(spriteArr.begin(), spriteArr.end(),
 		[](Sprite*& a, Sprite*& b)
 		{
-			return a->pos.z < b->pos.z;
+			return a->owner->pos.z < b->owner->pos.z;
 		}
 	);
 

@@ -30,9 +30,9 @@ struct Color { // range form 0 to 1
 using Color = struct Color;
 
 struct Sprite : ComponentBase{
-	AEVec3 pos{};
-	AEVec2 scale{};
-	f32 rotation{};
+	//AEVec3 pos{};
+	//AEVec2 scale{};
+	//f32 rotation{};
 	u32 meshColor{};
 	Color multiplyColor = Color(1.f, 1.f, 1.f, 1.f);
 	Color addColor = Color(0.f, 0.f, 0.f, 0.f);
@@ -49,7 +49,7 @@ struct Sprite : ComponentBase{
 	} spriteSheet;
 
 
-	Sprite() : meshColor(0x00000000), rotation(0.f), texture(nullptr) {
+	Sprite() : meshColor(0x00000000), texture(nullptr) {
 
 	}
 	Sprite(
@@ -58,14 +58,15 @@ struct Sprite : ComponentBase{
 		f32 rot = 0.f, 
 		u32 c = 0xFF000000,
 		AEGfxTexture* t = nullptr)
-		: meshColor(c), rotation(rot), texture(t)
+		: meshColor(c),texture(t)
 	{
-		AEVec2Set(&pos, pos_x, pos_y);
-		pos.z = pos_z;
-		AEVec2Set(&scale, scale_x, scale_y);
+		//AEVec2Set(&pos, pos_x, pos_y);
+		//pos.z = pos_z;
+		//AEVec2Set(&scale, scale_x, scale_y);
 
 	}
 
+	void Init() override;
 	void Update() override;
 	void Render() override;
 	void Free() override;

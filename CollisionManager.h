@@ -36,9 +36,9 @@ struct Collider : ComponentBase {
 	std::function<void()> OnMouseExit;
 
 	//Collision Function
-	std::function<void()> OnCollisionEnter;
-	std::function<void()> OnCollisionOver;
-	std::function<void()> OnCollisionExit;
+	std::function<void(Collider *)> OnCollisionEnter;
+	std::function<void(Collider *)> OnCollisionOver;
+	std::function<void(Collider *)> OnCollisionExit;
 
 	std::vector<Collider*> overlappingColliders{};
 
@@ -55,6 +55,8 @@ struct Collider : ComponentBase {
 
 	void AddToOvelappingVector(Collider* c);
 	void RemoveFromOverlappingVector(Collider* c);
+
+
 
 	void Update() override;
 	void Render() override;

@@ -41,13 +41,13 @@ void GameObject::Free()
 }
 
 
-void AddGameObjectToVector(GameObject* & go, std::vector<GameObject*>& gos)
+void AddGameObjectToVector(GameObject* go, std::vector<GameObject*>& gos)
 {
 	gos.push_back(go);
 
 	// sort array
 	std::sort(gos.begin(), gos.end(),
-		[](GameObject*& a, GameObject*& b)
+		[](GameObject* a, GameObject* b)
 		{
 			return a->pos.z < b->pos.z;
 		}
@@ -96,6 +96,11 @@ void HandleCollision(std::vector<GameObject*>& gos)
 						//Add to list
 						firstColl->AddToOvelappingVector(secondColl);
 						secondColl->AddToOvelappingVector(firstColl);
+
+						if (!firstColl->isTrigger && !secondColl->isTrigger)
+						{
+
+						}
 					}
 					else {
 						//remove from list

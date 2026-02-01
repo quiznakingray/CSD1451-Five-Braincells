@@ -9,6 +9,7 @@ struct Player : GameObject {
 	{
 	}
 	f32 speed{};
+	AEVec2 velocity{};
 	void Init() override;
 	void Update() override;
 };

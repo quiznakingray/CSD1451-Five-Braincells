@@ -56,7 +56,7 @@ struct GameObject {
 
 };
 
-void AddGameObjectToVector(GameObject*  &go, std::vector<GameObject*>& gos);
+void AddGameObjectToVector(GameObject* go, std::vector<GameObject*>& gos);
 void UpdateGameObjects(std::vector<GameObject*> &gos);
 void RenderGameObjects(std::vector<GameObject*>& gos);
 #endif // !GAME_OBJECT_MANAGER_H

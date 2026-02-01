@@ -4,32 +4,13 @@
 #include "TileData.h"
 #include <rapidcsv.h>
 #include "SingletonTemplate.h"
+#include "GameObjectManager.h"
 
 #define MAX_XAXIS 100
 #define MAX_YAXIS 100
 #define MAX_LEVELS 5
 
-struct Tile {
-	Sprite currSprite{};
-	Sprite bgSprite{};
-	int currID{};
-	int bgID{};
-	int currTag{};
-	int ogTag{};
-	size_t row{};
-	size_t col{};
-	bool isTrigger{};
-	bool isCollidable{};
-	bool isCenter{};
-	bool isCurrActive{ true };
-	bool isBGActive{ true };
-	union {
-		Spike spike{};
-	};
-};
-using Tile = struct Tile;
-
-enum TILE_ID {
+enum class TILE_ID {
 	EMPTY = 0,
 	GROUND = 100,
 	SPIKEDOWN = 101,
@@ -46,21 +27,45 @@ enum TILE_ID {
 	PLAYER = 200,
 	GOAL = 300,
 };
-using TILE_ID = enum TILE_ID;
+//using TILE_ID = enum TILE_ID;
 
-static std::array<TILE_ID,4> spikes = {SPIKEDOWN , SPIKEUP, SPIKELEFT, SPIKERIGHT};
+struct Tile : GameObject {
+	Sprite * currSprite{};
+	Sprite * bgSprite{};
+	TILE_ID currID{};
+	TILE_ID bgID{};
+	int currTag{};
+	int ogTag{};
+	size_t row{};
+	size_t col{};
+	bool isTrigger{};
+	bool isCollidable{};
+	bool isCenter{};
+	bool isCurrActive{ true };
+	bool isBGActive{ true };
+	union {
+		Spike spike{};
+	};
+
+	void Update() override;
+};
+//using Tile = struct Tile;
+
+
+static std::array<TILE_ID,4> spikes = {TILE_ID::SPIKEDOWN , TILE_ID::SPIKEUP, TILE_ID::SPIKELEFT, TILE_ID::SPIKERIGHT};
 
 //template <typename S>
 struct MapManager {
 
 	const float tileSize = 37.5f;
 	const char delimiter = ',';
-	int mapCurrLevel;
+	static int mapCurrLevel;
 
 	static MapManager* mapManager;
 	//S MapManager() {};
 	//S ~MapManager() {};
 	//S get_instance();
+
 
 #pragma region MapFuncs
 	// Loads a map
@@ -82,10 +87,10 @@ struct MapManager {
 	void DrawTile(Sprite currSprite, AEMtx33 transform);
 
 	// Inits tile variables
-	Tile InitTile(int mapIndex, std::string cell, size_t col, size_t row);
+	Tile * InitTile(int mapIndex, std::string cell, size_t col, size_t row);
 
 	// Sets tile variables
-	AEGfxTexture* SetTileTexture(unsigned int currID);
+	AEGfxTexture* SetTileTexture(TILE_ID currID);
 	
 	// Checks if tile needs to have special properties applied
 	void CheckTileToInit(Tile* tile);
@@ -109,7 +114,7 @@ struct MapManager {
 	std::vector<Tile*> GetTaggedTiles(int tag);
 
 	// Finds all tiles on the map with provided currTag and id
-	std::vector<Tile*> GetTaggedTiles(int tag, int id);
+	std::vector<Tile*> GetTaggedTiles(int tag, TILE_ID id);
 
 	// compares row of tiles in ascending order
 	int compRowAsc(const Tile** t1, const Tile** t2);
@@ -127,7 +132,14 @@ struct MapManager {
 
 #pragma region LaserFuncs
 	void SetLaserActive(Tile tile, bool active);
+#pragma endregion
+
+#pragma region GetFuncs
+	static AEVec2 GetPlayerSpawnPos();
+
+	void AddTilesToGameObjectVector(std::vector<GameObject*>& gos);
 };
+
 
 
 
