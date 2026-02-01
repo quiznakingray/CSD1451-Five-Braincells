@@ -101,6 +101,10 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
   <ItemGroup>
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="ComponentBase.cpp" />
+    <ClCompile Include="EnemyBase.cpp" />
+    <ClCompile Include="EnemyCombat.cpp" />
+    <ClCompile Include="EnemyGameObject.cpp" />
+    <ClCompile Include="EnemyMovement.cpp" />
     <ClCompile Include="GameObjectManager.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -110,6 +114,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="PlayerCombat.cpp" />
     <ClCompile Include="PlayerGameObject.cpp" />
+    <ClCompile Include="PowerUps.cpp" />
     <ClCompile Include="RigidBodyComponent.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="TextComponent.cpp" />
@@ -119,6 +124,10 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
   <ItemGroup>
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="ComponentBase.h" />
+    <ClInclude Include="EnemyBase.h" />
+    <ClInclude Include="EnemyCombat.h" />
+    <ClInclude Include="EnemyGameObject.h" />
+    <ClInclude Include="EnemyMovement.h" />
     <ClInclude Include="GameObjectManager.h" />
     <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="Header.h" />
@@ -129,6 +138,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="PhysicsManager.h" />
     <ClInclude Include="PlayerCombat.h" />
     <ClInclude Include="PlayerGameObject.h" />
+    <ClInclude Include="PowerUps.h" />
     <ClInclude Include="RigidBodyComponent.h" />
     <ClInclude Include="SingletonTemplate.h" />
     <ClInclude Include="SpriteManager.h" />
