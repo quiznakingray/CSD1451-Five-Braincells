@@ -57,7 +57,7 @@ static std::array<TILE_ID,4> spikes = {TILE_ID::SPIKEDOWN , TILE_ID::SPIKEUP, TI
 //template <typename S>
 struct MapManager {
 
-	const float tileSize = 37.5f;
+	static constexpr  float tileSize = 50.f;
 	const char delimiter = ',';
 	static int mapCurrLevel;
 
@@ -128,6 +128,8 @@ struct MapManager {
 	// compares cols of tiles in descending order
 	int compColDsc(const Tile** t1, const Tile** t2);
 
+	// get tiles near position
+	static std::vector<Tile*> GetTilesNearPos(AEVec2 pos, AEVec2 scale);
 #pragma endregion
 
 #pragma region LaserFuncs

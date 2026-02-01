@@ -15,6 +15,7 @@ struct GameObject {
 
 	bool isActive = true;
 	bool showColliders = false;
+	bool isOnCamera = true;
 	//Sprite* sprite;
 	
 	std::vector<ComponentBase*> components{};
@@ -40,6 +41,16 @@ struct GameObject {
 		}
 		return result;
 	}
+	template<typename T>
+	T* GetComponent()
+	{
+		for (ComponentBase* c : components)
+		{
+			if (T* casted = dynamic_cast<T*>(c))
+				return casted;
+		}
+		return nullptr;
+	}
 
 	virtual void Init();
 	virtual void Update();
@@ -47,6 +58,7 @@ struct GameObject {
 	virtual void Free();
 
 	GameObject() = default;
+	virtual ~GameObject() {};
 	GameObject(f32 scale_x, f32 scale_y, f32 pos_x, f32 pos_y, f32 pos_z = 0.f, f32 rot = 0.f)
 	{
 		AEVec2Set(&pos, pos_x, pos_y);
@@ -54,6 +66,7 @@ struct GameObject {
 		AEVec2Set(&scale, scale_x, scale_y);
 	}
 
+	bool isGameObjectOnScreen();
 };
 
 void AddGameObjectToVector(GameObject* go, std::vector<GameObject*>& gos);

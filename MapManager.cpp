@@ -408,6 +408,26 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
 #pragma endregion
 
 #pragma region LaserFuncs
+std::vector<Tile*> MapManager::GetTilesNearPos(AEVec2 pos, AEVec2 scale)
+{
+
+
+    std::vector<Tile*> nearbyTiles;
+
+    for (std::vector<Tile*> row : arrMapInfo[mapCurrLevel])
+    {
+        // Load a particular CSV value into the arrMapInfo
+        for (Tile* tile : row)
+        {
+            //Tile* currTile = arrMapInfo[mapCurrLevel][uiCol][uiRow];
+            if (BoxToBoxCollision(pos, tile->pos, scale,  tile->scale) && tile->currID != TILE_ID::PLAYER)
+            {
+                nearbyTiles.push_back(tile);
+            }
+        }
+    }
+    return nearbyTiles;
+}
 void MapManager::SetLaserActive(Tile tile, bool active)
 {
     std::vector<Tile*> lasers = GetTaggedTiles(tile.currTag, tile.currID);
@@ -420,17 +440,17 @@ AEVec2 MapManager::GetPlayerSpawnPos()
     AEVec2 pos;
     AEVec2Set(&pos, 0, 0);
 
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
+    //size_t x = (map.GetRow<std::string>(0)).size();
+    //size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    for (std::vector<Tile*> row : arrMapInfo[mapCurrLevel])
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        for (Tile* tile : row)
         {
-            Tile *currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
-            if (currTile->currID == TILE_ID::PLAYER) {
-                AEVec2Set(&pos, currTile->pos.x, currTile->pos.y);
+            //Tile *currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
+            if (tile->currID == TILE_ID::PLAYER) {
+                AEVec2Set(&pos, tile->pos.x, tile->pos.y);
             }
         }
     }

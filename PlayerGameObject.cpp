@@ -4,12 +4,46 @@
 #include <iostream>
 #include <vector>
 
+void Player::PlayerInput()
+{
+	AEVec2 moveDir{};
+	//AEVec2Set(&velocity, 0.f, 0.f);
+	//std::cout << "On ground: " << (onGround ? "--" : "___________________________ ") << std::endl;
+	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider)
+	{
+		moveDir.y = 400.f;
+		//onGround = false;
+
+	}
+	if (AEInputCheckCurr(AEVK_S))
+	{
+		moveDir.y -= 1.f;
+	}
+	if (AEInputCheckCurr(AEVK_A))
+	{
+		moveDir.x -= 1.f;  
+	}
+	if (AEInputCheckCurr(AEVK_D))
+	{
+		moveDir.x += 1.f;
+	}
+
+	float length = sqrt(moveDir.x * moveDir.x);
+	if (length > 0) {
+		moveDir.x /= length;
+	}
+
+	// Set velocity
+	rb->velocity.x = moveDir.x * speed;
+	rb->velocity.y += moveDir.y ;
+
+}
+
 void Player::Init()
 {
-	GameObject::Init();
 
 	//set pos
-	AEVec2Set(&pos,MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y);
+	AEVec2Set(&pos,MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y + 100.f);
 	pos.z = 1.f;
 
 	//set scale
@@ -43,50 +77,132 @@ void Player::Init()
 	//	std::cout << "Mouse Exit" << std::endl;
 	//	};
 
-	c->OnCollisionEnter = [](Collider * other) {
+	c->OnCollisionEnter = [this](Collider * other) {
 		std::cout << "Collision Enter" << std::endl;
-		};
-	c->OnCollisionOver = [](Collider * other) {
-		//std::cout << "Collision Over" << std::endl;
+		if (Tile * tile = dynamic_cast<Tile*>(other->owner))
+		{
+			this->rb->onCollider = true;
+		}
+	};
+	c->OnCollisionOver = [this](Collider * other) {
+		std::cout << "Collision Over" << std::endl;
+		//if (Tile* tile = dynamic_cast<Tile*>(other->owner))
+		//{
+		//	if (tile->currID == TILE_ID::GROUND)
+		//		std::cout << "Player on ground" << std::endl;
+		//}
+	};	
+	c->OnCollisionExit = [this](Collider * other) {
+		std::cout << "Collision Exit" << std::endl;
 		if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 		{
-			if (tile->currID == TILE_ID::GROUND)
-				std::cout << "Player on ground" << std::endl;
+			this->rb->onCollider = false;
 		}
-	};	
-	c->OnCollisionExit = [](Collider * other) {
-		std::cout << "Collision Exit" << std::endl;
-		};
+	};
+
+	rb = AddComponent(
+		new RigidBody()
+	);
+	rb->type = RIGIDBODY_TYPE::DYNAMIC;
+
 	showColliders = true;
 	speed = 50.f;
-	AEVec2Set(&velocity, 0.f, 0.f);
+	//AEVec2Set(&velocity, 0.f, 0.f);
+	AEGfxSetCamPosition(pos.x, pos.y);
+
+	GameObject::Init();
 }
 
 void Player::Update(){
+
+	PlayerInput();
+	//std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
+	std::vector<Collider*> colliders = GetComponents<Collider>();
+
+	for (Collider* pCol : colliders)
+	{
+		for (Collider* oCol : pCol->overlappingColliders)
+		{
+
+			if (BoxToBoxCollision(
+				pCol->GetPos2D(), oCol->GetPos2D(),
+				pCol->GetScale(), oCol->GetScale()))
+			{
+				//pCol->AddToOvelappingVector(oCol);
+				//oCol->AddToOvelappingVector(pCol);
+				PhysicsManager::HandleCollision(pCol, oCol);
+			}
+			else {
+				//pCol->RemoveFromOverlappingVector(oCol);
+				//oCol->RemoveFromOverlappingVector(pCol);
+			}
+		
+		}
+	}
+
+	//for (Collider* pCol : colliders)
+	//{
+	//	for (Tile* tile : nearbyTiles)
+	//	{
+	//		std::vector<Collider*> tileColls = tile->GetComponents<Collider>();
+	//		//std::vector<Sprite*> tileSpr = tile->GetComponents<Sprite>();
+
+	//		//for (Sprite* tSpr : tileSpr)
+	//		//{
+	//		//	tSpr->addColor.r = 1.f;
+	//		//}
+	//		for (Collider* tCol : tileColls)
+	//		{
+
+
+	//			if (BoxToBoxCollision(
+	//				pCol->GetPos2D(), tCol->GetPos2D(),
+	//				pCol->GetScale(), tCol->GetScale()))
+	//			{
+	//				//Add to list
+	//				pCol->AddToOvelappingVector(tCol);
+	//				tCol->AddToOvelappingVector(pCol);
+
+	//				PhysicsManager::HandleCollision(pCol, tCol);
+	//			}
+
+
+	//			
+	//		}
+	//	}
+
+	//	//for (Collider* oCol : pCol->overlappingColliders)
+	//	//{
+	//	//	if (!BoxToBoxCollision(
+	//	//		pCol->GetPos2D(), oCol->GetPos2D(),
+	//	//		pCol->GetScale(), oCol->GetScale()))
+	//	//	{
+	//	//		//remove from list
+
+	//	//		pCol->RemoveFromOverlappingVector(oCol);
+	//	//		oCol->RemoveFromOverlappingVector(pCol);
+	//	//	}
+
+	//	//}
+	//	////std::vector<Collider*> toRemove;
+
+	//	////for (Collider* oCol : pCol->overlappingColliders)
+	//	////{
+	//	////	if (!BoxToBoxCollision(
+	//	////		pCol->GetPos2D(), oCol->GetPos2D(),
+	//	////		pCol->GetScale(), oCol->GetScale()))
+	//	////	{
+	//	////		toRemove.push_back(oCol);
+	//	////	}
+	//	////}
+
+	//	////for (Collider* oCol : toRemove)
+	//	////{
+	//	////	pCol->RemoveFromOverlappingVector(oCol);
+	//	////	oCol->RemoveFromOverlappingVector(pCol);
+	//	////}
+
+	//}
+	//AEGfxSetCamPosition(pos.x, pos.y);
 	GameObject::Update();
-
-	AEVec2Set(&velocity, 0.f, 0.f);
-	if (AEInputCheckCurr(AEVK_W))
-	{
-		//pos.y += speed * AEFrameRateControllerGetFrameTime();
-		velocity.y = 1;
-	}
-	if (AEInputCheckCurr(AEVK_S))
-	{
-		//pos.y -= speed * AEFrameRateControllerGetFrameTime();
-		velocity.y = -1;
-	}
-	if (AEInputCheckCurr(AEVK_A))
-	{
-		//pos.x -= speed * AEFrameRateControllerGetFrameTime();
-		velocity.x = -1;
-	}
-	if (AEInputCheckCurr(AEVK_D))
-	{
-		//pos.x += speed * AEFrameRateControllerGetFrameTime();
-		velocity.x = 1;
-	}
-
-	pos.x += velocity.x * speed * AEFrameRateControllerGetFrameTime();
-	pos.y += velocity.y * speed * AEFrameRateControllerGetFrameTime();
 }

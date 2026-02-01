@@ -1,5 +1,6 @@
 #include "GameObjectManager.h"
 #include "CollisionManager.h"
+#include "PhysicsManager.h"
 #include <type_traits>
 #include <iostream>
 #include <algorithm>
@@ -25,6 +26,7 @@ void GameObject::Update()
 }
 
 void GameObject::Render() {
+	if (!isOnCamera) return;
 	for (ComponentBase* comp : components)
 	{
 		comp->Render();
@@ -35,9 +37,33 @@ void GameObject::Free()
 	for (ComponentBase* comp : components)
 	{
 		comp->Free();
+		delete comp;
 	}
 
 	components.clear();
+}
+
+bool GameObject::isGameObjectOnScreen()
+{
+	f32 camX, camY, camMinX, camMinY, camMaxX, camMaxY;
+	f32 windowWidth = AEGfxGetWindowWidth();
+	f32 windowHeight = AEGfxGetWindowHeight();
+	AEGfxGetCamPosition(&camX, &camY);
+	camMinX = camX - windowWidth / 2.f;
+	camMaxX = camX + windowWidth / 2.f;
+	camMinY = camY - windowHeight / 2.f;
+	camMaxY = camY + windowHeight / 2.f;
+
+	//player pos
+	f32 posMinX, posMinY, posMaxX, posMaxY;
+	posMinX = pos.x - scale.x / 2.f;
+	posMaxX = pos.x + scale.x / 2.f;
+	posMinY = pos.y - scale.y / 2.f;
+	posMaxY = pos.y + scale.y / 2.f;
+
+
+	return !(posMaxX < camMinX || posMinX > camMaxX ||
+		posMaxY < camMinY || posMinY > camMaxY);
 }
 
 
@@ -57,16 +83,20 @@ void AddGameObjectToVector(GameObject* go, std::vector<GameObject*>& gos)
 
 void HandleCollision(std::vector<GameObject*>& gos)
 {
-	for (GameObject* firstGo : gos)
+	for (size_t i = 0; i < gos.size(); ++i)
 	{
-
-		for (GameObject* secondGo : gos)
+		GameObject* firstGo = gos[i];
+		if (!firstGo->isOnCamera) continue;
+		for (size_t j = i + 1; j < gos.size(); ++j)
 		{
-			if (firstGo == secondGo) continue;
+			GameObject* secondGo = gos[j];
+
+			if (!secondGo->isOnCamera ) continue;
 
 			// collision to collision 
 			std::vector<Collider*> firstGoColliders = firstGo->GetComponents<Collider>();
 			std::vector<Collider*> secondGoColliders = secondGo->GetComponents<Collider>();
+			
 			for (Collider* firstColl : firstGoColliders)
 			{
 				if (!firstColl->canCollide) continue;
@@ -91,16 +121,12 @@ void HandleCollision(std::vector<GameObject*>& gos)
 
 					if (colliding)
 					{
-						//std::cout << "colliding" << std::endl;
 
 						//Add to list
 						firstColl->AddToOvelappingVector(secondColl);
 						secondColl->AddToOvelappingVector(firstColl);
-
-						if (!firstColl->isTrigger && !secondColl->isTrigger)
-						{
-
-						}
+						
+						//PhysicsManager::HandleCollision(firstColl, secondColl);
 					}
 					else {
 						//remove from list
@@ -129,7 +155,7 @@ void HandleInteraction(std::vector<GameObject*>& gos)
 	{
 		for (Collider* col : go->GetComponents<Collider>())
 		{
-			if (!col->canInteract) continue;
+			if (!col->canInteract || !go->isOnCamera) continue;
 			if (IsCursorOverRect(
 				go->pos.x + col->center.x,
 				go->pos.y + col->center.y,
@@ -152,7 +178,7 @@ void HandleInteraction(std::vector<GameObject*>& gos)
 	{
 		for (Collider* col : go->GetComponents<Collider>())
 		{
-			if (!col->canInteract) continue;
+			if (!col->canInteract || !go->isOnCamera) continue;
 
 			bool isHover = (col == topCollider);
 
@@ -201,6 +227,7 @@ void UpdateGameObjects(std::vector<GameObject*> &gos)
 	for (GameObject* firstGo : gos)
 	{
 		firstGo->Update();
+		firstGo->isOnCamera = firstGo->isGameObjectOnScreen();
 	}
 	HandleCollision(gos);
 	HandleInteraction(gos);

@@ -16,23 +16,29 @@ bool CheckBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 o
 
 bool BoxToBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size)
 {
-	AEVec2 l1, r1, l2, r2;
-	AEVec2Set(&l1, obj1Pos.x - obj1Size.x / 2.f, obj1Pos.y + obj1Size.y / 2.f);
-	AEVec2Set(&r1, obj1Pos.x + obj1Size.x / 2.f, obj1Pos.y - obj1Size.y / 2.f);
-
-	AEVec2Set(&l2, obj2Pos.x - obj2Size.x / 2.f, obj2Pos.y + obj2Size.y / 2.f);
-	AEVec2Set(&r2, obj2Pos.x + obj2Size.x / 2.f, obj2Pos.y - obj2Size.y / 2.f);
-
-	if (l1.x > r2.x || l2.x > r1.x)
+	// Check X overlap
+	if (obj1Pos.x + obj1Size.x * 0.5f < obj2Pos.x - obj2Size.x * 0.5f || obj1Pos.x - obj1Size.x * 0.5f > obj2Pos.x + obj2Size.x * 0.5f)
 		return false;
-	
-	if (r1.y > l2.y || r2.y > l1.y)
+
+	// Check Y overlap
+	if (obj1Pos.y + obj1Size.y * 0.5f < obj2Pos.y - obj2Size.y * 0.5f || obj1Pos.y - obj1Size.y * 0.5f > obj2Pos.y + obj2Size.y * 0.5f)
 		return false;
 
 	return true;
 }
 
 
+bool IsPosInRect(AEVec2 pos, AEVec2 rectPos, AEVec2 rectScale)
+{
+	f32 minX = rectPos.x - rectScale.x / 2.f;
+	f32 maxX = rectPos.x + rectScale.x / 2.f;
+
+	f32 minY = rectPos.y - rectScale.y / 2.f;
+	f32 maxY = rectPos.y + rectScale.y / 2.f;
+
+	return pos.x >= minX && pos.x <= maxX
+		&& pos.y >= minY && pos.y <= maxY;
+}
 
 bool IsCursorOverRect(f32 pos_x, f32 pos_y, f32 scale_x, f32 scale_y)
 {
