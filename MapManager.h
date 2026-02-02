@@ -30,8 +30,8 @@ enum class TILE_ID {
 //using TILE_ID = enum TILE_ID;
 
 struct Tile : GameObject {
-	Sprite * currSprite{};
-	Sprite * bgSprite{};
+	Sprite* currSprite{};
+	Sprite* bgSprite{};
 	TILE_ID currID{};
 	TILE_ID bgID{};
 	int currTag{};
@@ -47,56 +47,17 @@ struct Tile : GameObject {
 		Spike spike{};
 	};
 
-	const float tileSize = 37.5f;
-
-	// Checks if tile needs to have special properties applied
-	void CheckTileToInit(Tile* tile);
-
-	Tile(TILE_ID a, TILE_ID b, int c, bool d, bool e, AEGfxTexture* currTex, AEGfxTexture* bgTex, size_t f, size_t g) :
-		currID{ a }, bgID{ b }, currTag{ c }, ogTag{ c }, isBGActive{ d }, isCurrActive{ e }, currSprite{}, bgSprite{}, 
-		row { f }, col{ g }
-	{
-		if (bgTex) {
-			bgSprite = AddComponent(new Sprite());
-			bgSprite->texture = bgTex;
-		}
-		currSprite = AddComponent(new Sprite());
-		currSprite->texture = currTex;
-
-		AEVec2Set(&scale, tileSize, tileSize);
-		f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((scale.x) * (col + 1));
-		f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((scale.y) * (row + 1));
-		AEVec2Set(&pos, x, y);
-		CheckTileToInit(this);
-	};
 	void Update() override;
 };
 //using Tile = struct Tile;
 
-struct GroundTile : Tile {
-	GroundTile(TILE_ID a, TILE_ID b, int c, bool d, bool e, AEGfxTexture* currTex, AEGfxTexture* bgTex, size_t f, size_t g) :
-		Tile{ a, b, c, d, e, currTex, bgTex, f, g } {
-		
-	};
-	~GroundTile() {
-	};
-};
 
-struct WallTile : Tile {
-	WallTile(TILE_ID a, TILE_ID b, int c, bool d, bool e, AEGfxTexture* currTex, AEGfxTexture* bgTex, size_t f, size_t g) :
-		Tile{ a, b, c, d, e, currTex, bgTex, f, g } {
-		
-	};
-	~WallTile() {
-	};
-};
-
-static std::array<TILE_ID,4> spikes = {TILE_ID::SPIKEDOWN , TILE_ID::SPIKEUP, TILE_ID::SPIKELEFT, TILE_ID::SPIKERIGHT};
+static std::array<TILE_ID, 4> spikes = { TILE_ID::SPIKEDOWN , TILE_ID::SPIKEUP, TILE_ID::SPIKELEFT, TILE_ID::SPIKERIGHT };
 
 //template <typename S>
 struct MapManager {
 
-
+	const float tileSize = 37.5f;
 	const char delimiter = ',';
 	static int mapCurrLevel;
 
@@ -130,8 +91,9 @@ struct MapManager {
 
 	// Sets tile variables
 	AEGfxTexture* SetTileTexture(TILE_ID currID);
-	
 
+	// Checks if tile needs to have special properties applied
+	void CheckTileToInit(Tile* tile);
 
 	// rotates tile based on given rotation
 	void RotateTile(double rotation, Tile tile);
