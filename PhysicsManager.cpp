@@ -40,11 +40,11 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     }
 
     // Compute overlap (AABB)
-    float dx = A->pos.x - B->pos.x;
-    float dy = A->pos.y - B->pos.y;
+    float dx = a->GetPos2D().x - b->GetPos2D().x;
+    float dy = a->GetPos2D().y - b->GetPos2D().y;
 
-    float pxOverlap = (A->scale.x * 0.5f + B->scale.x * 0.5f) - fabs(dx);
-    float pyOverlap = (A->scale.y * 0.5f + B->scale.y * 0.5f) - fabs(dy);
+    float pxOverlap = (a->GetScale().x * 0.5f + b->GetScale().x * 0.5f) - fabs(dx);
+    float pyOverlap = (a->GetScale().y * 0.5f + b->GetScale().y * 0.5f) - fabs(dy);
 
     if (pxOverlap <= 0 || pyOverlap <= 0) return; // no collision
 
@@ -105,31 +105,42 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 
         if (!dynamicObj) return;
 
-        float pushX = 0, pushY = 0;
 
         // Prioritize Y resolution
         if (resolveX)
         {
-            pushX = dx > 0 ? pxOverlap : -pxOverlap;
+            if (dx > 0.0f)
+                dynamicObj->pos.x += pxOverlap;
+            else
+                dynamicObj->pos.x -= pxOverlap;
+
+            // Stop motion INTO wall
+
+            //dynamic->velocity.x = 0.0f;
+            
         }
         else
         {
             // Only snap if dynamic is falling onto static
-            if (dynamicObj->pos.y > staticObj->pos.y && dynamic->velocity.y <= 0.f)
+            dynamic->onCollider = false;
+            if (dynamic->velocity.y <= 0.f && dy > 0.f) // going down
             {
-                dynamicObj->pos.y = staticObj->pos.y + (staticObj->scale.y * 0.5f) + (dynamicObj->scale.y * 0.5f);
+                // push dynamic upwards
+                dynamicObj->pos.y += pyOverlap;
                 dynamic->velocity.y = 0.f;
                 dynamic->onCollider = true;
             }
-            else
-            {
-                dynamic->onCollider = false;
+            else if (dynamic->velocity.y > 0.f && dy < 0.f){
+                // push dynamic downwards
+                dynamicObj->pos.y -= pyOverlap;
+                dynamic->velocity.y = 0.f;
+
             }
+
+            
+
         }
 
-        // Move the dynamic object
-        dynamicObj->pos.x += pushX;
-        //dynamicObj->pos.y += pushY;
     }
 
 

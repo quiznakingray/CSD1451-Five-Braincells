@@ -88,13 +88,25 @@ void Collider::AddToOvelappingVector(Collider* c)
 	// if not in list , call on collison enter & add to list
 	if (it == overlappingColliders.end()) // cant find
 	{
-		if (OnCollisionEnter) OnCollisionEnter(c);
+		if (isTrigger)
+		{
+			if (OnTriggerEnter) OnTriggerEnter(c);
+		}else{
+
+			if (OnCollisionEnter) OnCollisionEnter(c);
+		}
 		overlappingColliders.push_back(c);
 	}
 	// if still in list, keep calling oncollisionover
 	else {
+		if (isTrigger)
+		{
+			if (OnTriggerOver) OnTriggerOver(c);
+		}
+		else {
 
-		if (OnCollisionOver) OnCollisionOver(c);
+			if (OnCollisionOver) OnCollisionOver(c);
+		}
 	}
 }
 
@@ -106,7 +118,15 @@ void Collider::RemoveFromOverlappingVector(Collider* c)
 	if (it == overlappingColliders.end()) return;
 
 	// if still in list but no colliion, call oncollision exit and remove from list
-	if (OnCollisionExit) OnCollisionExit(c);
+	if (isTrigger)
+	{
+		if (OnTriggerExit) OnTriggerExit(c);
+
+	}
+	else {
+
+		if (OnCollisionExit) OnCollisionExit(c);
+	}
 	overlappingColliders.erase(it);
 	//delete* it;
 }
@@ -126,15 +146,16 @@ void Collider::Render()
 			owner->scale.y * size.y,
 			owner->pos.x + center.x,
 			owner->pos.y + center.y,
-			owner->pos.z);
+			owner->pos.z + 1);
 
 	Sprite* s = c->AddComponent(
 		new Sprite()
 	);
 
-	s->meshColor = 0xFFFF0000;
+	s->meshColor = isTrigger ? 0xFFFFFF00 : 0xFFFF0000;
 	s->opacity = 0.5f;
 
+	c->Init();
 	c->Render();
 
 	//Sprite* s = new Sprite(

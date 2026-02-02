@@ -40,6 +40,10 @@ struct Collider : ComponentBase {
 	std::function<void(Collider *)> OnCollisionOver;
 	std::function<void(Collider *)> OnCollisionExit;
 
+	std::function<void(Collider*)> OnTriggerEnter;
+	std::function<void(Collider*)> OnTriggerOver;
+	std::function<void(Collider*)> OnTriggerExit;
+
 	std::vector<Collider*> overlappingColliders{};
 
 	//Collider() = default;

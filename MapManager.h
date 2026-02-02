@@ -3,7 +3,10 @@
 #include "SpriteManager.h"
 #include "TileData.h"
 #include <rapidcsv.h>
+#include <functional>
+#include <iostream>
 #include "SingletonTemplate.h"
+#include "PlayerGameObject.h"
 #include "GameObjectManager.h"
 
 #define MAX_XAXIS 100
@@ -43,8 +46,50 @@ struct Tile : GameObject {
 	bool isCenter{};
 	bool isCurrActive{ true };
 	bool isBGActive{ true };
+
+
 	union {
 		Spike spike{};
+	};
+
+	Tile(
+		TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize
+	)
+		: currID(currID_)
+		, bgID(bgID_)
+		, currTag(currTag_)
+		, ogTag(currTag_)
+		, isBGActive(bgActive)
+		, isCurrActive(currActive)
+		, row(row_)
+		, col(col_)
+	{
+		// scale
+		AEVec2Set(&scale, tileSize, tileSize);
+
+		// position
+		f32 x = -AEGfxGetWindowWidth() * 0.5f + scale.x * (col + 1);
+		f32 y = AEGfxGetWindowHeight() * 0.5f - scale.y * (row + 1);
+		AEVec2Set(&pos, x, y);
+
+		currSprite = AddComponent(
+			new Sprite()
+		);
+
+	}
+
+	virtual Collider * SetColliders() {
+		Collider* c = AddComponent(
+			new Collider()
+		);
+		return c;
 	};
 
 	void Update() override;
@@ -54,10 +99,40 @@ struct Tile : GameObject {
 
 static std::array<TILE_ID, 4> spikes = { TILE_ID::SPIKEDOWN , TILE_ID::SPIKEUP, TILE_ID::SPIKELEFT, TILE_ID::SPIKERIGHT };
 
+struct SpikeTile : Tile {
+
+	SpikeTile(
+		TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+
+		currSprite->texture = AEGfxTextureLoad("Assets/Environment/spike.png");
+
+	}
+
+	Collider* SetColliders() override
+	{
+		Collider* c = Tile::SetColliders(); // get/set default collider
+		c->isTrigger = true;
+		c->OnTriggerOver = [](Collider* other) {
+			if (Player* tile = dynamic_cast<Player*>(other->owner))
+			{
+				std::cout << "In spike" << std::endl;
+			}
+		};
+		return nullptr;
+	}
+};
 //template <typename S>
 struct MapManager {
 
-	static constexpr  float tileSize = 50.f;
+	static constexpr  float tileSize = 80.f;
 	const char delimiter = ',';
 	static int mapCurrLevel;
 

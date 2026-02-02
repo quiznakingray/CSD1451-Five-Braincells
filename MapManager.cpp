@@ -174,7 +174,6 @@ void MapManager::DrawTile(Sprite sprite, AEMtx33 transform)
 Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t row)
 {
     // saves first int as current currID of tile
-    Tile* newTile = new Tile();
     TILE_ID currID = static_cast<TILE_ID>(stoi(cell));
     cell.erase(0, 4);
     TILE_ID bgID = currID;
@@ -218,23 +217,31 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         delimitCount++;
     }
 
+    // do checking here
+    Tile* newTile = currID != TILE_ID::SPIKEDOWN ?
+        new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize) :
+        new SpikeTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
 
-    newTile->currID = currID;
-    newTile->bgID = bgID;
-    newTile->currTag = currTag;
-    newTile->ogTag = currTag;
-    newTile->isBGActive = bgActive;
-    newTile->isCurrActive = currActive;
+    if (currID == TILE_ID::SPIKEDOWN)
+    {
+        Tile* t = newTile;
+    }
+    //newTile->currID = currID;
+    //newTile->bgID = bgID;
+    //newTile->currTag = currTag;
+    //newTile->ogTag = currTag;
+    //newTile->isBGActive = bgActive;
+    //newTile->isCurrActive = currActive;
     // sets size, position, row, col of tile
-    AEVec2Set(&newTile->scale, tileSize, tileSize);
-    AEVec2 size = newTile->scale;
-    f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-    f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
-    AEVec2Set(&newTile->pos, x, y);
+    //AEVec2Set(&newTile->scale, tileSize, tileSize);
+    //AEVec2 size = newTile->scale;
+    //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
+    //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
+    //AEVec2Set(&newTile->pos, x, y);
     CheckTileToInit(newTile);
 
-    newTile->row = row;
-    newTile->col = col;
+    //newTile->row = row;
+    //newTile->col = col;
     if (currID == TILE_ID::PLAYER) return newTile;
     // if bg tile sprite is present
     if (bgID != currID) 
@@ -250,28 +257,12 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         newTile->bgSprite->texture = SetTileTexture(bgID);
 
     }
-    //newTile->currSprite = new Sprite();
-    //newTile->currSprite->texture = SetTileTexture(currID);
 
-    // add to component array
 
-    newTile->currSprite = newTile->AddComponent(
-        new Sprite()
-    );
+    newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
+    newTile->SetColliders();
 
-    newTile->currSprite->texture = SetTileTexture(currID);
 
-    // add collider
-    if (newTile->currID != TILE_ID::EMPTY)
-    {
-        Collider* c = newTile->AddComponent(
-            new Collider()
-        );
-        c->OnCollisionOver = [c](Collider* other) {
-           
-        };
-    }
-    
     //newTile->showColliders = true;
 
     return newTile;
@@ -457,6 +448,7 @@ AEVec2 MapManager::GetPlayerSpawnPos()
     return pos;
 }
 #pragma endregion
+
 
 void Tile::Update()
 {

@@ -47,7 +47,7 @@ void Player::Init()
 	pos.z = 1.f;
 
 	//set scale
-	AEVec2Set(&scale, 37.5f, 37.5f);
+	AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
 
 	// set components
 	Sprite * s = AddComponent(
@@ -78,14 +78,14 @@ void Player::Init()
 	//	};
 
 	c->OnCollisionEnter = [this](Collider * other) {
-		std::cout << "Collision Enter" << std::endl;
+		//std::cout << "Collision Enter" << std::endl;
 		if (Tile * tile = dynamic_cast<Tile*>(other->owner))
 		{
 			this->rb->onCollider = true;
 		}
 	};
 	c->OnCollisionOver = [this](Collider * other) {
-		std::cout << "Collision Over" << std::endl;
+		//std::cout << "Collision Over" << std::endl;
 		//if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 		//{
 		//	if (tile->currID == TILE_ID::GROUND)
@@ -93,7 +93,7 @@ void Player::Init()
 		//}
 	};	
 	c->OnCollisionExit = [this](Collider * other) {
-		std::cout << "Collision Exit" << std::endl;
+		//std::cout << "Collision Exit" << std::endl;
 		if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 		{
 			this->rb->onCollider = false;
@@ -106,7 +106,7 @@ void Player::Init()
 	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 
 	showColliders = true;
-	speed = 50.f;
+	speed = 200.f;
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	AEGfxSetCamPosition(pos.x, pos.y);
 
@@ -140,69 +140,7 @@ void Player::Update(){
 		}
 	}
 
-	//for (Collider* pCol : colliders)
-	//{
-	//	for (Tile* tile : nearbyTiles)
-	//	{
-	//		std::vector<Collider*> tileColls = tile->GetComponents<Collider>();
-	//		//std::vector<Sprite*> tileSpr = tile->GetComponents<Sprite>();
 
-	//		//for (Sprite* tSpr : tileSpr)
-	//		//{
-	//		//	tSpr->addColor.r = 1.f;
-	//		//}
-	//		for (Collider* tCol : tileColls)
-	//		{
-
-
-	//			if (BoxToBoxCollision(
-	//				pCol->GetPos2D(), tCol->GetPos2D(),
-	//				pCol->GetScale(), tCol->GetScale()))
-	//			{
-	//				//Add to list
-	//				pCol->AddToOvelappingVector(tCol);
-	//				tCol->AddToOvelappingVector(pCol);
-
-	//				PhysicsManager::HandleCollision(pCol, tCol);
-	//			}
-
-
-	//			
-	//		}
-	//	}
-
-	//	//for (Collider* oCol : pCol->overlappingColliders)
-	//	//{
-	//	//	if (!BoxToBoxCollision(
-	//	//		pCol->GetPos2D(), oCol->GetPos2D(),
-	//	//		pCol->GetScale(), oCol->GetScale()))
-	//	//	{
-	//	//		//remove from list
-
-	//	//		pCol->RemoveFromOverlappingVector(oCol);
-	//	//		oCol->RemoveFromOverlappingVector(pCol);
-	//	//	}
-
-	//	//}
-	//	////std::vector<Collider*> toRemove;
-
-	//	////for (Collider* oCol : pCol->overlappingColliders)
-	//	////{
-	//	////	if (!BoxToBoxCollision(
-	//	////		pCol->GetPos2D(), oCol->GetPos2D(),
-	//	////		pCol->GetScale(), oCol->GetScale()))
-	//	////	{
-	//	////		toRemove.push_back(oCol);
-	//	////	}
-	//	////}
-
-	//	////for (Collider* oCol : toRemove)
-	//	////{
-	//	////	pCol->RemoveFromOverlappingVector(oCol);
-	//	////	oCol->RemoveFromOverlappingVector(pCol);
-	//	////}
-
-	//}
-	//AEGfxSetCamPosition(pos.x, pos.y);
+	AEGfxSetCamPosition(pos.x, pos.y);
 	GameObject::Update();
 }
