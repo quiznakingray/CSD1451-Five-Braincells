@@ -47,6 +47,38 @@ struct Tile : GameObject {
 		Spike spike{};
 	};
 
+	const float tileSize = 37.5f;
+
+	// Checks if tile needs to have special properties applied
+	void CheckTileToInit(Tile* tile);
+
+	Tile(TILE_ID a, TILE_ID b, int c, bool d, bool e, AEGfxTexture* currTex, AEGfxTexture* bgTex, size_t f, size_t g) :
+		currID{ a }, bgID{ b }, currTag{ c }, ogTag{ c }, isBGActive{ d }, isCurrActive{ e }, currSprite{}, bgSprite{}, 
+		row { f }, col{ g }
+	{
+		if (bgTex) {
+			bgSprite = AddComponent(new Sprite());
+			bgSprite->texture = bgTex;
+		}
+		currSprite = AddComponent(new Sprite());
+		currSprite->texture = currTex;
+
+		AEVec2Set(&scale, tileSize, tileSize);
+		f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((scale.x) * (col + 1));
+		f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((scale.y) * (row + 1));
+		AEVec2Set(&pos, x, y);
+		CheckTileToInit(this);
+
+		if (currID != TILE_ID::EMPTY)
+		{
+			Collider* c = AddComponent(
+				new Collider()
+			);
+			c->OnCollisionOver = [c](Collider* other) {
+
+				};
+		}
+	};
 	void Update() override;
 };
 //using Tile = struct Tile;

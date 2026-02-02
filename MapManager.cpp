@@ -174,14 +174,14 @@ void MapManager::DrawTile(Sprite sprite, AEMtx33 transform)
 Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t row)
 {
     // saves first int as current currID of tile
-    Tile* newTile = new Tile();
+    //Tile* newTile = new Tile();
     TILE_ID currID = static_cast<TILE_ID>(stoi(cell));
     cell.erase(0, 4);
     TILE_ID bgID = currID;
     int currTag = 0;
     bool bgActive = true;
     bool currActive = true;
-
+    
     int delimitCount = 0;
     while (!cell.empty()) {
         if (delimitCount == 0) {
@@ -217,64 +217,62 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         }
         delimitCount++;
     }
-
-
-    newTile->currID = currID;
-    newTile->bgID = bgID;
-    newTile->currTag = currTag;
-    newTile->ogTag = currTag;
-    newTile->isBGActive = bgActive;
-    newTile->isCurrActive = currActive;
-    // sets size, position, row, col of tile
-    AEVec2Set(&newTile->scale, tileSize, tileSize);
-    AEVec2 size = newTile->scale;
-    f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-    f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
-    AEVec2Set(&newTile->pos, x, y);
-    CheckTileToInit(newTile);
-
-    newTile->row = row;
-    newTile->col = col;
-    if (currID == TILE_ID::PLAYER) return newTile;
-    // if bg tile sprite is present
-    if (bgID != currID) 
-    {
-        //AEVec2Set(&newTile->bgSprite.scale, tileSize, tileSize);
-        //AEVec2 size = newTile->bgSprite.scale;
-        //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-        //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
-        //AEVec2Set(&newTile->bgSprite.pos, x, y);
-        newTile->bgSprite = newTile->AddComponent(
-            new Sprite()
-        );
-        newTile->bgSprite->texture = SetTileTexture(bgID);
-
+    AEGfxTexture* bgTex = nullptr;
+    if (bgID != currID) {
+        bgTex = SetTileTexture(bgID);
     }
+    AEGfxTexture* currTex = SetTileTexture(currID);
+    
+
+    //newTile->currID = currID;
+    //newTile->bgID = bgID;
+    //newTile->currTag = currTag;
+    //newTile->ogTag = currTag;
+    //newTile->isBGActive = bgActive;
+    //newTile->isCurrActive = currActive;
+    //// sets size, position, row, col of tile
+    //AEVec2Set(&newTile->scale, tileSize, tileSize);
+    //AEVec2 size = newTile->scale;
+    //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
+    //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
+    //AEVec2Set(&newTile->pos, x, y);
+    //CheckTileToInit(newTile);
+
+    //newTile->row = row;
+    //newTile->col = col;
+
+    //if (currID == TILE_ID::PLAYER) return newTile;
+    //// if bg tile sprite is present
+    //if (bgID != currID) 
+    //{
+    //    //AEVec2Set(&newTile->bgSprite.scale, tileSize, tileSize);
+    //    //AEVec2 size = newTile->bgSprite.scale;
+    //    //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
+    //    //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
+    //    //AEVec2Set(&newTile->bgSprite.pos, x, y);
+    //    newTile->bgSprite = newTile->AddComponent(
+    //        new Sprite()
+    //    );
+    //    newTile->bgSprite->texture = SetTileTexture(bgID);
+
+    //}
     //newTile->currSprite = new Sprite();
     //newTile->currSprite->texture = SetTileTexture(currID);
 
     // add to component array
 
-    newTile->currSprite = newTile->AddComponent(
-        new Sprite()
-    );
+    //newTile->currSprite = newTile->AddComponent(
+    //    new Sprite()
+    //);
 
-    newTile->currSprite->texture = SetTileTexture(currID);
+    //newTile->currSprite->texture = SetTileTexture(currID);
 
     // add collider
-    if (newTile->currID != TILE_ID::EMPTY)
-    {
-        Collider* c = newTile->AddComponent(
-            new Collider()
-        );
-        c->OnCollisionOver = [c](Collider* other) {
-           
-        };
-    }
+
     
     //newTile->showColliders = true;
 
-    return newTile;
+    return new Tile { currID, bgID, currTag, bgActive, currActive, currTex, bgTex, row, col };
 }
 
 AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
@@ -323,34 +321,7 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     }
 	return tTex;
 }
-void MapManager::CheckTileToInit(Tile* tile)
-{
-    if ((std::find(spikes.begin(), spikes.end(), tile->currID) != spikes.end())) 
-    {
-        switch (tile->currID){
-        case TILE_ID::SPIKEDOWN:
-        {
-            tile->rotation = 0;
-            break;
-        }
-        case TILE_ID::SPIKEUP:
-        {
-            tile->rotation = PI;
-            break;
-        }
-        case TILE_ID::SPIKELEFT:
-        {
-            tile->rotation = 270 * (PI / 180);
-            break;
-        }
-        case TILE_ID::SPIKERIGHT:
-        {
-            tile->rotation = PI / 2;
-            break;
-        }
-    }
-    }
-}
+
 void MapManager::RotateTile(double rotation, Tile tile)
 {
 
@@ -438,6 +409,36 @@ AEVec2 MapManager::GetPlayerSpawnPos()
 }
 #pragma endregion
 
+void Tile::CheckTileToInit(Tile* tile)
+{
+        if ((std::find(spikes.begin(), spikes.end(), tile->currID) != spikes.end()))
+        {
+            switch (tile->currID) {
+            case TILE_ID::SPIKEDOWN:
+            {
+                tile->rotation = 0;
+                break;
+            }
+            case TILE_ID::SPIKEUP:
+            {
+                tile->rotation = PI;
+                break;
+            }
+            case TILE_ID::SPIKELEFT:
+            {
+                tile->rotation = 270 * (PI / 180);
+                break;
+            }
+            case TILE_ID::SPIKERIGHT:
+            {
+                tile->rotation = PI / 2;
+                break;
+            }
+            }
+        }
+    
+}
+
 void Tile::Update()
 {
     GameObject::Update();
@@ -459,3 +460,5 @@ void  MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
         }
     }
 }
+
+
