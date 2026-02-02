@@ -1,17 +1,225 @@
-﻿  CollisionManager.cpp
-C:\Users\konxi\CSD1451-Five-Braincells\CollisionManager.cpp(42,13): warning C4244: 'initializing': conversion from 'float' to 's32', possible loss of data
-C:\Users\konxi\CSD1451-Five-Braincells\CollisionManager.cpp(42,66): warning C4244: 'initializing': conversion from 'float' to 's32', possible loss of data
-  GameObjectManager.cpp
-  Main.cpp
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\filesystem(12): warning STL4038: The contents of <filesystem> are available only with C++17 or later.
-  MapManager.cpp
+﻿  MapManager.cpp
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(22,16): error C2665: 'std::vector<std::vector<std::vector<Tile,std::allocator<Tile>>,std::allocator<std::vector<Tile,std::allocator<Tile>>>>,std::allocator<std::vector<std::vector<Tile,std::allocator<Tile>>,std::allocator<std::vector<Tile,std::allocator<Tile>>>>>>::resize': no overloaded function could convert all the argument types
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(1633,23):
+      could be 'void std::vector<std::vector<std::vector<Tile,std::allocator<Tile>>,std::allocator<std::vector<Tile,std::allocator<Tile>>>>,std::allocator<std::vector<std::vector<Tile,std::allocator<Tile>>,std::allocator<std::vector<Tile,std::allocator<Tile>>>>>>::resize(const unsigned __int64,const _Ty &)'
+          with
+          [
+              _Ty=std::vector<std::vector<Tile,std::allocator<Tile>>,std::allocator<std::vector<Tile,std::allocator<Tile>>>>
+          ]
+          C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(22,16):
+          'void std::vector<std::vector<std::vector<Tile,std::allocator<Tile>>,std::allocator<std::vector<Tile,std::allocator<Tile>>>>,std::allocator<std::vector<std::vector<Tile,std::allocator<Tile>>,std::allocator<std::vector<Tile,std::allocator<Tile>>>>>>::resize(const unsigned __int64,const _Ty &)': cannot convert argument 2 from 'std::vector<std::vector<Tile *,std::allocator<Tile *>>,std::allocator<std::vector<Tile *,std::allocator<Tile *>>>>' to 'const _Ty &'
+          with
+          [
+              _Ty=std::vector<std::vector<Tile,std::allocator<Tile>>,std::allocator<std::vector<Tile,std::allocator<Tile>>>>
+          ]
+              C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(22,67):
+              Reason: cannot convert from 'std::vector<std::vector<Tile *,std::allocator<Tile *>>,std::allocator<std::vector<Tile *,std::allocator<Tile *>>>>' to 'const _Ty'
+          with
+          [
+              _Ty=std::vector<std::vector<Tile,std::allocator<Tile>>,std::allocator<std::vector<Tile,std::allocator<Tile>>>>
+          ]
+              C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(22,67):
+              No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(22,16):
+      while trying to match the argument list '(int, std::vector<std::vector<Tile *,std::allocator<Tile *>>,std::allocator<std::vector<Tile *,std::allocator<Tile *>>>>)'
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(34,49): error C2280: 'Tile &Tile::operator =(const Tile &)': attempting to reference a deleted function
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.h(73,1):
+      compiler has generated 'Tile::operator =' here
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.h(73,1):
+      'Tile &Tile::operator =(const Tile &)': function was implicitly deleted because 'Tile' has a data member 'Tile::tileSize' of const-qualified non-class type
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.h(50,14):
+      see declaration of 'Tile::tileSize'
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(65,77): error C2819: type 'Tile' does not have an overloaded member 'operator ->'
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.h(32,8):
+      see declaration of 'Tile'
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(65,77):
+      did you intend to use '.' instead?
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(65,78): error C2232: '->Tile::currID': left operand has 'struct' type, use '.'
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(96,29): error C2440: 'initializing': cannot convert from '_Ty' to 'Tile *'
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(96,29): error C2440:         with
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(96,29): error C2440:         [
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(96,29): error C2440:             _Ty=Tile
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(96,29): error C2440:         ]
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(96,29):
+      No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(339,45): error C2440: 'return': cannot convert from '_Ty' to 'Tile *'
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(339,45): error C2440:         with
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(339,45): error C2440:         [
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(339,45): error C2440:             _Ty=Tile
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(339,45): error C2440:         ]
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(339,45):
+      No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(352,54): error C2819: type 'Tile' does not have an overloaded member 'operator ->'
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.h(32,8):
+      see declaration of 'Tile'
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(352,54):
+      did you intend to use '.' instead?
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(352,55): error C2232: '->Tile::currTag': left operand has 'struct' type, use '.'
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(354,29): error C2665: 'std::vector<Tile *,std::allocator<Tile *>>::push_back': no overloaded function could convert all the argument types
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(936,23):
+      could be 'void std::vector<Tile *,std::allocator<Tile *>>::push_back(_Ty &&)'
+          with
+          [
+              _Ty=Tile *
+          ]
+          C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(354,29):
+          'void std::vector<Tile *,std::allocator<Tile *>>::push_back(_Ty &&)': cannot convert argument 1 from '_Ty' to '_Ty &&'
+          with
+          [
+              _Ty=Tile *
+          ]
+          and
+          [
+              _Ty=Tile
+          ]
+          and
+          [
+              _Ty=Tile *
+          ]
+              C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(354,76):
+              Reason: cannot convert from '_Ty' to '_Ty'
+          with
+          [
+              _Ty=Tile
+          ]
+              C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(354,76):
+              No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(932,23):
+      or       'void std::vector<Tile *,std::allocator<Tile *>>::push_back(const _Ty &)'
+          with
+          [
+              _Ty=Tile *
+          ]
+          C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(354,29):
+          'void std::vector<Tile *,std::allocator<Tile *>>::push_back(const _Ty &)': cannot convert argument 1 from '_Ty' to 'const _Ty &'
+          with
+          [
+              _Ty=Tile *
+          ]
+          and
+          [
+              _Ty=Tile
+          ]
+          and
+          [
+              _Ty=Tile *
+          ]
+              C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(354,76):
+              Reason: cannot convert from '_Ty' to 'const _Ty'
+          with
+          [
+              _Ty=Tile
+          ]
+              C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(354,76):
+              No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(354,29):
+      while trying to match the argument list '(_Ty)'
+          with
+          [
+              _Ty=Tile
+          ]
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(375,54): error C2819: type 'Tile' does not have an overloaded member 'operator ->'
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.h(32,8):
+      see declaration of 'Tile'
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(375,54):
+      did you intend to use '.' instead?
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(375,55): error C2232: '->Tile::currTag': left operand has 'struct' type, use '.'
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(376,54): error C2819: type 'Tile' does not have an overloaded member 'operator ->'
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.h(32,8):
+      see declaration of 'Tile'
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(376,54):
+      did you intend to use '.' instead?
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(376,55): error C2232: '->Tile::currID': left operand has 'struct' type, use '.'
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(378,29): error C2665: 'std::vector<Tile *,std::allocator<Tile *>>::push_back': no overloaded function could convert all the argument types
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(936,23):
+      could be 'void std::vector<Tile *,std::allocator<Tile *>>::push_back(_Ty &&)'
+          with
+          [
+              _Ty=Tile *
+          ]
+          C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(378,29):
+          'void std::vector<Tile *,std::allocator<Tile *>>::push_back(_Ty &&)': cannot convert argument 1 from '_Ty' to '_Ty &&'
+          with
+          [
+              _Ty=Tile *
+          ]
+          and
+          [
+              _Ty=Tile
+          ]
+          and
+          [
+              _Ty=Tile *
+          ]
+              C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(378,76):
+              Reason: cannot convert from '_Ty' to '_Ty'
+          with
+          [
+              _Ty=Tile
+          ]
+              C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(378,76):
+              No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\vector(932,23):
+      or       'void std::vector<Tile *,std::allocator<Tile *>>::push_back(const _Ty &)'
+          with
+          [
+              _Ty=Tile *
+          ]
+          C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(378,29):
+          'void std::vector<Tile *,std::allocator<Tile *>>::push_back(const _Ty &)': cannot convert argument 1 from '_Ty' to 'const _Ty &'
+          with
+          [
+              _Ty=Tile *
+          ]
+          and
+          [
+              _Ty=Tile
+          ]
+          and
+          [
+              _Ty=Tile *
+          ]
+              C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(378,76):
+              Reason: cannot convert from '_Ty' to 'const _Ty'
+          with
+          [
+              _Ty=Tile
+          ]
+              C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(378,76):
+              No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(378,29):
+      while trying to match the argument list '(_Ty)'
+          with
+          [
+              _Ty=Tile
+          ]
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(410,28): error C2440: 'initializing': cannot convert from '_Ty' to 'Tile *'
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(410,28): error C2440:         with
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(410,28): error C2440:         [
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(410,28): error C2440:             _Ty=Tile
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(410,28): error C2440:         ]
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(410,28):
+      No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+  
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(465,28): error C2440: 'initializing': cannot convert from '_Ty' to 'Tile *'
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(465,28): error C2440:         with
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(465,28): error C2440:         [
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(465,28): error C2440:             _Ty=Tile
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(465,28): error C2440:         ]
+      C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(465,28):
+      No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+  
   PlayerGameObject.cpp
 C:\Users\konxi\CSD1451-Five-Braincells\PlayerGameObject.cpp(90,30): warning C4244: '+=': conversion from 'f64' to 'f32', possible loss of data
 C:\Users\konxi\CSD1451-Five-Braincells\PlayerGameObject.cpp(91,30): warning C4244: '+=': conversion from 'f64' to 'f32', possible loss of data
-  SpriteManager.cpp
   Generating Code...
-  Project1.vcxproj -> C:\Users\konxi\CSD1451-Five-Braincells\bin\Debug-x64\Project1.exe
-  31 File(s) copied
-  1 File(s) copied
-  1 File(s) copied
-  1 File(s) copied
