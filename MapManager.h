@@ -30,8 +30,8 @@ enum class TILE_ID {
 //using TILE_ID = enum TILE_ID;
 
 struct Tile : GameObject {
-	Sprite * currSprite{};
-	Sprite * bgSprite{};
+	Sprite* currSprite{};
+	Sprite* bgSprite{};
 	TILE_ID currID{};
 	TILE_ID bgID{};
 	int currTag{};
@@ -52,7 +52,7 @@ struct Tile : GameObject {
 //using Tile = struct Tile;
 
 
-static std::array<TILE_ID,4> spikes = {TILE_ID::SPIKEDOWN , TILE_ID::SPIKEUP, TILE_ID::SPIKELEFT, TILE_ID::SPIKERIGHT};
+static std::array<TILE_ID, 4> spikes = { TILE_ID::SPIKEDOWN , TILE_ID::SPIKEUP, TILE_ID::SPIKELEFT, TILE_ID::SPIKERIGHT };
 
 //template <typename S>
 struct MapManager {
@@ -87,11 +87,11 @@ struct MapManager {
 	void DrawTile(Sprite currSprite, AEMtx33 transform);
 
 	// Inits tile variables
-	Tile * InitTile(int mapIndex, std::string cell, size_t col, size_t row);
+	Tile* InitTile(int mapIndex, std::string cell, size_t col, size_t row);
 
 	// Sets tile variables
 	AEGfxTexture* SetTileTexture(TILE_ID currID);
-	
+
 	// Checks if tile needs to have special properties applied
 	void CheckTileToInit(Tile* tile);
 
