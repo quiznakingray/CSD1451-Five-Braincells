@@ -32,7 +32,9 @@ enum class TILE_ID {
 	LASERRED = 130,
 	LASERGREEN = 131,
 	PLAYER = 200,
+	ENEMY = 250,
 	GOAL = 300,
+
 };
 //using TILE_ID = enum TILE_ID;
 

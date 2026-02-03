@@ -1,11 +1,17 @@
 #include "AEEngine.h"
 #include "PlayerCombat.h"
+#include "GameStateManager.h"
 
 // consts
 const float WINDOW_WIDTH = 1600.0f;
 const float WINDOW_HEIGHT = 900.0f;
 
-
+// Global variables
+AbilityButton abilities[4];
+PlayerStats playerStats;
+AEGfxVertexList* squareMesh;
+AEGfxVertexList* circleMesh;
+int selectedAbility = -1;
 // color from rgba
 unsigned long ColorToHex(float r, float g, float b, float a) {
     unsigned char red = (unsigned char)(r * 255);
@@ -16,7 +22,7 @@ unsigned long ColorToHex(float r, float g, float b, float a) {
 }
 
 // colored square mesh
-AEGfxVertexList* createColoredSquareMesh(float width, float height, float r, float g, float b, float a) {
+AEGfxVertexList* CreateColoredSquareMesh(float width, float height, float r, float g, float b, float a) {
     unsigned long color = ColorToHex(r, g, b, a);
 
     AEGfxMeshStart();
@@ -39,7 +45,7 @@ AEGfxVertexList* createColoredSquareMesh(float width, float height, float r, flo
 }
 
 // circle mesh
-AEGfxVertexList* createCircleMesh(float radius, int segments, float r, float g, float b, float a) {
+AEGfxVertexList* CreateCircleMesh(float radius, int segments, float r, float g, float b, float a) {
     unsigned long color = ColorToHex(r, g, b, a);
 
     AEGfxMeshStart();
@@ -78,10 +84,10 @@ void GameStateLoad() {
 
 void GameStateInit() {
 
-    // init player
-    player.health = 100.0f;
-    player.speed = 50.0f;
-    player.attack = 100.0f;
+    // init playerStats
+    playerStats.health = 100.0f;
+    playerStats.speed = 50.0f;
+    playerStats.attack = 100.0f;
 
     // init abilities (2x2 grid)
     float buttonWidth = 350.0f;
@@ -172,6 +178,11 @@ void GameStateUpdate() {
             abilities[i].isHovered = false;
         }
     }
+
+    if (AEInputCheckTriggered(AEVK_M))
+    {
+        next = GAME_STATE_TYPE::WORLD;
+    }
 }
 
 void drawHealthBar(float x, float y, float health, float maxHealth, const char* name, bool isEnemy) {
@@ -179,7 +190,7 @@ void drawHealthBar(float x, float y, float health, float maxHealth, const char* 
     float barHeight = 10.0f;
 
     // background (white panel)
-    AEGfxVertexList* panelMesh = createColoredSquareMesh(barWidth + 20, 60, 1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxVertexList* panelMesh = CreateColoredSquareMesh(barWidth + 20, 60, 1.0f, 1.0f, 1.0f, 1.0f);
     AEMtx33 trans;
     AEMtx33Trans(&trans, x, y);
     AEGfxSetTransform(trans.m);
@@ -187,7 +198,7 @@ void drawHealthBar(float x, float y, float health, float maxHealth, const char* 
     AEGfxMeshFree(panelMesh);
 
     // heakth bar background (gray)
-    AEGfxVertexList* barBgMesh = createColoredSquareMesh(barWidth, barHeight, 0.88f, 0.91f, 0.94f, 1.0f);
+    AEGfxVertexList* barBgMesh = CreateColoredSquareMesh(barWidth, barHeight, 0.88f, 0.91f, 0.94f, 1.0f);
     AEMtx33Trans(&trans, x, y - 10);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(barBgMesh, AE_GFX_MDM_TRIANGLES);
@@ -209,7 +220,7 @@ void drawHealthBar(float x, float y, float health, float maxHealth, const char* 
         r = 0.96f; g = 0.4f; b = 0.4f; // Red
     }
 
-    AEGfxVertexList* barFillMesh = createColoredSquareMesh(currentBarWidth, barHeight, r, g, b, 1.0f);
+    AEGfxVertexList* barFillMesh = CreateColoredSquareMesh(currentBarWidth, barHeight, r, g, b, 1.0f);
     AEMtx33Trans(&trans, barOffsetX, y - 10);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(barFillMesh, AE_GFX_MDM_TRIANGLES);
@@ -224,31 +235,31 @@ void GameStateDraw() {
     AEMtx33 scale, trans, transform;
 
     // Draw ground
-    AEGfxVertexList* groundMesh = createColoredSquareMesh(WINDOW_WIDTH, 300, 0.56f, 0.93f, 0.56f, 1.0f);
+    AEGfxVertexList* groundMesh = CreateColoredSquareMesh(WINDOW_WIDTH, 300, 0.56f, 0.93f, 0.56f, 1.0f);
     AEMtx33Trans(&trans, 0, -200);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(groundMesh, AE_GFX_MDM_TRIANGLES);
     AEGfxMeshFree(groundMesh);
 
-    // Draw player (blue circle)
-    AEGfxVertexList* playersprite = createCircleMesh(50, 32, 0.3f, 0.69f, 1.0f, 1.0f);
+    // Draw playerStats (blue circle)
+    AEGfxVertexList* playerStatssprite = CreateCircleMesh(50, 32, 0.3f, 0.69f, 1.0f, 1.0f);
     AEMtx33Trans(&trans, -400.0f, 50.0f);
     AEGfxSetTransform(trans.m);
-    AEGfxMeshDraw(playersprite, AE_GFX_MDM_TRIANGLES);
-    AEGfxMeshFree(playersprite);
+    AEGfxMeshDraw(playerStatssprite, AE_GFX_MDM_TRIANGLES);
+    AEGfxMeshFree(playerStatssprite);
 
     // Draw enemy (red circle)
-    AEGfxVertexList* enemySprite = createCircleMesh(60, 32, 1.0f, 0.42f, 0.44f, 1.0f);
+    AEGfxVertexList* enemySprite = CreateCircleMesh(60, 32, 1.0f, 0.42f, 0.44f, 1.0f);
     AEMtx33Trans(&trans, 400.0f, 200.0f);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(enemySprite, AE_GFX_MDM_TRIANGLES);
     AEGfxMeshFree(enemySprite);
 
     // health bar
-    drawHealthBar(450, -100, player.health, player.maxhealth, player.playername, false);
+    drawHealthBar(450, -100, playerStats.health, playerStats.maxhealth, playerStats.playername, false);
 
     // Draw UI panel (dark gray background)
-    AEGfxVertexList* uiPanelMesh = createColoredSquareMesh(WINDOW_WIDTH, 360, 0.18f, 0.22f, 0.28f, 1.0f);
+    AEGfxVertexList* uiPanelMesh = CreateColoredSquareMesh(WINDOW_WIDTH, 360, 0.18f, 0.22f, 0.28f, 1.0f);
     AEMtx33Trans(&trans, 0, -270);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(uiPanelMesh, AE_GFX_MDM_TRIANGLES);
@@ -264,7 +275,7 @@ void GameStateDraw() {
         float b = AEMin(abilities[i].b * brightness, 1.0f);
 
         // Button border (darker)
-        AEGfxVertexList* borderMesh = createColoredSquareMesh(
+        AEGfxVertexList* borderMesh = CreateColoredSquareMesh(
             abilities[i].width + 4, abilities[i].height + 4,
             r * 0.7f, g * 0.7f, b * 0.7f, opacity);
         AEMtx33Trans(&trans, abilities[i].x, abilities[i].y);
@@ -273,7 +284,7 @@ void GameStateDraw() {
         AEGfxMeshFree(borderMesh);
 
         // Button background
-        AEGfxVertexList* buttonMesh = createColoredSquareMesh(
+        AEGfxVertexList* buttonMesh = CreateColoredSquareMesh(
             abilities[i].width, abilities[i].height, r, g, b, opacity);
         AEMtx33Trans(&trans, abilities[i].x, abilities[i].y);
         AEGfxSetTransform(trans.m);
@@ -290,43 +301,43 @@ void GameStateUnload() {
 void GameStateFree() {
 }
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPWSTR lpCmdLine,
-    _In_ int nCmdShow)
-{
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
-
-    AESysInit(hInstance, nCmdShow, (s32)WINDOW_WIDTH, (s32)WINDOW_HEIGHT, 1, 60, true, NULL);
-    AESysSetWindowTitle("battle ui");
-
-    AEInputInit();
-    AEFrameRateControllerInit(60);
-
-    GameStateLoad();
-    GameStateInit();
-
-    while (AESysDoesWindowExist()) {
-        AESysFrameStart();
-        AEInputUpdate();
-        AEFrameRateControllerStart();
-
-        GameStateUpdate();
-        GameStateDraw();
-
-        AEFrameRateControllerEnd();
-        AESysFrameEnd();
-
-        if (AEInputCheckTriggered(AEVK_ESCAPE))
-            break;
-    }
-
-    GameStateUnload();
-    GameStateFree();
-
-    AEInputExit();
-    AESysExit();
-
-    return 0;
-}
+//int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+//    _In_opt_ HINSTANCE hPrevInstance,
+//    _In_ LPWSTR lpCmdLine,
+//    _In_ int nCmdShow)
+//{
+//    UNREFERENCED_PARAMETER(hPrevInstance);
+//    UNREFERENCED_PARAMETER(lpCmdLine);
+//
+//    AESysInit(hInstance, nCmdShow, (s32)WINDOW_WIDTH, (s32)WINDOW_HEIGHT, 1, 60, true, NULL);
+//    AESysSetWindowTitle("battle ui");
+//
+//    AEInputInit();
+//    AEFrameRateControllerInit(60);
+//
+//    GameStateLoad();
+//    GameStateInit();
+//
+//    while (AESysDoesWindowExist()) {
+//        AESysFrameStart();
+//        AEInputUpdate();
+//        AEFrameRateControllerStart();
+//
+//        GameStateUpdate();
+//        GameStateDraw();
+//
+//        AEFrameRateControllerEnd();
+//        AESysFrameEnd();
+//
+//        if (AEInputCheckTriggered(AEVK_ESCAPE))
+//            break;
+//    }
+//
+//    GameStateUnload();
+//    GameStateFree();
+//
+//    AEInputExit();
+//    AESysExit();
+//
+//    return 0;
+//}

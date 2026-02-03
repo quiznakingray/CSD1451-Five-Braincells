@@ -1,0 +1,38 @@
+#include "GameStateManager.h"
+#include "ParkourLevel.h"
+#include "PlayerCombat.h"
+
+
+FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpRender = nullptr, fpFree = nullptr, fpUnload = nullptr;
+
+GAME_STATE_TYPE current = GAME_STATE_TYPE::WORLD, next = GAME_STATE_TYPE::WORLD;
+
+void GameStateManager::Initialize(GAME_STATE_TYPE type)
+{
+	current = next = type;
+}
+
+void GameStateManager::Update()
+{
+	switch (current)
+	{
+	case GAME_STATE_TYPE::WORLD:  
+		fpLoad = ParkourLevel::Load;  
+		fpInitialize = ParkourLevel::Init;  
+		fpUpdate = ParkourLevel::Update;  
+		fpRender = ParkourLevel::Render;  
+		fpFree = ParkourLevel::Free;  
+		fpUnload = ParkourLevel::Unload;  
+		break;
+	case GAME_STATE_TYPE::COMBAT:  
+		fpLoad = GameStateLoad;
+		fpInitialize = GameStateInit;
+		fpUpdate = GameStateUpdate;
+		fpRender = GameStateDraw;
+		fpFree = GameStateFree;
+		fpUnload = GameStateUnload;
+		break;
+	default:
+		break;
+	}
+}

@@ -244,11 +244,11 @@ void UpdateGameObjects(std::vector<GameObject*> &gos)
 	HandleInteraction(gos);
 }
 
-void RenderGameObjects(std::vector<GameObject*>& gos)
-{
-	for (GameObject* go : gos)
-	{
-		if (!go->isActive) continue;
-		go->Render();
-	}
-}
+//void RenderGameObjects(std::vector<GameObject*>& gos)
+//{
+//	for (GameObject* go : gos)
+//	{
+//		if (!go->isActive) continue;
+//		go->Render();
+//	}
+//}

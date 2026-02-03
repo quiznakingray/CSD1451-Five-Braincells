@@ -25,13 +25,15 @@ struct AbilityButton {
 };
     struct PlayerBase;
 
-    // Global variables
-    AbilityButton abilities[4];
-    PlayerStats player;
-    AEGfxVertexList* squareMesh;
-    AEGfxVertexList* circleMesh;
-    int selectedAbility = -1;
 
+
+
+    void GameStateLoad();
+    void GameStateInit();
+    void GameStateUpdate();
+    void GameStateDraw();
+    void GameStateFree();
+    void GameStateUnload();
 
 #endif
 
