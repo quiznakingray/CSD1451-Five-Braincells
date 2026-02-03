@@ -11,7 +11,7 @@ void Player::PlayerInput()
 	//std::cout << "On ground: " << (onGround ? "--" : "___________________________ ") << std::endl;
 	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider)
 	{
-		moveDir.y = 400.f;
+		moveDir.y = 500.f;
 		//onGround = false;
 
 	}
@@ -81,7 +81,7 @@ void Player::Init()
 		//std::cout << "Collision Enter" << std::endl;
 		if (Tile * tile = dynamic_cast<Tile*>(other->owner))
 		{
-			this->rb->onCollider = true;
+			//this->rb->onCollider = true;
 		}
 	};
 	c->OnCollisionOver = [this](Collider * other) {

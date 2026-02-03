@@ -7,6 +7,7 @@ struct ComponentBase {
 
 	// link to GameObbject idk
 	GameObject * owner = nullptr;
+	bool isActive = true;
 
 	virtual void Init() {};
 	virtual void Update(){};

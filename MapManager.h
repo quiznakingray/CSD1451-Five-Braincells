@@ -8,6 +8,7 @@
 #include "SingletonTemplate.h"
 #include "PlayerGameObject.h"
 #include "GameObjectManager.h"
+#include "TextComponent.h"
 
 #define MAX_XAXIS 100
 #define MAX_YAXIS 100
@@ -47,29 +48,37 @@ struct Tile : GameObject {
 	bool isCurrActive{ true };
 	bool isBGActive{ true };
 
+	Collider* collider = nullptr;
+
+	bool canInteract = false;
+	Text* interactionTextBox = nullptr;
 
 	union {
 		Spike spike{};
 	};
 
 	Tile(
-		TILE_ID currID_,
-		TILE_ID bgID_,
+		TILE_ID curr_ID,
+		TILE_ID bg_ID,
 		int currTag_,
 		bool bgActive,
 		bool currActive,
 		int row_,
 		int col_,
-		float tileSize
+		float tileSize,
+		bool is_Trigger = false,
+		bool can_Interact = false
 	)
-		: currID(currID_)
-		, bgID(bgID_)
+		: currID(curr_ID)
+		, bgID(bg_ID)
 		, currTag(currTag_)
 		, ogTag(currTag_)
 		, isBGActive(bgActive)
 		, isCurrActive(currActive)
 		, row(row_)
 		, col(col_)
+		,isTrigger(is_Trigger)
+		,canInteract(can_Interact)
 	{
 		// scale
 		AEVec2Set(&scale, tileSize, tileSize);
@@ -83,16 +92,33 @@ struct Tile : GameObject {
 			new Sprite()
 		);
 
+
 	}
 
-	virtual Collider * SetColliders() {
-		Collider* c = AddComponent(
+
+	void Init() override {
+
+		collider = AddComponent(
 			new Collider()
 		);
-		return c;
-	};
+		collider->isTrigger = isTrigger;
 
+
+		if (canInteract)
+		{
+			interactionTextBox = AddComponent(
+				new Text()
+			);
+			interactionTextBox->text = "[Interact]";
+			interactionTextBox->center.y = 100.f;
+			interactionTextBox->isActive = false;
+		}
+
+		GameObject::Init();
+	}
 	void Update() override;
+
+
 };
 //using Tile = struct Tile;
 
@@ -110,23 +136,132 @@ struct SpikeTile : Tile {
 		int row_,
 		int col_,
 		float tileSize)
-		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true) {
 
 		currSprite->texture = AEGfxTextureLoad("Assets/Environment/spike.png");
-
 	}
 
-	Collider* SetColliders() override
-	{
-		Collider* c = Tile::SetColliders(); // get/set default collider
-		c->isTrigger = true;
-		c->OnTriggerOver = [](Collider* other) {
+	void Init() override {
+		Tile::Init();
+		collider->OnTriggerOver = [](Collider* other) {
 			if (Player* tile = dynamic_cast<Player*>(other->owner))
 			{
 				std::cout << "In spike" << std::endl;
 			}
 		};
-		return nullptr;
+	}
+};
+
+struct LeverTile : Tile {
+
+	LeverTile(
+		TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
+
+		switch (currID_)
+		{
+			case TILE_ID::LEVERREDON:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
+				break;
+			case TILE_ID::LEVERREDOFF:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOff.png");
+				break;
+			case TILE_ID::LEVERGREENON:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOn.png");
+				break;
+			case TILE_ID::LEVERGREENOFF:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
+				break;
+			default:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
+				break;
+		}
+		
+	}
+
+	void Init() override {
+		Tile::Init();
+
+		showColliders = true;
+
+		collider->isTrigger = true;
+
+		//Collider* interactionBox = AddComponent(
+		//	new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.5f, 2.f, 1.5f)
+		//);
+		collider->center.y = 0.5f;
+		collider->size.x = 2.f;
+		collider->size.y = 1.5f;
+		collider->isTrigger = true;
+		collider->OnTriggerOver = [this](Collider* other) {
+			if (Player* tile = dynamic_cast<Player*>(other->owner))
+			{
+				std::cout << "In lever" << std::endl;
+				this->interactionTextBox->isActive= true;
+			}
+			};
+		collider->OnTriggerExit = [this](Collider* other) {
+			if (Player* tile = dynamic_cast<Player*>(other->owner))
+			{
+				//std::cout << "In lever" << std::endl;
+				this->interactionTextBox->isActive= false;
+			}
+		};
+
+		interactionTextBox->text = "[F]";
+
+	}
+
+};
+
+struct GroundTile : Tile {
+	GroundTile(
+		TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+
+
+		currSprite->texture =  AEGfxTextureLoad("Assets/Environment/ground.png");
+
+	}
+
+	void Init() override {
+		Tile::Init();
+	}
+};
+
+struct WallTile : Tile {
+	WallTile(
+		TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+
+
+		currSprite->texture = AEGfxTextureLoad("Assets/Environment/wall.png");
+
+	}
+
+	void Init() override {
+		Tile::Init();
 	}
 };
 //template <typename S>

@@ -6,6 +6,7 @@
 #include "MapManager.h"
 #include "PlayerGameObject.h"
 #include "GameObjectManager.h"
+//#include "TextComponent.h"
 #include <filesystem>
 
 
@@ -14,6 +15,8 @@ AEGfxVertexList* pMesh = 0;
 AEGfxTexture* pTex = 0;
 
 MapManager mapManager;
+TextManager textManager;
+s8 TextManager::pFont = 0;
 
 Player* player = new Player();
 
@@ -45,16 +48,18 @@ void GameInit()
 	// Clears game background
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	//mapManager.GetInstance();
+	TextManager::Init();
 
 	mapManager.InitMap("Assets/Maps/Map_Level_01.csv", 0);
 	mapManager.PrintMap(0);
 
 	mapManager.AddTilesToGameObjectVector(gameObjects);
 
-	player->Init();
+	//player->Init();
 	AddGameObjectToVector(player, gameObjects);
 	
 	
+	InitGameObjects(gameObjects);
 }
 void GameUpdate() {
 	UpdateGameObjects(gameObjects);
@@ -103,6 +108,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		AESysFrameEnd();
 	}
 	mapManager.FreeMap();
+	//AEGfxDestroyFont(textManager.pFont);
 	// free the system
 	AESysExit();
 }

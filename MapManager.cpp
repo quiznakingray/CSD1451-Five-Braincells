@@ -218,14 +218,42 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     }
 
     // do checking here
-    Tile* newTile = currID != TILE_ID::SPIKEDOWN ?
-        new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize) :
-        new SpikeTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+    Tile* newTile{};
 
-    if (currID == TILE_ID::SPIKEDOWN)
+    switch (currID)
     {
-        Tile* t = newTile;
+        // dont do anythign for 
+        case TILE_ID::SPIKEDOWN:
+        case TILE_ID::SPIKEUP:
+        case TILE_ID::SPIKELEFT:
+        case TILE_ID::SPIKERIGHT:
+            newTile = new SpikeTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+        
+        case TILE_ID::LEVERREDON:
+        case TILE_ID::LEVERREDOFF:
+        case TILE_ID::LEVERGREENON:
+        case TILE_ID::LEVERGREENOFF:
+            newTile = new LeverTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+
+        case TILE_ID::GROUND:
+            newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+        case TILE_ID::WALL:
+            newTile = new WallTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+        default:
+            newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
+            newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
+
+            break;
     }
+
+    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY) {
+        return newTile;
+    }
+
     //newTile->currID = currID;
     //newTile->bgID = bgID;
     //newTile->currTag = currTag;
@@ -242,7 +270,6 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
 
     //newTile->row = row;
     //newTile->col = col;
-    if (currID == TILE_ID::PLAYER) return newTile;
     // if bg tile sprite is present
     if (bgID != currID) 
     {
@@ -259,8 +286,8 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     }
 
 
-    newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
-    newTile->SetColliders();
+    //newTile->SetColliders();
+    //newTile->SetText();
 
 
     //newTile->showColliders = true;
@@ -274,6 +301,7 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
 	switch (currID) 
     {
     case TILE_ID::EMPTY:
+    case TILE_ID::PLAYER:
         tTex = nullptr;
         break;
     case TILE_ID::GROUND:

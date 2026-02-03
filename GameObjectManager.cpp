@@ -21,6 +21,7 @@ void GameObject::Update()
 		//{
 		//	std::cout << "This is a collider" << std::endl;
 		//}
+		if (!comp->isActive) return;
 		comp->Update();
 	}
 }
@@ -29,6 +30,7 @@ void GameObject::Render() {
 	if (!isOnCamera) return;
 	for (ComponentBase* comp : components)
 	{
+		if (!comp->isActive) return;
 		comp->Render();
 	}
 }
@@ -221,6 +223,13 @@ void HandleInteraction(std::vector<GameObject*>& gos)
 	}
 
 	
+}
+void InitGameObjects(std::vector<GameObject*>& gos)
+{
+	for (GameObject* go : gos)
+	{
+		go->Init();
+	}
 }
 void UpdateGameObjects(std::vector<GameObject*> &gos)
 {
