@@ -243,6 +243,11 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         case TILE_ID::WALL:
             newTile = new WallTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
             break;
+
+        case TILE_ID::LASERRED:
+        case TILE_ID::LASERGREEN:
+            newTile = new LaserTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
         default:
             newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
             newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
@@ -412,10 +417,11 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
     {
         for (size_t uiCol = 0; uiCol < x; uiCol++)
         {
-            if (arrMapInfo[mapCurrLevel][uiCol][uiRow]->currTag == tag && 
-                arrMapInfo[mapCurrLevel][uiCol][uiRow]->currID == id)
+            Tile* currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
+            if (currTile->currTag == tag && 
+                currTile->currID == id)
             {
-                taggedTiles.push_back(arrMapInfo[mapCurrLevel][uiCol][uiRow]);
+                taggedTiles.push_back(currTile);
                 i++;
             }
 

@@ -27,7 +27,7 @@ void GameObject::Update()
 }
 
 void GameObject::Render() {
-	if (!isOnCamera) return;
+	if (!isOnCamera || !isActive) return;
 	for (ComponentBase* comp : components)
 	{
 		if (!comp->isActive) return;
@@ -88,12 +88,12 @@ void HandleCollision(std::vector<GameObject*>& gos)
 	for (size_t i = 0; i < gos.size(); ++i)
 	{
 		GameObject* firstGo = gos[i];
-		if (!firstGo->isOnCamera) continue;
+		if (!firstGo->isOnCamera || !firstGo->isActive) continue;
 		for (size_t j = i + 1; j < gos.size(); ++j)
 		{
 			GameObject* secondGo = gos[j];
 
-			if (!secondGo->isOnCamera ) continue;
+			if (!secondGo->isOnCamera || !secondGo->isActive) continue;
 
 			// collision to collision 
 			std::vector<Collider*> firstGoColliders = firstGo->GetComponents<Collider>();
@@ -155,6 +155,7 @@ void HandleInteraction(std::vector<GameObject*>& gos)
 	// Find topmost GameObject under cursor
 	for (GameObject* go : gos)
 	{
+		if (!go->isActive) continue;
 		for (Collider* col : go->GetComponents<Collider>())
 		{
 			if (!col->canInteract || !go->isOnCamera) continue;
@@ -235,6 +236,7 @@ void UpdateGameObjects(std::vector<GameObject*> &gos)
 {
 	for (GameObject* firstGo : gos)
 	{
+		if (!firstGo->isActive) continue;
 		firstGo->Update();
 		firstGo->isOnCamera = firstGo->isGameObjectOnScreen();
 	}
@@ -246,6 +248,7 @@ void RenderGameObjects(std::vector<GameObject*>& gos)
 {
 	for (GameObject* go : gos)
 	{
+		if (!go->isActive) continue;
 		go->Render();
 	}
 }

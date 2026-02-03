@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿#ifndef MAP_MANAGER_H 
+#define MAP_MANAGER_H
+
 #include "AEEngine.h"
 #include "SpriteManager.h"
 #include "TileData.h"
@@ -9,6 +11,7 @@
 #include "PlayerGameObject.h"
 #include "GameObjectManager.h"
 #include "TextComponent.h"
+#include "InputManager.h"
 
 #define MAX_XAXIS 100
 #define MAX_YAXIS 100
@@ -77,8 +80,8 @@ struct Tile : GameObject {
 		, isCurrActive(currActive)
 		, row(row_)
 		, col(col_)
-		,isTrigger(is_Trigger)
-		,canInteract(can_Interact)
+		, isTrigger(is_Trigger)
+		, canInteract(can_Interact)
 	{
 		// scale
 		AEVec2Set(&scale, tileSize, tileSize);
@@ -152,75 +155,6 @@ struct SpikeTile : Tile {
 	}
 };
 
-struct LeverTile : Tile {
-
-	LeverTile(
-		TILE_ID currID_,
-		TILE_ID bgID_,
-		int currTag_,
-		bool bgActive,
-		bool currActive,
-		int row_,
-		int col_,
-		float tileSize)
-		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
-
-		switch (currID_)
-		{
-			case TILE_ID::LEVERREDON:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
-				break;
-			case TILE_ID::LEVERREDOFF:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOff.png");
-				break;
-			case TILE_ID::LEVERGREENON:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOn.png");
-				break;
-			case TILE_ID::LEVERGREENOFF:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
-				break;
-			default:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
-				break;
-		}
-		
-	}
-
-	void Init() override {
-		Tile::Init();
-
-		showColliders = true;
-
-		collider->isTrigger = true;
-
-		//Collider* interactionBox = AddComponent(
-		//	new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.5f, 2.f, 1.5f)
-		//);
-		collider->center.y = 0.5f;
-		collider->size.x = 2.f;
-		collider->size.y = 1.5f;
-		collider->isTrigger = true;
-		collider->OnTriggerOver = [this](Collider* other) {
-			if (Player* tile = dynamic_cast<Player*>(other->owner))
-			{
-				std::cout << "In lever" << std::endl;
-				this->interactionTextBox->isActive= true;
-			}
-			};
-		collider->OnTriggerExit = [this](Collider* other) {
-			if (Player* tile = dynamic_cast<Player*>(other->owner))
-			{
-				//std::cout << "In lever" << std::endl;
-				this->interactionTextBox->isActive= false;
-			}
-		};
-
-		interactionTextBox->text = "[F]";
-
-	}
-
-};
-
 struct GroundTile : Tile {
 	GroundTile(
 		TILE_ID currID_,
@@ -262,6 +196,32 @@ struct WallTile : Tile {
 
 	void Init() override {
 		Tile::Init();
+	}
+};
+struct LaserTile : Tile {
+	LaserTile(
+		TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+
+
+		currSprite->texture = currID == TILE_ID::LASERRED ?
+			AEGfxTextureLoad("Assets/Environment/laserRedVertical.png")
+			:
+			AEGfxTextureLoad("Assets/Environment/laserGreenVertical.png");
+
+	}
+
+	void Init() override {
+		Tile::Init();
+		collider->size.x = 0.4f;
+		//showColliders = true;
 	}
 };
 //template <typename S>
@@ -324,7 +284,7 @@ struct MapManager {
 	std::vector<Tile*> GetTaggedTiles(int tag);
 
 	// Finds all tiles on the map with provided currTag and id
-	std::vector<Tile*> GetTaggedTiles(int tag, TILE_ID id);
+	static std::vector<Tile*> GetTaggedTiles(int tag, TILE_ID id);
 
 	// compares row of tiles in ascending order
 	int compRowAsc(const Tile** t1, const Tile** t2);
@@ -353,7 +313,123 @@ struct MapManager {
 };
 
 
+struct LeverTile : Tile {
 
+	LeverTile(
+		TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
 
+		SetTexture();
+		
+	}
 
+	void SetTexture() {
+		switch (currID)
+		{
+			case TILE_ID::LEVERREDON:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
+				break;
+			case TILE_ID::LEVERREDOFF:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOff.png");
+				break;
+			case TILE_ID::LEVERGREENON:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOn.png");
+				break;
+			case TILE_ID::LEVERGREENOFF:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
+				break;
+			default:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
+				break;
+		}
+	}
+
+	void ToggleLever()
+	{
+		switch (currID)
+		{
+			case TILE_ID::LEVERREDON:
+				currID = TILE_ID::LEVERREDOFF;
+				break;
+			case TILE_ID::LEVERREDOFF:
+				currID = TILE_ID::LEVERREDON;
+				break;
+			case TILE_ID::LEVERGREENON:
+				currID = TILE_ID::LEVERGREENOFF;
+				break;
+			case TILE_ID::LEVERGREENOFF:
+				currID = TILE_ID::LEVERGREENON;
+				break;
+			default:
+				currID = TILE_ID::LEVERREDON;
+				break;
+		}
+
+		SetTexture();
+
+	}
+	void Init() override {
+		Tile::Init();
+
+		//showColliders = true;
+
+		collider->center.y = 0.5f;
+		collider->size.x = 2.f;
+		collider->size.y = 1.5f;
+		collider->isTrigger = true;
+		collider->OnTriggerEnter = [this](Collider* other) {
+			if (Player* tile = dynamic_cast<Player*>(other->owner))
+			{
+				
+				//std::cout << "In lever" << std::endl;
+				this->interactionTextBox->isActive = true;
+				//this->ToggleLever();
+		
+				//inputManager.OnInteractionTriggered = []() {
+				//	std::cout << "yipee" << std::endl;
+				//	//lever->ToggleLever();
+				//};
+			}
+		};
+		collider->OnTriggerOver = [this](Collider* other) {
+			if (Player* tile = dynamic_cast<Player*>(other->owner))
+			{
+				//std::cout << "In lever" << std::endl;
+				this->interactionTextBox->isActive= true;
+				if (AEInputCheckTriggered(AEVK_F))
+				{
+					this->ToggleLever();
+
+					TILE_ID tileId = currID == TILE_ID::LEVERREDOFF || currID == TILE_ID::LEVERREDON ? TILE_ID::LASERRED : TILE_ID::LASERGREEN;
+
+					std::vector<Tile*> taggedTiles = MapManager::GetTaggedTiles(currTag, tileId);
+
+					for (Tile* laser : taggedTiles)
+					{
+						laser->isActive = (currID == TILE_ID::LEVERREDON || currID == TILE_ID::LEVERGREENON);
+					}
+				}
+			}
+		};
+		collider->OnTriggerExit = [this](Collider* other) {
+			if (Player* tile = dynamic_cast<Player*>(other->owner))
+			{
+				//std::cout << "In lever" << std::endl;
+				this->interactionTextBox->isActive= false;
+			}
+		};
+
+		interactionTextBox->text = "[F]";
+
+	}
+
+};
+#endif // !MAP_MANAGER 
 
