@@ -255,7 +255,7 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
             break;
     }
 
-    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY) {
+    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMY) {
         return newTile;
     }
 
@@ -307,6 +307,7 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     {
     case TILE_ID::EMPTY:
     case TILE_ID::PLAYER:
+    case TILE_ID::ENEMY:
         tTex = nullptr;
         break;
     case TILE_ID::GROUND:
@@ -460,25 +461,28 @@ void MapManager::SetLaserActive(Tile tile, bool active)
         laser->isCurrActive = active;
     }
 }
-AEVec2 MapManager::GetPlayerSpawnPos()
+Tile* MapManager::GetTile(TILE_ID id)
 {
-    AEVec2 pos;
-    AEVec2Set(&pos, 0, 0);
-
-    //size_t x = (map.GetRow<std::string>(0)).size();
-    //size_t y = (map.GetColumn<std::string>(0)).size();
-    // Read the rows and columns of CSV data into arrMapInfo
     for (std::vector<Tile*> row : arrMapInfo[mapCurrLevel])
     {
         // Load a particular CSV value into the arrMapInfo
         for (Tile* tile : row)
         {
             //Tile *currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
-            if (tile->currID == TILE_ID::PLAYER) {
-                AEVec2Set(&pos, tile->pos.x, tile->pos.y);
+            if (tile->currID == id) {
+                return tile;
             }
         }
     }
+    return nullptr;
+}
+AEVec2 MapManager::GetPlayerSpawnPos()
+{
+    AEVec2 pos;
+    AEVec2Set(&pos, 0, 0);
+
+    Tile* player = GetTile(TILE_ID::PLAYER);
+    AEVec2Set(&pos, player->pos.x, player->pos.y);
     return pos;
 }
 #pragma endregion

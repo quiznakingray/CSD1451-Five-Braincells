@@ -2,6 +2,8 @@
 #include "CollisionManager.h"
 #include "MapManager.h"
 #include "PlayerGameObject.h"
+#include "PhysicsManager.h"
+#include "GameStateManager.h"
 #include <iostream>
 
 void EnemyGameObject::Init()
@@ -11,12 +13,13 @@ void EnemyGameObject::Init()
 	InitEnemyBase(base, EnemyType::BASIC);
 	InitEnemyMovement(movement);
 
-	AEVec2Set(&pos, MapManager::GetPlayerSpawnPos().x + 50, MapManager::GetPlayerSpawnPos().y);
+	Tile* spawnTile = MapManager::GetTile(TILE_ID::ENEMY);
+	AEVec2Set(&pos, spawnTile->pos.x + 50, spawnTile->pos.y);
 	pos.z = 1.f;
 
-	AEVec2Set(&scale, 30.f, 30.f);
+	AEVec2Set(&scale, MapManager::tileSize , MapManager::tileSize );
 
-	base.patrolStart = { MapManager::GetPlayerSpawnPos().x, 200.f };
+	base.patrolStart = { spawnTile->pos.x, 200.f };
 	base.patrolEnd = { 350.f, 200.f };
 
 	Sprite* s = AddComponent(new Sprite());
@@ -29,6 +32,8 @@ void EnemyGameObject::Init()
 		if (Player* player = dynamic_cast<Player*>(other->owner))
 		{
 			std::cout << "[EnemyGameObj] Collided with PLAYER\n";
+			next = GAME_STATE_TYPE::COMBAT;
+
 		}
 		else if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 		{
@@ -41,6 +46,11 @@ void EnemyGameObject::Init()
 		}
 	};
 
+	rb = AddComponent(
+		new RigidBody()
+	);
+	//rb->type = RIGIDBODY_TYPE::DYNAMIC;
+
 	showColliders = true;
 }
 
@@ -48,4 +58,27 @@ void EnemyGameObject::Update()
 {
 	GameObject::Update();
 	UpdateEnemyPatrol(base, movement, pos, AEFrameRateControllerGetFrameTime());
+
+	std::vector<Collider*> colliders = GetComponents<Collider>();
+
+	for (Collider* pCol : colliders)
+	{
+		for (Collider* oCol : pCol->overlappingColliders)
+		{
+
+			if (BoxToBoxCollision(
+				pCol->GetPos2D(), oCol->GetPos2D(),
+				pCol->GetScale(), oCol->GetScale()))
+			{
+				//pCol->AddToOvelappingVector(oCol);
+				//oCol->AddToOvelappingVector(pCol);
+				PhysicsManager::HandleCollision(pCol, oCol);
+			}
+			else {
+				//pCol->RemoveFromOverlappingVector(oCol);
+				//oCol->RemoveFromOverlappingVector(pCol);
+			}
+
+		}
+	}
 }

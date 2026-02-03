@@ -105,7 +105,7 @@ void Player::Init()
 	);
 	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 
-	showColliders = true;
+	//showColliders = true;
 	speed = 200.f;
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	AEGfxSetCamPosition(pos.x, pos.y);

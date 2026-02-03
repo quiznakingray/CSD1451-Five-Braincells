@@ -97,7 +97,7 @@ struct Tile : GameObject {
 			new Sprite()
 		);
 
-
+		//showColliders = true;
 	}
 
 
@@ -309,6 +309,7 @@ struct MapManager {
 #pragma endregion
 
 #pragma region GetFuncs
+	static Tile * GetTile(TILE_ID id);
 	static AEVec2 GetPlayerSpawnPos();
 
 	void AddTilesToGameObjectVector(std::vector<GameObject*>& gos);
