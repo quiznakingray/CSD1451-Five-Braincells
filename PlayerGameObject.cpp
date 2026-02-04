@@ -43,7 +43,7 @@ void Player::Init()
 {
 
 	//set pos
-	AEVec2Set(&pos,MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y + 100.f);
+	AEVec2Set(&pos,MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y + 200.f);
 	pos.z = 1.f;
 
 	//set scale
