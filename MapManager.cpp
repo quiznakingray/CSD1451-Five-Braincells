@@ -11,27 +11,30 @@ rapidcsv::Document map;
 std::vector<std::vector<std::vector<Tile*>>> arrMapInfo{};
 AEGfxVertexList* mesh;
 
-int MapManager::mapCurrLevel = 0;
+unsigned int MapManager::mapCurrLevel = 0;
+unsigned int MapManager::rowCount = 0;
+unsigned int MapManager::colCount = 0;
 
 void MapManager::InitMap(std::string fileName, unsigned int currLevel)
 {
     map = rapidcsv::Document(fileName);
+    mapCurrLevel = currLevel;
     // Read a row from the CSV file
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
-    arrMapInfo.resize(MAX_LEVELS, std::vector<std::vector<Tile *>>(y, std::vector<Tile *>(x)));
+    colCount = (map.GetRow<std::string>(0)).size();
+    rowCount = (map.GetColumn<std::string>(0)).size();
+    arrMapInfo.resize(MAX_LEVELS, std::vector<std::vector<Tile *>>(rowCount, std::vector<Tile *>(colCount)));
 
     // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
         // Read a row from the CSV file
         std::vector<std::string> row = map.GetRow<std::string>(uiRow);
 
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; ++uiCol)
+        for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
         {
 
-            arrMapInfo[currLevel][uiRow][uiCol] = InitTile(currLevel, row[uiCol], uiCol, uiRow);
+            arrMapInfo[mapCurrLevel][uiRow][uiCol] = InitTile(mapCurrLevel, row[uiCol], uiCol, uiRow);
         }
     }
     AEGfxMeshStart();
@@ -47,11 +50,10 @@ void MapManager::InitMap(std::string fileName, unsigned int currLevel)
 
     // Saving the mesh (list of triangles) in pMesh
     mesh = AEGfxMeshEnd();
-    mapCurrLevel = currLevel;
 }
 
-void MapManager::PrintMap(unsigned int currLevel) {
-    size_t x = (map.GetRow<std::string>(0)).size();
+void MapManager::PrintMap() {
+    size_t colCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
@@ -60,9 +62,9 @@ void MapManager::PrintMap(unsigned int currLevel) {
         std::vector<std::string> row = map.GetRow<std::string>(uiRow);
 
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; ++uiCol)
+        for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
         {
-            std::cout << static_cast<int>(arrMapInfo[currLevel][uiRow][uiCol]->currID) << ' ';
+            std::cout << static_cast<int>(arrMapInfo[mapCurrLevel][uiRow][uiCol]->currID) << ' ';
 
         }
         std::cout << '\n';
@@ -70,30 +72,30 @@ void MapManager::PrintMap(unsigned int currLevel) {
 }
 void MapManager::LoopMap(void* (mapfunc)())
 {    
-    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; ++uiCol)
+        for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
         {
             mapfunc();
         }
         std::cout << '\n';
     }
 }
-void MapManager::DrawMapSprite(int currLevel)
+void MapManager::DrawMapSprite()
 {
-    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            Tile * currTile = arrMapInfo[currLevel][uiRow][uiCol];
+            Tile * currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
             if (currTile->currID != TILE_ID::EMPTY) {
                 if (currTile->currID != currTile->bgID && 
                      currTile->isBGActive)
@@ -112,15 +114,15 @@ void MapManager::DrawMapSprite(int currLevel)
 }
 
 // change this function to turn on/off tile collision
-void MapManager::DrawMapCollision(int currLevel)
+void MapManager::DrawMapCollision()
 {
-    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
             //if (arrMapInfo[currLevel][uiRow][uiCol].currID) {
             //    if (arrMapInfo[currLevel][uiRow][uiCol].currID != arrMapInfo[currLevel][uiRow][uiCol].bgID &&
@@ -139,6 +141,16 @@ void MapManager::DrawMapCollision(int currLevel)
 void MapManager::FreeMap()
 {
     AEGfxMeshFree(mesh);
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    {
+        // Load a particular CSV value into the arrMapInfo
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        {
+            delete arrMapInfo[mapCurrLevel][uiRow][uiCol];
+        }
+    }
 }
 #pragma endregion
 
@@ -233,9 +245,9 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     //// sets size, position, row, col of tile
     //AEVec2Set(&newTile->scale, tileSize, tileSize);
     //AEVec2 size = newTile->scale;
-    //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-    //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
-    //AEVec2Set(&newTile->pos, x, y);
+    //f32 colCount = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.colCount) * (col + 1));
+    //f32 rowCount = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.rowCount) * (row + 1));
+    //AEVec2Set(&newTile->pos, colCount, rowCount);
     //CheckTileToInit(newTile);
 
     //newTile->row = row;
@@ -247,9 +259,9 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     //{
     //    //AEVec2Set(&newTile->bgSprite.scale, tileSize, tileSize);
     //    //AEVec2 size = newTile->bgSprite.scale;
-    //    //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-    //    //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
-    //    //AEVec2Set(&newTile->bgSprite.pos, x, y);
+    //    //f32 colCount = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.colCount) * (col + 1));
+    //    //f32 rowCount = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.rowCount) * (row + 1));
+    //    //AEVec2Set(&newTile->bgSprite.pos, colCount, rowCount);
     //    newTile->bgSprite = newTile->AddComponent(
     //        new Sprite()
     //    );
@@ -332,14 +344,14 @@ Tile* MapManager::GetTile(unsigned int col, unsigned int row)
 }
 std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
 {
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> taggedTiles;
     //taggedTiles.resize(size, 0);
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
             if (arrMapInfo[mapCurrLevel][uiCol][uiRow]->currTag == tag)
             {
@@ -355,14 +367,14 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
 
 std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
 {
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> taggedTiles;
     //taggedTiles.resize(size, 0);
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
             if (arrMapInfo[mapCurrLevel][uiCol][uiRow]->currTag == tag && 
                 arrMapInfo[mapCurrLevel][uiCol][uiRow]->currID == id)
@@ -391,13 +403,13 @@ AEVec2 MapManager::GetPlayerSpawnPos()
     AEVec2 pos;
     AEVec2Set(&pos, 0, 0);
 
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
             Tile *currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
             if (currTile->currID == TILE_ID::PLAYER) {
@@ -446,13 +458,13 @@ void Tile::Update()
 
 void  MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
 {
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
             Tile* currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
 

@@ -1,18 +1,11 @@
-﻿  CollisionManager.cpp
-C:\Users\konxi\CSD1451-Five-Braincells\CollisionManager.cpp(42,13): warning C4244: 'initializing': conversion from 'float' to 's32', possible loss of data
-C:\Users\konxi\CSD1451-Five-Braincells\CollisionManager.cpp(42,66): warning C4244: 'initializing': conversion from 'float' to 's32', possible loss of data
-  ComponentBase.cpp
-  GameObjectManager.cpp
-  Main.cpp
+﻿  Main.cpp
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\filesystem(12): warning STL4038: The contents of <filesystem> are available only with C++17 or later.
   MapManager.cpp
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(23,49): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+C:\Users\konxi\CSD1451-Five-Braincells\MapManager.cpp(24,52): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
   PlayerGameObject.cpp
 C:\Users\konxi\CSD1451-Five-Braincells\PlayerGameObject.cpp(90,30): warning C4244: '+=': conversion from 'f64' to 'f32', possible loss of data
 C:\Users\konxi\CSD1451-Five-Braincells\PlayerGameObject.cpp(91,30): warning C4244: '+=': conversion from 'f64' to 'f32', possible loss of data
-  RigidBodyComponent.cpp
-  SpriteManager.cpp
-  TileData.cpp
-  Utils.cpp
   Generating Code...
   Project1.vcxproj -> C:\Users\konxi\CSD1451-Five-Braincells\bin\Debug-x64\Project1.exe
   31 File(s) copied

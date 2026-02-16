@@ -25,7 +25,7 @@ void RenderGraphics() {
 	// Your own rendering logic goes here
 	// Set the background to black.
 	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
-	mapManager.DrawMapSprite(0);
+	mapManager.DrawMapSprite();
 
 	player->Render();
 
@@ -47,7 +47,7 @@ void GameInit()
 	//mapManager.GetInstance();
 
 	mapManager.InitMap("Assets/Maps/Map_Level_01.csv", 0);
-	mapManager.PrintMap(0);
+	mapManager.PrintMap();
 
 	mapManager.AddTilesToGameObjectVector(gameObjects);
 

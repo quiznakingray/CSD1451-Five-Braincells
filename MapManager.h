@@ -91,7 +91,9 @@ struct MapManager {
 
 	const float tileSize = 37.5f;
 	const char delimiter = ',';
-	static int mapCurrLevel;
+	static unsigned int mapCurrLevel;
+	static unsigned int rowCount;
+	static unsigned int colCount;
 
 	static MapManager* mapManager;
 	//S MapManager() {};
@@ -103,13 +105,13 @@ struct MapManager {
 	// Loads a map
 	void InitMap(std::string fileName, unsigned int currLevel);
 
-	void PrintMap(unsigned int currLevel);
+	void PrintMap();
 
 	void LoopMap(void* (mapfunc)());
 
-	void DrawMapSprite(int currLevel);
+	void DrawMapSprite();
 
-	void DrawMapCollision(int currLevel);
+	void DrawMapCollision();
 
 	void FreeMap();
 #pragma endregion
