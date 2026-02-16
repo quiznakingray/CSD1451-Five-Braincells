@@ -6,18 +6,24 @@
 #include "MapManager.h"
 #include "PlayerGameObject.h"
 #include "GameObjectManager.h"
+//#include "TextComponent.h"
+#include "GameStateManager.h"
 #include <filesystem>
 
 
 int gGameRunning = 1;
-AEGfxVertexList* pMesh = 0;
-AEGfxTexture* pTex = 0;
+//AEGfxVertexList* pMesh = 0;
+//AEGfxTexture* pTex = 0;
 
 MapManager mapManager;
+TextManager textManager;
+s8 TextManager::pFont = 0;
 
 Player* player = new Player();
 
 std::vector<GameObject*> gameObjects{};
+
+GameStateManager gameStateManager;
 #pragma region tempFuncs
 // temporary functions
 void RenderGraphics() {
@@ -45,16 +51,18 @@ void GameInit()
 	// Clears game background
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	//mapManager.GetInstance();
+	TextManager::Init();
 
 	mapManager.InitMap("Assets/Maps/Map_Level_01.csv", 0);
 	mapManager.PrintMap();
 
 	mapManager.AddTilesToGameObjectVector(gameObjects);
 
-	player->Init();
+	//player->Init();
 	AddGameObjectToVector(player, gameObjects);
 	
 	
+	InitGameObjects(gameObjects);
 }
 void GameUpdate() {
 	UpdateGameObjects(gameObjects);
@@ -89,20 +97,46 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	printf("Hello World\n");
 
-	GameInit();
+	//GameInit();
+	gameStateManager.Initialize(GAME_STATE_TYPE::WORLD);
 
 	// Game Loop
 	while (gGameRunning)
 	{
 		// Informing the system about the loop's start
 		AESysFrameStart();
+		gameStateManager.Update();
 
-		GameUpdate();
+		//// Initialize the current game state
+		fpLoad();
+		fpInitialize();
+		while (next == current)
+		{
+			// Update game logic for the current frame
+			fpUpdate();
+			// Render graphics for the current frame
+			fpRender();
+			// check if forcing the application to quit
+			if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
+				gGameRunning = 0;
 
-		// Informing the system about the loop's end
-		AESysFrameEnd();
+			if (AEInputCheckCurr(AEVK_1))
+				AESysSetFullScreen(1);
+			if (AEInputCheckCurr(AEVK_2))
+				AESysSetFullScreen(0);
+			// Informing the system about the loop's end
+			AESysFrameEnd();
+			AESysFrameStart();
+
+		}
+		//GameUpdate();
+
+		fpFree();
+		fpUnload();
+		current = next;
 	}
-	mapManager.FreeMap();
+	//mapManager.FreeMap();
+	//AEGfxDestroyFont(textManager.pFont);
 	// free the system
 	AESysExit();
 }

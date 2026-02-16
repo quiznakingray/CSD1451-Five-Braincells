@@ -186,7 +186,6 @@ void MapManager::DrawTile(Sprite sprite, AEMtx33 transform)
 Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t row)
 {
     // saves first int as current currID of tile
-    //Tile* newTile = new Tile();
     TILE_ID currID = static_cast<TILE_ID>(stoi(cell));
     cell.erase(0, 4);
     TILE_ID bgID = currID;
@@ -229,12 +228,48 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         }
         delimitCount++;
     }
-    AEGfxTexture* bgTex = nullptr;
-    if (bgID != currID) {
-        bgTex = SetTileTexture(bgID);
+
+    // do checking here
+    Tile* newTile{};
+
+    switch (currID)
+    {
+        // dont do anythign for 
+        case TILE_ID::SPIKEDOWN:
+        case TILE_ID::SPIKEUP:
+        case TILE_ID::SPIKELEFT:
+        case TILE_ID::SPIKERIGHT:
+            newTile = new SpikeTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+        
+        case TILE_ID::LEVERREDON:
+        case TILE_ID::LEVERREDOFF:
+        case TILE_ID::LEVERGREENON:
+        case TILE_ID::LEVERGREENOFF:
+            newTile = new LeverTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+
+        case TILE_ID::GROUND:
+            newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+        case TILE_ID::WALL:
+            newTile = new WallTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+
+        case TILE_ID::LASERRED:
+        case TILE_ID::LASERGREEN:
+            newTile = new LaserTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+        default:
+            newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
+            newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
+
+            break;
     }
-    AEGfxTexture* currTex = SetTileTexture(currID);
-    
+
+    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMY) {
+        return newTile;
+    }
 
     //newTile->currID = currID;
     //newTile->bgID = bgID;
@@ -242,36 +277,31 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     //newTile->ogTag = currTag;
     //newTile->isBGActive = bgActive;
     //newTile->isCurrActive = currActive;
-    //// sets size, position, row, col of tile
+    // sets size, position, row, col of tile
     //AEVec2Set(&newTile->scale, tileSize, tileSize);
     //AEVec2 size = newTile->scale;
-    //f32 colCount = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.colCount) * (col + 1));
-    //f32 rowCount = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.rowCount) * (row + 1));
-    //AEVec2Set(&newTile->pos, colCount, rowCount);
-    //CheckTileToInit(newTile);
+    //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
+    //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
+    //AEVec2Set(&newTile->pos, x, y);
+    CheckTileToInit(newTile);
 
     //newTile->row = row;
     //newTile->col = col;
+    // if bg tile sprite is present
+    if (bgID != currID) 
+    {
+        //AEVec2Set(&newTile->bgSprite.scale, tileSize, tileSize);
+        //AEVec2 size = newTile->bgSprite.scale;
+        //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
+        //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
+        //AEVec2Set(&newTile->bgSprite.pos, x, y);
+        newTile->bgSprite = newTile->AddComponent(
+            new Sprite()
+        );
+        newTile->bgSprite->texture = SetTileTexture(bgID);
 
-    //if (currID == TILE_ID::PLAYER) return newTile;
-    //// if bg tile sprite is present
-    //if (bgID != currID) 
-    //{
-    //    //AEVec2Set(&newTile->bgSprite.scale, tileSize, tileSize);
-    //    //AEVec2 size = newTile->bgSprite.scale;
-    //    //f32 colCount = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.colCount) * (col + 1));
-    //    //f32 rowCount = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.rowCount) * (row + 1));
-    //    //AEVec2Set(&newTile->bgSprite.pos, colCount, rowCount);
-    //    newTile->bgSprite = newTile->AddComponent(
-    //        new Sprite()
-    //    );
-    //    newTile->bgSprite->texture = SetTileTexture(bgID);
+    }
 
-    //}
-    //newTile->currSprite = new Sprite();
-    //newTile->currSprite->texture = SetTileTexture(currID);
-
-    // add to component array
 
     //newTile->currSprite = newTile->AddComponent(
     //    new Sprite()
@@ -283,8 +313,8 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
 
     
     //newTile->showColliders = true;
-
-    return new Tile { currID, bgID, currTag, bgActive, currActive, currTex, bgTex, row, col };
+    return newTile;
+    //return new Tile { currID, bgID, currTag, bgActive, currActive, currTex, bgTex, row, col };
 }
 
 AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
@@ -293,6 +323,8 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
 	switch (currID) 
     {
     case TILE_ID::EMPTY:
+    case TILE_ID::PLAYER:
+    case TILE_ID::ENEMY:
         tTex = nullptr;
         break;
     case TILE_ID::GROUND:
@@ -376,10 +408,11 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
     {
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            if (arrMapInfo[mapCurrLevel][uiCol][uiRow]->currTag == tag && 
-                arrMapInfo[mapCurrLevel][uiCol][uiRow]->currID == id)
+            Tile* currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
+            if (currTile->currTag == tag && 
+                currTile->currID == id)
             {
-                taggedTiles.push_back(arrMapInfo[mapCurrLevel][uiCol][uiRow]);
+                taggedTiles.push_back(currTile);
                 i++;
             }
 
@@ -391,6 +424,26 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
 #pragma endregion
 
 #pragma region LaserFuncs
+std::vector<Tile*> MapManager::GetTilesNearPos(AEVec2 pos, AEVec2 scale)
+{
+
+
+    std::vector<Tile*> nearbyTiles;
+
+    for (std::vector<Tile*> row : arrMapInfo[mapCurrLevel])
+    {
+        // Load a particular CSV value into the arrMapInfo
+        for (Tile* tile : row)
+        {
+            //Tile* currTile = arrMapInfo[mapCurrLevel][uiCol][uiRow];
+            if (BoxToBoxCollision(pos, tile->pos, scale,  tile->scale) && tile->currID != TILE_ID::PLAYER)
+            {
+                nearbyTiles.push_back(tile);
+            }
+        }
+    }
+    return nearbyTiles;
+}
 void MapManager::SetLaserActive(Tile tile, bool active)
 {
     std::vector<Tile*> lasers = GetTaggedTiles(tile.currTag, tile.currID);
@@ -398,58 +451,61 @@ void MapManager::SetLaserActive(Tile tile, bool active)
         laser->isCurrActive = active;
     }
 }
+Tile* MapManager::GetTile(TILE_ID id)
+{
+    for (std::vector<Tile*> row : arrMapInfo[mapCurrLevel])
+    {
+        // Load a particular CSV value into the arrMapInfo
+        for (Tile* tile : row)
+        {
+            //Tile *currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
+            if (tile->currID == id) {
+                return tile;
+            }
+        }
+    }
+    return nullptr;
+}
 AEVec2 MapManager::GetPlayerSpawnPos()
 {
     AEVec2 pos;
     AEVec2Set(&pos, 0, 0);
 
-    size_t colCount = (map.GetRow<std::string>(0)).size();
-    size_t rowCount = (map.GetColumn<std::string>(0)).size();
-    // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
-    {
-        // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
-        {
-            Tile *currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
-            if (currTile->currID == TILE_ID::PLAYER) {
-                AEVec2Set(&pos, currTile->pos.x, currTile->pos.y);
-            }
-        }
-    }
+    Tile* player = GetTile(TILE_ID::PLAYER);
+    AEVec2Set(&pos, player->pos.x, player->pos.y);
     return pos;
 }
 #pragma endregion
 
-void Tile::CheckTileToInit(Tile* tile)
-{
-        if ((std::find(spikes.begin(), spikes.end(), tile->currID) != spikes.end()))
-        {
-            switch (tile->currID) {
-            case TILE_ID::SPIKEDOWN:
-            {
-                tile->rotation = 0;
-                break;
-            }
-            case TILE_ID::SPIKEUP:
-            {
-                tile->rotation = PI;
-                break;
-            }
-            case TILE_ID::SPIKELEFT:
-            {
-                tile->rotation = 270 * (PI / 180);
-                break;
-            }
-            case TILE_ID::SPIKERIGHT:
-            {
-                tile->rotation = PI / 2;
-                break;
-            }
-            }
-        }
-    
-}
+//void Tile::CheckTileToInit(Tile* tile)
+//{
+//        if ((std::find(spikes.begin(), spikes.end(), tile->currID) != spikes.end()))
+//        {
+//            switch (tile->currID) {
+//            case TILE_ID::SPIKEDOWN:
+//            {
+//                tile->rotation = 0;
+//                break;
+//            }
+//            case TILE_ID::SPIKEUP:
+//            {
+//                tile->rotation = PI;
+//                break;
+//            }
+//            case TILE_ID::SPIKELEFT:
+//            {
+//                tile->rotation = 270 * (PI / 180);
+//                break;
+//            }
+//            case TILE_ID::SPIKERIGHT:
+//            {
+//                tile->rotation = PI / 2;
+//                break;
+//            }
+//            }
+//        }
+//    
+//}
 
 void Tile::Update()
 {

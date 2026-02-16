@@ -5,21 +5,6 @@
 
 void Sprite::Init()
 {
-
-}
-
-void Sprite::Update()
-{
-	//AEVec2Set(&pos, owner->pos.x, owner->pos.y);
-	//pos.z = owner->pos.z;
-	//AEVec2Set(&scale, owner->scale.x, owner->scale.y);
-}
-
-void Sprite::Render()  {
-
-	// calculate row and columns 
-
-
 	AEGfxMeshStart();
 
 	//f32 row = spriteSheet.isSpriteSheet ?  spriteSheet.currentFrame / spriteSheet.rows : 1.f;
@@ -38,6 +23,41 @@ void Sprite::Render()  {
 
 
 	mesh = AEGfxMeshEnd(); // set to ui->mesh
+}
+
+void Sprite::Update()
+{
+	//AEVec2Set(&pos, owner->pos.x, owner->pos.y);
+	//pos.z = owner->pos.z;
+	//AEVec2Set(&scale, owner->scale.x, owner->scale.y);
+}
+
+void Sprite::Render()  {
+
+	// calculate row and columns 
+
+	if (spriteSheet.isSpriteSheet)
+	{
+		AEGfxMeshStart();
+
+		//f32 row = spriteSheet.isSpriteSheet ?  spriteSheet.currentFrame / spriteSheet.rows : 1.f;
+		//f32 column = spriteSheet.isSpriteSheet ? column * spriteSheet.currentFrame / spriteSheet.columns : 1.f;
+
+		// add tri for rects
+		AEGfxTriAdd(
+			-0.5f, -0.5f, meshColor, 0.0f, 1.0f,
+			0.5f, -0.5f, meshColor, 1.0f, 1.0f,
+			-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
+
+		AEGfxTriAdd(
+			0.5f, -0.5f, meshColor, 1.0f, 1.0f,
+			0.5f, 0.5f, meshColor, 1.0f, 0.0f,
+			-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
+
+
+		mesh = AEGfxMeshEnd(); // set to ui->mesh
+
+	}
 
 	AEMtx33 scaleMtx = { 0 };
 	AEMtx33Scale(&scaleMtx, owner->scale.x, owner->scale.y);

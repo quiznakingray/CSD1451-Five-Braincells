@@ -21,7 +21,7 @@ struct Collider : ComponentBase {
 	bool canCollide = true;
 	bool canInteract = true;
 
-	bool isTrigger = true;
+	bool isTrigger = false;
 	bool isHovering = false;
 	bool isInteracting = false;
 
@@ -39,6 +39,10 @@ struct Collider : ComponentBase {
 	std::function<void(Collider *)> OnCollisionEnter;
 	std::function<void(Collider *)> OnCollisionOver;
 	std::function<void(Collider *)> OnCollisionExit;
+
+	std::function<void(Collider*)> OnTriggerEnter;
+	std::function<void(Collider*)> OnTriggerOver;
+	std::function<void(Collider*)> OnTriggerExit;
 
 	std::vector<Collider*> overlappingColliders{};
 
@@ -67,6 +71,7 @@ bool CheckBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 o
 
 bool BoxToBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size);
 
+bool IsPosInRect(AEVec2 pos, AEVec2 rectPos, AEVec2 rectScale);
 bool IsCursorOverRect(f32 pos_x, f32 pos_y, f32 scale_x, f32 scale_y);
 
 #endif // !COLLISION_MANAGER_H

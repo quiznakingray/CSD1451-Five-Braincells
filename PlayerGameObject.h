@@ -2,6 +2,7 @@
 #define  PLAYER_GAME_OBJECT_H
 
 #include "GameObjectManager.h"
+#include "PhysicsManager.h"
 
 struct Player : GameObject {
 
@@ -9,7 +10,11 @@ struct Player : GameObject {
 	{
 	}
 	f32 speed{};
-	AEVec2 velocity{};
+
+	RigidBody* rb = nullptr;
+	//AEVec2 velocity{};
+
+	void PlayerInput();
 	void Init() override;
 	void Update() override;
 };

@@ -8,18 +8,23 @@ enum class RIGIDBODY_TYPE
 {
 	STATIC,
 	DYNAMIC,
-	KINEMATIC
+	//KINEMATIC
 };
 struct RigidBody : ComponentBase {
 
 	RIGIDBODY_TYPE type = RIGIDBODY_TYPE::DYNAMIC;
 
-	AEVec2 velocity;
-	f32 mass;
-	f32 drag;
+	AEVec2 velocity{};
+	AEVec2 acceleration{};
+	f32 mass{};
+	f32 drag{};
 
+	bool onCollider = false;
 
-	AEVec2 FreePosition;
+	bool hasGravity = true;
+	f32 gravity = -500.f;
+	//AEVec2 FreePosition;
+
 
 	void Update() override;
 };
