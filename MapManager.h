@@ -63,14 +63,14 @@ struct Tile : GameObject {
 	};
 
 	Tile(
-		TILE_ID curr_ID,
-		TILE_ID bg_ID,
-		int currTag_,
-		bool bgActive,
-		bool currActive,
-		int row_,
-		int col_,
-		float tileSize,
+		TILE_ID curr_ID = TILE_ID::EMPTY,
+		TILE_ID bg_ID = TILE_ID::EMPTY,
+		int currTag_ = 0,
+		bool bgActive = false,
+		bool currActive = true,
+		int row_ = 0, 
+		int col_ = 0,
+		float tileSize = 0.f,
 		bool is_Trigger = false,
 		bool can_Interact = false
 	)

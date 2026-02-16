@@ -148,9 +148,17 @@ void MapManager::FreeMap()
         // Load a particular CSV value into the arrMapInfo
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            delete arrMapInfo[mapCurrLevel][uiRow][uiCol];
+            if (static_cast<int>(arrMapInfo[mapCurrLevel][uiRow][uiCol]->currID) > -1) {
+                delete arrMapInfo[mapCurrLevel][uiRow][uiCol]->currSprite;
+                if (arrMapInfo[mapCurrLevel][uiRow][uiCol]->bgSprite) {
+                    delete arrMapInfo[mapCurrLevel][uiRow][uiCol]->bgSprite;
+                }
+                delete arrMapInfo[mapCurrLevel][uiRow][uiCol];
+            }
+            
         }
     }
+    
 }
 #pragma endregion
 
@@ -231,7 +239,7 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
 
     // do checking here
     Tile* newTile{};
-
+    
     switch (currID)
     {
         // dont do anythign for 
@@ -366,6 +374,35 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
 	return tTex;
 }
 
+void MapManager::CheckTileToInit(Tile* tile)
+{
+    if ((std::find(spikes.begin(), spikes.end(), tile->currID) != spikes.end()))
+    {
+        switch (tile->currID) {
+        case TILE_ID::SPIKEDOWN:
+        {
+            tile->rotation = 0;
+            break;
+        }
+        case TILE_ID::SPIKEUP:
+        {
+            tile->rotation = PI;
+            break;
+        }
+        case TILE_ID::SPIKELEFT:
+        {
+            tile->rotation = 270 * (PI / 180);
+            break;
+        }
+        case TILE_ID::SPIKERIGHT:
+        {
+            tile->rotation = PI / 2;
+            break;
+        }
+        }
+    }
+}
+
 void MapManager::RotateTile(double rotation, Tile tile)
 {
 
@@ -476,36 +513,6 @@ AEVec2 MapManager::GetPlayerSpawnPos()
     return pos;
 }
 #pragma endregion
-
-//void Tile::CheckTileToInit(Tile* tile)
-//{
-//        if ((std::find(spikes.begin(), spikes.end(), tile->currID) != spikes.end()))
-//        {
-//            switch (tile->currID) {
-//            case TILE_ID::SPIKEDOWN:
-//            {
-//                tile->rotation = 0;
-//                break;
-//            }
-//            case TILE_ID::SPIKEUP:
-//            {
-//                tile->rotation = PI;
-//                break;
-//            }
-//            case TILE_ID::SPIKELEFT:
-//            {
-//                tile->rotation = 270 * (PI / 180);
-//                break;
-//            }
-//            case TILE_ID::SPIKERIGHT:
-//            {
-//                tile->rotation = PI / 2;
-//                break;
-//            }
-//            }
-//        }
-//    
-//}
 
 void Tile::Update()
 {

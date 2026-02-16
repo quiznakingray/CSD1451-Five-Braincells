@@ -22,7 +22,7 @@ void ParkourLevel::Init()
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 
 	mapManager1.InitMap("Assets/Maps/Map_Level_01.csv", 0);
-	mapManager1.PrintMap(0);
+	mapManager1.PrintMap();
 
 	mapManager1.AddTilesToGameObjectVector(gameObjects1);
 
@@ -44,7 +44,7 @@ void ParkourLevel::Render()
 {
 
 	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
-	mapManager1.DrawMapSprite(0);
+	mapManager1.DrawMapSprite();
 
 	player1->Render();
 	enemy->Render();
