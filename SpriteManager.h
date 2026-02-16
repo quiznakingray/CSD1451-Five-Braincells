@@ -1,65 +1,86 @@
 #pragma once
-#include "AEEngine.h"
 #include <array>
 #include <vector>
-#include <functional>
+#include "AEEngine.h"
+#include "Utils.h"
+#include "CollisionManager.h"
+#include "GameObjectManager.h"
+#include "ComponentBase.h"
 
 #define COLORSIZE 4
 
-struct AEVec3 : AEVec2 {
-	f32 z;
+enum class SPRITE_DRAW_MODE {
+	SIMPLE,
+	TILED,
+	SLICED
 };
 
-struct Sprite {
-	AEVec3 pos{};
-	AEVec2 scale{};
-	f32 rotation{};
-	u32 color{};
+struct Color { // range form 0 to 1
+	f32 r{};
+	f32 g{};
+	f32 b{};
+	f32 a{};
+
+	Color(f32 red = 1.f, f32 green = 1.f, f32 blue = 1.f, f32 alpha = 1.f)
+		:r(red), g(green), b(blue), a(alpha) {
+	}
+
+};
+
+using Color = struct Color;
+
+struct Sprite : ComponentBase{
+	//AEVec3 pos{};
+	//AEVec2 scale{};
+	//f32 rotation{};
+	u32 meshColor{};
+	Color multiplyColor = Color(1.f, 1.f, 1.f, 1.f);
+	Color addColor = Color(0.f, 0.f, 0.f, 0.f);
+	AEGfxBlendMode blendMode = AE_GFX_BM_BLEND;
+	f32 opacity = 1.f;
 	AEGfxVertexList* mesh = nullptr;
 	AEGfxTexture* texture = nullptr;
 
 	//std::array <f64, COLORSIZE > color{ };
-	bool isCenter = false;
-
-	//Clicking Functions
-	std::function<void()> OnClick; // When mouse is click & holding sprite
-	std::function<void()> OnMouseDown; // Triggered once when sprite is clicked
-	std::function<void()> OnMouseUp; // Triggered once when mouse button on sprite is released
-
-	//Hovering Functions
-	std::function<void()> OnMouseEnter;
-	std::function<void()> OnMouseOver;
-	std::function<void()> OnMouseExit;
-	bool hasCollision = true;
-	bool blockCollision = true;
-
-	bool isHovering = false;
-	bool isInteracting = false;
+	struct SpriteSheet {
+		bool isSpriteSheet = false;
+		s32 rows = 1, columns = 1;
+		int currentFrame = 0;
+	} spriteSheet;
 
 
-	Sprite() = default;
-	Sprite(f32 scale_x, f32 scale_y, f32 pos_x, f32 pos_y, f32 pos_z = 0.f, f32 rot = 0.f, u32 c = 0xFF000000, AEGfxTexture* t = nullptr)
-		: color(c), rotation(rot), texture(t)
+	Sprite() : meshColor(0x00000000), texture(nullptr) {
+
+	}
+	Sprite(
+		f32 scale_x, f32 scale_y, 
+		f32 pos_x, f32 pos_y, f32 pos_z = 0.f, 
+		f32 rot = 0.f, 
+		u32 c = 0xFF000000,
+		AEGfxTexture* t = nullptr)
+		: meshColor(c),texture(t)
 	{
-		AEVec2Set(&pos, pos_x, pos_y);
-		pos.z = pos_z;
-		AEVec2Set(&scale, scale_x, scale_y);
+		//AEVec2Set(&pos, pos_x, pos_y);
+		//pos.z = pos_z;
+		//AEVec2Set(&scale, scale_x, scale_y);
+
 	}
 
-	void SetCollision(bool b)
-	{
-		hasCollision = b;
-	}
-
+	void Init() override;
+	void Update() override;
+	void Render() override;
+	void Free() override;
 
 };
-
-void RenderSprite(Sprite *sprite);
 
 void RenderSprite(Sprite sprite, AEGfxVertexList* mesh);
 
 void HandleSpriteInteraction(std::vector<Sprite*>& spriteArr);
 
+void UpdateSpriteArray(std::vector<Sprite*>& spriteArr);
+
 void AddSpriteToArray(std::vector<Sprite*>& spriteArr, Sprite*& s);
 
 void RenderSpriteArray(std::vector<Sprite*>& spriteArr);
+
+void FreeSprite(Sprite* sprite);
