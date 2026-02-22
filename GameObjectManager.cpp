@@ -45,6 +45,32 @@ void GameObject::Free()
 	components.clear();
 }
 
+void HandleState(std::vector<GameObject*>& gos)
+{
+	for (size_t i = 0; i < gos.size(); ++i)
+	{
+		GameObject* go = gos[i];
+		
+		RigidBody* rb = go->GetComponent<RigidBody>();
+		if (!go->isOnCamera || !go->isActive || rb == nullptr) continue;
+		if (rb->velocity.x == rb->prevVel.x && rb->velocity.y == rb->prevVel.y)
+			return; // no change, skip state update
+		if (rb->velocity.y < 0) {
+			go->objectState = STATE::FALL;
+		}
+		else if (rb->velocity.y > 0) {
+			go->objectState = STATE::JUMP;
+		}
+		else {
+			if (fabs(rb->velocity.x) > 0.1f)
+				go->objectState = STATE::WALK;
+			else
+				go->objectState = STATE::IDLE;
+		}
+		rb->prevVel = rb->velocity;
+	}
+}
+
 bool GameObject::isGameObjectOnScreen()
 {
 	f32 camX, camY, camMinX, camMinY, camMaxX, camMaxY;
@@ -89,6 +115,7 @@ void HandleCollision(std::vector<GameObject*>& gos)
 	{
 		GameObject* firstGo = gos[i];
 		if (!firstGo->isOnCamera || !firstGo->isActive) continue;
+
 		for (size_t j = i + 1; j < gos.size(); ++j)
 		{
 			GameObject* secondGo = gos[j];
@@ -127,7 +154,6 @@ void HandleCollision(std::vector<GameObject*>& gos)
 						//Add to list
 						firstColl->AddToOvelappingVector(secondColl);
 						secondColl->AddToOvelappingVector(firstColl);
-						
 						//PhysicsManager::HandleCollision(firstColl, secondColl);
 					}
 					else {
@@ -242,6 +268,7 @@ void UpdateGameObjects(std::vector<GameObject*> &gos)
 	}
 	HandleCollision(gos);
 	HandleInteraction(gos);
+	HandleState(gos);
 }
 
 //void RenderGameObjects(std::vector<GameObject*>& gos)

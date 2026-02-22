@@ -32,11 +32,10 @@ void Player::PlayerInput()
 	if (length > 0) {
 		moveDir.x /= length;
 	}
-
 	// Set velocity
 	rb->velocity.x = moveDir.x * speed;
 	rb->velocity.y += moveDir.y ;
-
+	std::cout << static_cast<int>(objectState) << '\n';
 }
 
 void Player::Init()
@@ -45,6 +44,9 @@ void Player::Init()
 	//set pos
 	AEVec2Set(&pos,MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y + 100.f);
 	pos.z = 1.f;
+
+	// set state
+	objectState = STATE::IDLE;
 
 	//set scale
 	AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
@@ -96,7 +98,7 @@ void Player::Init()
 		//std::cout << "Collision Exit" << std::endl;
 		if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 		{
-			this->rb->onCollider = false;
+ 			this->rb->onCollider = false;
 		}
 	};
 
@@ -106,7 +108,7 @@ void Player::Init()
 	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 
 	//showColliders = true;
-	speed = 200.f;
+	speed = static_cast<f32>(200.0);
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	AEGfxSetCamPosition(pos.x, pos.y);
 
@@ -114,29 +116,37 @@ void Player::Init()
 }
 
 void Player::Update(){
-
+	
 	PlayerInput();
-	//std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
+	std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
 	std::vector<Collider*> colliders = GetComponents<Collider>();
 
 	for (Collider* pCol : colliders)
 	{
-		for (Collider* oCol : pCol->overlappingColliders)
+		for (std::vector<Collider*>::iterator it = pCol->overlappingColliders.begin();
+			it != pCol->overlappingColliders.end(); )
 		{
+			Collider* oCol = *it;
+
+			if (!oCol->canCollide)
+			{
+				pCol->RemoveFromOverlappingVector(oCol);
+				it = pCol->overlappingColliders.begin();
+				continue;
+			}
 
 			if (BoxToBoxCollision(
 				pCol->GetPos2D(), oCol->GetPos2D(),
 				pCol->GetScale(), oCol->GetScale()))
 			{
-				//pCol->AddToOvelappingVector(oCol);
-				//oCol->AddToOvelappingVector(pCol);
 				PhysicsManager::HandleCollision(pCol, oCol);
+				++it;
 			}
-			else {
-				//pCol->RemoveFromOverlappingVector(oCol);
-				//oCol->RemoveFromOverlappingVector(pCol);
+			else
+			{
+				pCol->RemoveFromOverlappingVector(oCol);
+				it = pCol->overlappingColliders.begin();
 			}
-		
 		}
 	}
 

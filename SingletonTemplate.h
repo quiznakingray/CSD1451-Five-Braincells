@@ -1,27 +1,19 @@
 #pragma once
 
-struct Singleton
+template<typename T>
+class Singleton
 {
-    static Singleton& get_instance()
+public:
+    static T& get_instance()
     {
-        static Singleton instance;
+        static T instance;
         return instance;
     }
 
-    // The copy constructor is deleted, to prevent client code from creating new
-    // instances of this class by copying the instance returned by get_instance()
-    Singleton(Singleton const&) = delete;
+    Singleton(const Singleton&) = delete;
+    Singleton& operator=(const Singleton&) = delete;
 
-    // The move constructor is deleted, to prevent client code from moving from
-    // the object returned by get_instance(), which could result in other clients
-    // retrieving a reference to an object with unspecified state.
-    Singleton(Singleton&&) = delete;
-
-private:
-
-    // Default-constructor is private, to prevent client code from creating new
-    // instances of this class. The only instance shall be retrieved through the
-    // get_instance() function.
-    Singleton() {}
-
+protected:
+    Singleton() = default;
+    ~Singleton() = default;
 };

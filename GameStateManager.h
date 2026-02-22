@@ -6,6 +6,7 @@ extern FP fpLoad , fpInitialize , fpUpdate , fpRender , fpFree , fpUnload ;
 
 enum class GAME_STATE_TYPE {
 	WORLD,
+	OTHER,
 	COMBAT
 };
 extern GAME_STATE_TYPE current, next;
@@ -24,6 +25,8 @@ struct GameState {
 struct GameStateManager {
 
 	void Initialize(GAME_STATE_TYPE type);
+
+	void ChangeState(GAME_STATE_TYPE type);
 
 	void Update();
 };

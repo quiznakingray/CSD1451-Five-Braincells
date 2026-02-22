@@ -54,6 +54,7 @@ void GameInit()
 	TextManager::Init();
 
 	mapManager.InitMap("Assets/Maps/Map_Level_01.csv", 0);
+
 	mapManager.PrintMap();
 
 	mapManager.AddTilesToGameObjectVector(gameObjects);
@@ -65,8 +66,10 @@ void GameInit()
 	InitGameObjects(gameObjects);
 }
 void GameUpdate() {
+	double dt = AEFrameRateControllerGetFrameTime();
 	UpdateGameObjects(gameObjects);
 	RenderGraphics();
+
 	//player->Update();
 }
 #pragma endregion
@@ -124,6 +127,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				AESysSetFullScreen(1);
 			if (AEInputCheckCurr(AEVK_2))
 				AESysSetFullScreen(0);
+
+			if (AEInputCheckCurr(AEVK_3)) {
+				gameStateManager.ChangeState(GAME_STATE_TYPE::OTHER);
+				gameStateManager.Update();
+				mapManager.ChangeMap(1);
+			}
+			if (AEInputCheckCurr(AEVK_4)) {
+				gameStateManager.ChangeState(GAME_STATE_TYPE::WORLD);
+				gameStateManager.Update();
+				mapManager.ChangeMap(0);
+			}
 			// Informing the system about the loop's end
 			AESysFrameEnd();
 			AESysFrameStart();

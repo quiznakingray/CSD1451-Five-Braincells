@@ -15,6 +15,7 @@ struct RigidBody : ComponentBase {
 	RIGIDBODY_TYPE type = RIGIDBODY_TYPE::DYNAMIC;
 
 	AEVec2 velocity{};
+	AEVec2 prevVel{};
 	AEVec2 acceleration{};
 	f32 mass{};
 	f32 drag{};

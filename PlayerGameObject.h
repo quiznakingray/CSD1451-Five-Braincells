@@ -9,12 +9,16 @@ struct Player : GameObject {
 	Player() :GameObject()
 	{
 	}
+
+
+	//STATE playerState = STATE::IDLE;
 	f32 speed{};
 
 	RigidBody* rb = nullptr;
 	//AEVec2 velocity{};
 
 	void PlayerInput();
+
 	void Init() override;
 	void Update() override;
 };

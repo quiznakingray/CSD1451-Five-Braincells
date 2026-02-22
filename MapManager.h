@@ -12,6 +12,7 @@
 #include "GameObjectManager.h"
 #include "TextComponent.h"
 #include "InputManager.h"
+#include "Helper.h"
 
 #define MAX_XAXIS 100
 #define MAX_YAXIS 100
@@ -24,6 +25,7 @@ enum class TILE_ID {
 	SPIKEUP = 102,
 	SPIKELEFT = 103,
 	SPIKERIGHT = 104,
+	CLOUD = 105,
 	WALL = 110,
 	LEVERREDOFF = 120,
 	LEVERREDON = 121,
@@ -89,8 +91,8 @@ struct Tile : GameObject {
 		AEVec2Set(&scale, tileSize, tileSize);
 
 		// position
-		f32 x = -AEGfxGetWindowWidth() * 0.5f + scale.x * (col + 1);
-		f32 y = AEGfxGetWindowHeight() * 0.5f - scale.y * (row + 1);
+		f32 x = static_cast<f32>(- AEGfxGetWindowWidth() * 0.5f + scale.x * (col + 1));
+		f32 y = static_cast<f32>(AEGfxGetWindowHeight() * 0.5f - scale.y * (row + 1));
 		AEVec2Set(&pos, x, y);
 
 		currSprite = AddComponent(
@@ -226,8 +228,87 @@ struct LaserTile : Tile {
 		//showColliders = true;
 	}
 };
+
+
+struct CloudTile : Tile {
+	double maxTimer = 3.0;
+	double currTimer = 0.0;
+	bool hasPlayerStepped = false;
+	CooldownTimer cloudTimer;
+
+	CloudTile(TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+
+
+		currSprite->texture = currID == TILE_ID::CLOUD ?
+			AEGfxTextureLoad("Assets/Environment/images.png")
+			:
+			AEGfxTextureLoad("Assets/Environment/images.png");
+	}
+	void StartCloudCountdown()
+	{
+		cloudTimer.Start(2.0);
+	}
+
+
+	void Init() override {
+		Tile::Init();
+
+		//showColliders = true;
+
+		collider->center.y = 0.5f;
+		collider->size.x = 2.f;
+		collider->size.y = 1.5f;
+		//collider->is = true;
+		collider->OnCollisionEnter = [this](Collider* other) {
+			if (Player* tile = dynamic_cast<Player*>(other->owner))
+			{
+				if (!hasPlayerStepped) {
+					hasPlayerStepped = true;
+					if (!cloudTimer.IsActive())
+						cloudTimer.Start(2.0);  // fade duration
+				}
+			}
+		};
+		collider->OnCollisionOver = [this](Collider* other) {
+		};
+		collider->OnCollisionExit = [this](Collider* other) {
+
+			};
+
+		//interactionTextBox->text = "[F]";
+
+	}
+
+	void Update() override
+	{
+		Tile::Update();
+
+		double dt = AEFrameRateControllerGetFrameTime();
+
+		if (cloudTimer.Update(dt))
+		{
+			isActive = false;   // disappears after fade completes
+			collider->canCollide = false;
+		}
+
+		if (cloudTimer.IsActive())
+		{
+			float progress = cloudTimer.GetProgress();
+			currSprite->opacity = (f32)(1.0f - progress);
+		}
+	}
+};
+
 //template <typename S>
-struct MapManager {
+struct MapManager : public Singleton<MapManager> {
 
 	static constexpr  float tileSize = 80.f;
 	const char delimiter = ',';
@@ -245,13 +326,13 @@ struct MapManager {
 	// Loads a map
 	void InitMap(std::string fileName, unsigned int currLevel);
 
+	void ChangeMap(unsigned int currLevel);
+
 	void PrintMap();
 
 	void LoopMap(void* (mapfunc)());
 
 	void DrawMapSprite();
-
-	void DrawMapCollision();
 
 	void FreeMap();
 #pragma endregion

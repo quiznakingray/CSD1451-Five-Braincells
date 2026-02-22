@@ -8,6 +8,14 @@
 #include "Utils.h"
 #include "SpriteManager.h"
 
+enum class STATE
+{
+	IDLE,
+	WALK,
+	JUMP,
+	FALL
+};
+
 struct GameObject {
 	AEVec3 pos{};
 	AEVec2 scale{};
@@ -17,6 +25,7 @@ struct GameObject {
 	bool showColliders = false;
 	bool isOnCamera = true;
 	//Sprite* sprite;
+	STATE objectState = STATE::IDLE;
 	
 	std::vector<ComponentBase*> components{};
 
@@ -72,6 +81,6 @@ struct GameObject {
 void AddGameObjectToVector(GameObject* go, std::vector<GameObject*>& gos);
 
 void InitGameObjects(std::vector<GameObject*>& gos);
-void UpdateGameObjects(std::vector<GameObject*> &gos);
+void UpdateGameObjects(std::vector<GameObject*>& gos);
 //void RenderGameObjects(std::vector<GameObject*>& gos);
 #endif // !GAME_OBJECT_MANAGER_H

@@ -37,6 +37,7 @@ void ParkourLevel::Init()
 
 void ParkourLevel::Update()
 {
+	double dt = AEFrameRateControllerGetFrameTime();
 	UpdateGameObjects(gameObjects1);
 }
 

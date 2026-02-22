@@ -8,7 +8,7 @@
 #pragma region MapFuncs
 
 rapidcsv::Document map;
-std::vector<std::vector<std::vector<Tile*>>> arrMapInfo{};
+std::vector<std::vector<Tile*>> arrMapInfo{};
 AEGfxVertexList* mesh;
 
 unsigned int MapManager::mapCurrLevel = 0;
@@ -18,11 +18,16 @@ unsigned int MapManager::colCount = 0;
 void MapManager::InitMap(std::string fileName, unsigned int currLevel)
 {
     map = rapidcsv::Document(fileName);
-    mapCurrLevel = currLevel;
+    //mapCurrLevel = currLevel;
     // Read a row from the CSV file
     colCount = (map.GetRow<std::string>(0)).size();
     rowCount = (map.GetColumn<std::string>(0)).size();
-    arrMapInfo.resize(MAX_LEVELS, std::vector<std::vector<Tile *>>(rowCount, std::vector<Tile *>(colCount)));
+    arrMapInfo.resize(rowCount);
+
+    for (auto& row : arrMapInfo)
+    {
+        row.resize(colCount);
+    }
 
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
@@ -34,7 +39,7 @@ void MapManager::InitMap(std::string fileName, unsigned int currLevel)
         for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
         {
 
-            arrMapInfo[mapCurrLevel][uiRow][uiCol] = InitTile(mapCurrLevel, row[uiCol], uiCol, uiRow);
+            arrMapInfo[uiRow][uiCol] = InitTile(mapCurrLevel, row[uiCol], uiCol, uiRow);
         }
     }
     AEGfxMeshStart();
@@ -52,6 +57,12 @@ void MapManager::InitMap(std::string fileName, unsigned int currLevel)
     mesh = AEGfxMeshEnd();
 }
 
+void MapManager::ChangeMap(unsigned int currLevel)
+{
+    mapCurrLevel = currLevel;
+
+}
+
 void MapManager::PrintMap() {
     size_t colCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
@@ -64,7 +75,7 @@ void MapManager::PrintMap() {
         // Load a particular CSV value into the arrMapInfo
         for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
         {
-            std::cout << static_cast<int>(arrMapInfo[mapCurrLevel][uiRow][uiCol]->currID) << ' ';
+            std::cout << static_cast<int>(arrMapInfo[uiRow][uiCol]->currID) << ' ';
 
         }
         std::cout << '\n';
@@ -95,7 +106,7 @@ void MapManager::DrawMapSprite()
         // Load a particular CSV value into the arrMapInfo
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            Tile * currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
+            Tile * currTile = arrMapInfo[uiRow][uiCol];
             if (currTile->currID != TILE_ID::EMPTY) {
                 if (currTile->currID != currTile->bgID && 
                      currTile->isBGActive)
@@ -113,31 +124,6 @@ void MapManager::DrawMapSprite()
     }
 }
 
-// change this function to turn on/off tile collision
-void MapManager::DrawMapCollision()
-{
-    size_t colCount = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
-    // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
-    {
-        // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
-        {
-            //if (arrMapInfo[currLevel][uiRow][uiCol].currID) {
-            //    if (arrMapInfo[currLevel][uiRow][uiCol].currID != arrMapInfo[currLevel][uiRow][uiCol].bgID &&
-            //        arrMapInfo[currLevel][uiRow][uiCol].isBGActive)
-            //    {
-            //        RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].bgSprite, mesh);
-            //    }
-            //    if (arrMapInfo[currLevel][uiRow][uiCol].isCurrActive) {
-            //        RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].currSprite, mesh);
-            //    }
-            //}
-        }
-    }
-}
-
 void MapManager::FreeMap()
 {
     AEGfxMeshFree(mesh);
@@ -148,12 +134,12 @@ void MapManager::FreeMap()
         // Load a particular CSV value into the arrMapInfo
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            if (static_cast<int>(arrMapInfo[mapCurrLevel][uiRow][uiCol]->currID) > -1) {
-                delete arrMapInfo[mapCurrLevel][uiRow][uiCol]->currSprite;
-                if (arrMapInfo[mapCurrLevel][uiRow][uiCol]->bgSprite) {
-                    delete arrMapInfo[mapCurrLevel][uiRow][uiCol]->bgSprite;
+            if (static_cast<int>(arrMapInfo[uiRow][uiCol]->currID) > -1) {
+                delete arrMapInfo[uiRow][uiCol]->currSprite;
+                if (arrMapInfo[uiRow][uiCol]->bgSprite) {
+                    delete arrMapInfo[uiRow][uiCol]->bgSprite;
                 }
-                delete arrMapInfo[mapCurrLevel][uiRow][uiCol];
+                delete arrMapInfo[uiRow][uiCol];
             }
             
         }
@@ -268,6 +254,9 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         case TILE_ID::LASERGREEN:
             newTile = new LaserTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
             break;
+        case TILE_ID::CLOUD:
+            newTile = new CloudTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
         default:
             newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
             newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
@@ -279,30 +268,11 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         return newTile;
     }
 
-    //newTile->currID = currID;
-    //newTile->bgID = bgID;
-    //newTile->currTag = currTag;
-    //newTile->ogTag = currTag;
-    //newTile->isBGActive = bgActive;
-    //newTile->isCurrActive = currActive;
-    // sets size, position, row, col of tile
-    //AEVec2Set(&newTile->scale, tileSize, tileSize);
-    //AEVec2 size = newTile->scale;
-    //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-    //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
-    //AEVec2Set(&newTile->pos, x, y);
     CheckTileToInit(newTile);
 
-    //newTile->row = row;
-    //newTile->col = col;
     // if bg tile sprite is present
     if (bgID != currID) 
     {
-        //AEVec2Set(&newTile->bgSprite.scale, tileSize, tileSize);
-        //AEVec2 size = newTile->bgSprite.scale;
-        //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-        //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
-        //AEVec2Set(&newTile->bgSprite.pos, x, y);
         newTile->bgSprite = newTile->AddComponent(
             new Sprite()
         );
@@ -310,19 +280,7 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
 
     }
 
-
-    //newTile->currSprite = newTile->AddComponent(
-    //    new Sprite()
-    //);
-
-    //newTile->currSprite->texture = SetTileTexture(currID);
-
-    // add collider
-
-    
-    //newTile->showColliders = true;
     return newTile;
-    //return new Tile { currID, bgID, currTag, bgActive, currActive, currTex, bgTex, row, col };
 }
 
 AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
@@ -409,7 +367,7 @@ void MapManager::RotateTile(double rotation, Tile tile)
 }
 Tile* MapManager::GetTile(unsigned int col, unsigned int row)
 {
-    return arrMapInfo[mapCurrLevel][col][row];
+    return arrMapInfo[col][row];
 }
 std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
 {
@@ -422,9 +380,9 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
     {
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            if (arrMapInfo[mapCurrLevel][uiCol][uiRow]->currTag == tag)
+            if (arrMapInfo[uiCol][uiRow]->currTag == tag)
             {
-                taggedTiles.push_back(arrMapInfo[mapCurrLevel][uiCol][uiRow]);
+                taggedTiles.push_back(arrMapInfo[uiCol][uiRow]);
                 i++;
             }
 
@@ -445,7 +403,7 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
     {
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            Tile* currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
+            Tile* currTile = arrMapInfo[uiRow][uiCol];
             if (currTile->currTag == tag && 
                 currTile->currID == id)
             {
@@ -460,27 +418,9 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
 
 #pragma endregion
 
+
+
 #pragma region LaserFuncs
-std::vector<Tile*> MapManager::GetTilesNearPos(AEVec2 pos, AEVec2 scale)
-{
-
-
-    std::vector<Tile*> nearbyTiles;
-
-    for (std::vector<Tile*> row : arrMapInfo[mapCurrLevel])
-    {
-        // Load a particular CSV value into the arrMapInfo
-        for (Tile* tile : row)
-        {
-            //Tile* currTile = arrMapInfo[mapCurrLevel][uiCol][uiRow];
-            if (BoxToBoxCollision(pos, tile->pos, scale,  tile->scale) && tile->currID != TILE_ID::PLAYER)
-            {
-                nearbyTiles.push_back(tile);
-            }
-        }
-    }
-    return nearbyTiles;
-}
 void MapManager::SetLaserActive(Tile tile, bool active)
 {
     std::vector<Tile*> lasers = GetTaggedTiles(tile.currTag, tile.currID);
@@ -488,9 +428,35 @@ void MapManager::SetLaserActive(Tile tile, bool active)
         laser->isCurrActive = active;
     }
 }
+#pragma endregion
+
+
+
+#pragma region GetFuncs
+std::vector<Tile*> MapManager::GetTilesNearPos(AEVec2 pos, AEVec2 scale)
+{
+
+
+    std::vector<Tile*> nearbyTiles;
+
+    for (std::vector<Tile*> row : arrMapInfo)
+    {
+        // Load a particular CSV value into the arrMapInfo
+        for (Tile* tile : row)
+        {
+            //Tile* currTile = arrMapInfo[mapCurrLevel][uiCol][uiRow];
+            if (BoxToBoxCollision(pos, tile->pos, scale, tile->scale) && tile->currID != TILE_ID::PLAYER)
+            {
+                nearbyTiles.push_back(tile);
+            }
+        }
+    }
+    return nearbyTiles;
+}
+
 Tile* MapManager::GetTile(TILE_ID id)
 {
-    for (std::vector<Tile*> row : arrMapInfo[mapCurrLevel])
+    for (std::vector<Tile*> row : arrMapInfo)
     {
         // Load a particular CSV value into the arrMapInfo
         for (Tile* tile : row)
@@ -529,7 +495,7 @@ void  MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
         // Load a particular CSV value into the arrMapInfo
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            Tile* currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
+            Tile* currTile = arrMapInfo[uiRow][uiCol];
 
             if(currTile->currID != TILE_ID::EMPTY) AddGameObjectToVector(currTile, gos);
         }
