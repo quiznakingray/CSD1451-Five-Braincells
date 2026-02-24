@@ -3,6 +3,7 @@
 
 #include "GameObjectManager.h"
 #include "PhysicsManager.h"
+#include "AnimatorComponent.h"
 
 struct Player : GameObject {
 
@@ -12,7 +13,13 @@ struct Player : GameObject {
 	f32 speed{};
 
 	RigidBody* rb = nullptr;
+
 	//AEVec2 velocity{};
+
+	// animation
+	Animator* animator = nullptr;
+	Animation* idleAnim = nullptr;
+	Animation* runningAnim = nullptr;
 
 	void PlayerInput();
 	void Init() override;

@@ -104,7 +104,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	while (gGameRunning)
 	{
 		// Informing the system about the loop's start
-		AESysFrameStart();
 		gameStateManager.Update();
 
 		//// Initialize the current game state
@@ -112,6 +111,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		fpInitialize();
 		while (next == current)
 		{
+			AESysFrameStart();
 			// Update game logic for the current frame
 			fpUpdate();
 			// Render graphics for the current frame
@@ -125,9 +125,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			if (AEInputCheckCurr(AEVK_2))
 				AESysSetFullScreen(0);
 			// Informing the system about the loop's end
-			AESysFrameEnd();
-			AESysFrameStart();
 
+			AESysFrameEnd();
 		}
 		//GameUpdate();
 

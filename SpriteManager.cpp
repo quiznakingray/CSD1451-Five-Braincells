@@ -7,22 +7,46 @@ void Sprite::Init()
 {
 	AEGfxMeshStart();
 
-	//f32 row = spriteSheet.isSpriteSheet ?  spriteSheet.currentFrame / spriteSheet.rows : 1.f;
-	//f32 column = spriteSheet.isSpriteSheet ? column * spriteSheet.currentFrame / spriteSheet.columns : 1.f;
+	// set sprite uv
+	f32 u0 = 0.0f, v0 = 0.0f;
+	f32 u1 = 1.0f, v1 = 1.0f;
+
+	if (spriteSheet.isSpriteSheet)
+	{
+		spriteSheet.currentFrame = 0;
+		spriteSheet.maxFrames = spriteSheet.rows * spriteSheet.columns;
+		spriteSheet.UVWidth = 1.f / spriteSheet.columns;
+		spriteSheet.UVHeight = 1.f / spriteSheet.rows;
+
+		u32 currentSpriteRow = spriteSheet.currentFrame / spriteSheet.columns;
+		u32 currentSpriteCol = spriteSheet.currentFrame % spriteSheet.columns;
+
+		u0 = spriteSheet.UVWidth * currentSpriteCol;
+		v0 = spriteSheet.UVHeight * currentSpriteRow;
+
+		u1 = u0 + spriteSheet.UVWidth;
+		v1 = v0 + spriteSheet.UVHeight;
+	}
+
+
 
 	// add tri for rects
 	AEGfxTriAdd(
-		-0.5f, -0.5f, meshColor, 0.0f, 1.0f,
-		0.5f, -0.5f, meshColor, 1.0f, 1.0f,
-		-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
+		-0.5f, -0.5f, meshColor, u0, v1,
+		0.5f, -0.5f, meshColor, u1, v1,
+		-0.5f, 0.5f, meshColor, u0, v0);
 
 	AEGfxTriAdd(
-		0.5f, -0.5f, meshColor, 1.0f, 1.0f,
-		0.5f, 0.5f, meshColor, 1.0f, 0.0f,
-		-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
-
+		0.5f, -0.5f, meshColor, u1, v1,
+		0.5f, 0.5f, meshColor, u1, v0,
+		-0.5f, 0.5f, meshColor, u0, v0);
 
 	mesh = AEGfxMeshEnd(); // set to ui->mesh
+
+	if (!textureFileName.empty() && !texture)
+	{
+		texture = AEGfxTextureLoad(textureFileName.c_str());
+	}
 }
 
 void Sprite::Update()
@@ -30,34 +54,23 @@ void Sprite::Update()
 	//AEVec2Set(&pos, owner->pos.x, owner->pos.y);
 	//pos.z = owner->pos.z;
 	//AEVec2Set(&scale, owner->scale.x, owner->scale.y);
+	//if (spriteSheet.isSpriteSheet) {
+	//	spriteSheet.animTimer += (f32)AEFrameRateControllerGetFrameTime();
+	//	if (spriteSheet.animTimer >= 1.0f / spriteSheet.animFPS)
+	//	{
+	//		spriteSheet.animTimer = 0.0f;
+	//		if (spriteSheet.currentFrame >= spriteSheet.maxFrames - 1  && !spriteSheet.loopAnim) return;
+
+	//		spriteSheet.currentFrame = ++spriteSheet.currentFrame % spriteSheet.maxFrames;
+	//		UpdateFrame();
+	//	}
+	//}
 }
 
 void Sprite::Render()  {
 
 	// calculate row and columns 
 
-	if (spriteSheet.isSpriteSheet)
-	{
-		AEGfxMeshStart();
-
-		//f32 row = spriteSheet.isSpriteSheet ?  spriteSheet.currentFrame / spriteSheet.rows : 1.f;
-		//f32 column = spriteSheet.isSpriteSheet ? column * spriteSheet.currentFrame / spriteSheet.columns : 1.f;
-
-		// add tri for rects
-		AEGfxTriAdd(
-			-0.5f, -0.5f, meshColor, 0.0f, 1.0f,
-			0.5f, -0.5f, meshColor, 1.0f, 1.0f,
-			-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
-
-		AEGfxTriAdd(
-			0.5f, -0.5f, meshColor, 1.0f, 1.0f,
-			0.5f, 0.5f, meshColor, 1.0f, 0.0f,
-			-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
-
-
-		mesh = AEGfxMeshEnd(); // set to ui->mesh
-
-	}
 
 	AEMtx33 scaleMtx = { 0 };
 	AEMtx33Scale(&scaleMtx, owner->scale.x, owner->scale.y);
@@ -81,7 +94,7 @@ void Sprite::Render()  {
 	AEGfxSetBlendMode(blendMode);
 	AEGfxSetTransparency(opacity);
 	AEGfxSetTransform(transform.m);
-	if (texture != nullptr) AEGfxTextureSet(texture, 0, 0);
+	if (texture != nullptr) AEGfxTextureSet(texture, spriteSheet.isSpriteSheet ? spriteSheet.UVOffsetX : 0, spriteSheet.isSpriteSheet ? spriteSheet.UVOffsetY : 0);
 	// Tell Alpha Engine to draw the mesh with the above settings.
 	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 
@@ -90,7 +103,10 @@ void Sprite::Render()  {
 void Sprite::Free()
 {
 	if (mesh != nullptr) AEGfxMeshFree(mesh);
-	if (texture != nullptr)AEGfxTextureUnload(texture);
+	if (texture != nullptr) {
+		AEGfxTextureUnload(texture);
+		texture = nullptr;
+	}
 }
 
 
@@ -248,4 +264,16 @@ void FreeSprite(Sprite* sprite)
 {
 	if (sprite->mesh != nullptr)	AEGfxMeshFree(sprite->mesh);
 	if (sprite->texture != nullptr)AEGfxTextureUnload(sprite->texture);
+}
+
+void Sprite::UpdateFrame()
+{
+	u32 currentSpriteRow = spriteSheet.currentFrame / spriteSheet.columns;
+	u32 currentSpriteCol = spriteSheet.currentFrame % spriteSheet.columns;
+
+	f32 u0 = spriteSheet.UVWidth * currentSpriteCol;
+	f32 v0 = spriteSheet.UVHeight * currentSpriteRow;
+
+	spriteSheet.UVOffsetX = u0;
+	spriteSheet.UVOffsetY = v0;
 }

@@ -2,17 +2,17 @@
 #include "GameObjectManager.h"  
 #include "SpriteManager.h"  
 
-bool CheckBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size)
-{
-	// collision x-axis?
-	bool collisionX = obj1Pos.x + obj2Size.x >= obj2Pos.x &&
-		obj2Pos.x + obj2Size.x >= obj1Pos.x;
-	// collision y-axis?
-	bool collisionY = obj1Pos.y + obj1Size.y >= obj2Pos.y &&
-		obj2Pos.y + obj2Size.y >= obj1Pos.y;
-	// collision only if on both axes
-	return collisionX && collisionY;
-}
+//bool CheckBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size)
+//{
+//	// collision x-axis?
+//	bool collisionX = obj1Pos.x + obj2Size.x >= obj2Pos.x &&
+//		obj2Pos.x + obj2Size.x >= obj1Pos.x;
+//	// collision y-axis?
+//	bool collisionY = obj1Pos.y + obj1Size.y >= obj2Pos.y &&
+//		obj2Pos.y + obj2Size.y >= obj1Pos.y;
+//	// collision only if on both axes
+//	return collisionX && collisionY;
+//}
 
 bool BoxToBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size)
 {
@@ -158,16 +158,13 @@ void Collider::Render()
 	c->Init();
 	c->Render();
 
-	//Sprite* s = new Sprite(
-	//	owner->scale.x * size.x,
-	//	owner->scale.y * size.y,
-	//	owner->pos.x + center.x,
-	//	owner->pos.y + center.y,
-	//	owner->pos.z,
-	//	0.f,
-	//	0xFF000000
-	//	);
-	//s->opacity = 0.5f;
 
-	//s->Render();
+}
+
+void Collider::Free()
+{
+	for (Collider* c : overlappingColliders) {
+		delete c;
+	}
+	overlappingColliders.clear();
 }
