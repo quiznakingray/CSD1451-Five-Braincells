@@ -116,7 +116,7 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 
             // Stop motion INTO wall
 
-            //dynamic->velocity.x = 0.0f;
+            dynamic->velocity.x = 0.0f;
             
         }
         else
