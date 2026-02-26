@@ -8,6 +8,7 @@
 #include "GameObjectManager.h"
 //#include "TextComponent.h"
 #include "GameStateManager.h"
+#include "MainMenu.h"
 #include <filesystem>
 
 
@@ -105,6 +106,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	{
 		// Informing the system about the loop's start
 		AESysFrameStart();
+		// --- INSERT MENU CALLS HERE FOR TESTING ---
+		MainMenu_Update();
+		MainMenu_Draw();
 		gameStateManager.Update();
 
 		//// Initialize the current game state
