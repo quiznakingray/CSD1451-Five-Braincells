@@ -19,8 +19,8 @@ void EnemyGameObject::Init()
 
 	AEVec2Set(&scale, MapManager::tileSize , MapManager::tileSize );
 
-	base.patrolStart = { spawnTile->pos.x, 200.f };
-	base.patrolEnd = { 350.f, 200.f };
+	base.patrolStart = { spawnTile->pos.x - 100.f, spawnTile->pos.y - 100.f };
+	base.patrolEnd = { spawnTile->pos.x + 150.f,spawnTile->pos.y - 100.f };
 
 	Sprite* s = AddComponent(new Sprite());
 	s->meshColor = 0xFF0000FF; // red enemy
@@ -57,7 +57,10 @@ void EnemyGameObject::Init()
 void EnemyGameObject::Update()
 {
 	GameObject::Update();
-	UpdateEnemyPatrol(base, movement, pos, AEFrameRateControllerGetFrameTime());
+	//rb->velocity.x = -50.f;
+
+	
+	UpdateEnemyPatrol(this, AEFrameRateControllerGetFrameTime());
 
 	std::vector<Collider*> colliders = GetComponents<Collider>();
 
@@ -81,4 +84,42 @@ void EnemyGameObject::Update()
 
 		}
 	}
+}
+
+void EnemyGameObject::Render()
+{
+	GameObject::Render();
+
+
+	// render patrol points
+
+	GameObject* patrolStartGO = new GameObject(
+		60.f, 60.f,
+		base.patrolStart.x,
+		base.patrolStart.y,
+		1.f);
+
+	Sprite* patrolStartSprite = patrolStartGO->AddComponent(
+		new Sprite()
+	);
+
+	patrolStartSprite->meshColor = 0xFFFF0000;
+
+	patrolStartGO->Init();
+	patrolStartGO->Render();
+
+	GameObject* patrolEndGO = new GameObject(
+		60.f, 60.f,
+		base.patrolEnd.x,
+		base.patrolEnd.y,
+		1.f);
+
+	Sprite* patrolEndSprite = patrolEndGO->AddComponent(
+		new Sprite()
+	);
+
+	patrolEndSprite->meshColor = 0xFFFF0000;
+
+	patrolEndGO->Init();
+	patrolEndGO->Render();
 }

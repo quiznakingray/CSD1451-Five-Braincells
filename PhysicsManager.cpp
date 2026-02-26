@@ -78,8 +78,15 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 
         if (resolveX)
         {
-            if (dx > 0.0f) dynamicObj->pos.x += pxOverlap;
-            else dynamicObj->pos.x -= pxOverlap;
+            if (dx > 0.0f)
+                dynamicObj->pos.x += pxOverlap;
+            else
+                dynamicObj->pos.x -= pxOverlap;
+
+            // Stop motion INTO wall
+
+            dynamic->velocity.x = 0.0f;
+            
         }
         else
         {

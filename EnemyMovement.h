@@ -4,12 +4,13 @@
 #include "AEEngine.h"
 #include "EnemyBase.h"
 
+struct EnemyGameObject;
 struct EnemyMovement
 {
-	bool movingRight;
+	bool movingRight = false;
 };
 
 void InitEnemyMovement(EnemyMovement& move);
-void UpdateEnemyPatrol(EnemyBase& enemy, EnemyMovement& move, AEVec2& pos, f32 dt);
+void UpdateEnemyPatrol(EnemyGameObject* enemy, f32 dt);
 
 #endif

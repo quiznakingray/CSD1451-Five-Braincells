@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <vector>
+#include <string>
 #include "AEEngine.h"
 #include "Utils.h"
 #include "CollisionManager.h"
@@ -40,16 +41,26 @@ struct Sprite : ComponentBase{
 	f32 opacity = 1.f;
 	AEGfxVertexList* mesh = nullptr;
 	AEGfxTexture* texture = nullptr;
+	std::string textureFileName{};
 
 	//std::array <f64, COLORSIZE > color{ };
 	struct SpriteSheet {
 		bool isSpriteSheet = false;
 		s32 rows = 1, columns = 1;
-		int currentFrame = 0;
+		int currentFrame = 0, maxFrames = 0;
+		f32 UVWidth = 1.0f, UVHeight = 1.0f;
+		f32 UVOffsetX = 0.0f, UVOffsetY = 0.0f;
+		//f32 animFPS = 1.f;
+		//bool loopAnim = true;
+		//f32 animTimer = 0.0f;
+		SpriteSheet(s32 r, s32 col, int currFrame = 0) : rows(r), columns(col), currentFrame(currFrame) {
+
+		}
+
 	} spriteSheet;
 
 
-	Sprite() : meshColor(0x00000000), texture(nullptr) {
+	Sprite() : meshColor(0x00000000), texture(nullptr) , spriteSheet(1, 1){
 
 	}
 	Sprite(
@@ -58,7 +69,7 @@ struct Sprite : ComponentBase{
 		f32 rot = 0.f, 
 		u32 c = 0xFF000000,
 		AEGfxTexture* t = nullptr)
-		: meshColor(c),texture(t)
+		: meshColor(c),texture(t), spriteSheet(1, 1)
 	{
 		//AEVec2Set(&pos, pos_x, pos_y);
 		//pos.z = pos_z;
@@ -66,10 +77,12 @@ struct Sprite : ComponentBase{
 
 	}
 
+	void UpdateFrame();
 	void Init() override;
 	void Update() override;
 	void Render() override;
 	void Free() override;
+
 
 };
 

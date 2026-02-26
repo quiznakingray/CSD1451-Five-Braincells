@@ -1,48 +1,91 @@
 #include "AEEngine.h"
 #include "PlayerGameObject.h"
 #include "MapManager.h"
+
 #include <iostream>
 #include <vector>
 
 void Player::PlayerInput()
 {
+	f32 dt = AEFrameRateControllerGetFrameTime();
 	AEVec2 moveDir{};
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	//std::cout << "On ground: " << (onGround ? "--" : "___________________________ ") << std::endl;
 	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider)
 	{
-		moveDir.y = 500.f;
+		//moveDir.y = 500.f;
 		//onGround = false;
 
+		float jumpHeight = 300.0f; // pixels
+
+		float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * jumpHeight);
+
+		rb->velocity.y = jumpVelocity;
+
 	}
-	if (AEInputCheckCurr(AEVK_S))
-	{
-		moveDir.y -= 1.f;
-	}
+	//if (AEInputCheckCurr(AEVK_S))
+	//{
+	//	moveDir.y -= 1.f;
+	//}
+	float accel = 300.0f;     // acceleration power
+	float decel = 400.0f;     // deceleration power
+	float maxSpeed = 300.0f;
 	if (AEInputCheckCurr(AEVK_A))
 	{
-		moveDir.x -= 1.f;  
+		//moveDir.x -= 1.f;
+		rb->velocity.x -= accel * dt;
 	}
-	if (AEInputCheckCurr(AEVK_D))
+	else if (AEInputCheckCurr(AEVK_D))
 	{
-		moveDir.x += 1.f;
+		//moveDir.x += 1.f;
+		rb->velocity.x += accel * dt;
+	}
+	else
+	{
+		// KEY RELEASE DECELERATION (this is what you want)
+		if (rb->velocity.x > 0)
+		{
+			rb->velocity.x -= decel * dt;
+			if (rb->velocity.x < 0)
+				rb->velocity.x = 0;
+		}
+		else if (rb->velocity.x < 0)
+		{
+			rb->velocity.x += decel * dt;
+			if (rb->velocity.x > 0)
+				rb->velocity.x = 0;
+		}
 	}
 
-	float length = sqrt(moveDir.x * moveDir.x);
-	if (length > 0) {
-		moveDir.x /= length;
-	}
+	if (rb->velocity.x > maxSpeed)
+		rb->velocity.x = maxSpeed;
+
+	if (rb->velocity.x < -maxSpeed)
+		rb->velocity.x = -maxSpeed;
+	//float length = sqrt(moveDir.x * moveDir.x);
+	//if (length > 0) {
+	//	moveDir.x /= length;
+	//}
+
 	// Set velocity
-	rb->velocity.x = moveDir.x * speed;
-	rb->velocity.y += moveDir.y ;
-	std::cout << static_cast<int>(objectState) << '\n';
+	//rb->velocity.x = moveDir.x * speed;
+	//rb->velocity.y += moveDir.y ;
+	
+	//if (AEInputCheckCurr(AEVK_M))
+	//{
+	//	animator->PlayAnimation(runningAnim);
+	//}
+	//if (AEInputCheckCurr(AEVK_N))
+	//{
+	//	animator->PlayAnimation(idleAnim);
+	//}
 }
 
 void Player::Init()
 {
 
 	//set pos
-	AEVec2Set(&pos,MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y + 100.f);
+	AEVec2Set(&pos,MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y + 200.f);
 	pos.z = 1.f;
 
 	// set state
@@ -52,9 +95,28 @@ void Player::Init()
 	AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
 
 	// set components
-	Sprite * s = AddComponent(
-		new Sprite());
+
+	//set animation
+
+	Sprite * s = new Sprite();
 	s->meshColor = 0xFF0000FF;
+	s->textureFileName = "Assets/SpriteSheets/test2x12.png";
+	s->spriteSheet = Sprite::SpriteSheet(12, 2);
+	s->spriteSheet.isSpriteSheet = true;
+
+	idleAnim = new Animation(s);
+
+	Sprite * run = new Sprite();
+	run->meshColor = 0xFF0000FF;
+	run->textureFileName = "Assets/SpriteSheets/testRed4x6.png";
+	run->spriteSheet = Sprite::SpriteSheet(6, 4);
+	run->spriteSheet.isSpriteSheet = true;
+
+	runningAnim = new Animation(run);
+
+	animator = AddComponent(
+		new Animator(idleAnim)
+	);
 
 	Collider * c = AddComponent(
 		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.f, 1.f, 1.f)

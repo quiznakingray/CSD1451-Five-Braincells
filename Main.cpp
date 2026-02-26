@@ -2,6 +2,8 @@
 // includes
 
 #include <crtdbg.h> // To check for memory leaks
+#include <vector>
+#include <iostream>
 #include "AEEngine.h"
 #include "MapManager.h"
 #include "PlayerGameObject.h"
@@ -87,8 +89,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
+
+	int gGameRunning = 1;
+
 	// Initialization of your own variables go here
-	
+
 	// Using custom window procedure
 	AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
 
@@ -107,7 +112,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	while (gGameRunning)
 	{
 		// Informing the system about the loop's start
-		AESysFrameStart();
 		gameStateManager.Update();
 
 		//// Initialize the current game state
@@ -115,6 +119,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		fpInitialize();
 		while (next == current)
 		{
+			AESysFrameStart();
 			// Update game logic for the current frame
 			fpUpdate();
 			// Render graphics for the current frame
@@ -139,9 +144,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				mapManager.ChangeMap(0);
 			}
 			// Informing the system about the loop's end
-			AESysFrameEnd();
-			AESysFrameStart();
 
+			AESysFrameEnd();
 		}
 		//GameUpdate();
 
