@@ -141,28 +141,32 @@ void Player::Init()
 	//	std::cout << "Mouse Exit" << std::endl;
 	//	};
 
-	c->OnCollisionEnter = [this](Collider * other) {
-		//std::cout << "Collision Enter" << std::endl;
-		if (Tile * tile = dynamic_cast<Tile*>(other->owner))
+	c->OnCollisionEnter = [this](Collider* other, int sides)
 		{
-			//this->rb->onCollider = true;
-		}
-	};
-	c->OnCollisionOver = [this](Collider * other) {
-		//std::cout << "Collision Over" << std::endl;
-		//if (Tile* tile = dynamic_cast<Tile*>(other->owner))
-		//{
-		//	if (tile->currID == TILE_ID::GROUND)
-		//		std::cout << "Player on ground" << std::endl;
-		//}
-	};	
-	c->OnCollisionExit = [this](Collider * other) {
-		//std::cout << "Collision Exit" << std::endl;
-		if (Tile* tile = dynamic_cast<Tile*>(other->owner))
+			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
+			{
+				if (sides & COLLISION_SIDE::BOTTOM)
+					this->rb->onCollider = true;
+			}
+		};
+
+	c->OnCollisionOver = [this](Collider* other, int sides)
 		{
- 			this->rb->onCollider = false;
-		}
-	};
+			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
+			{
+				// Keep onCollider true while still standing on something
+				if (sides & COLLISION_SIDE::BOTTOM)
+					this->rb->onCollider = true;
+			}
+		};
+
+	c->OnCollisionExit = [this](Collider* other, int sides)
+		{
+			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
+			{
+				this->rb->onCollider = false;
+			}
+		};
 
 	rb = AddComponent(
 		new RigidBody()
@@ -185,15 +189,15 @@ void Player::Update(){
 
 	for (Collider* pCol : colliders)
 	{
-		for (std::vector<Collider*>::iterator it = pCol->overlappingColliders.begin();
-			it != pCol->overlappingColliders.end(); )
+		// Fix: iterate CollisionInfo structs not raw Collider*
+		for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
 		{
-			Collider* oCol = *it;
+			Collider* oCol = it->other; // Fix: extract pointer from struct
 
-			if (!oCol->canCollide)
+			if (!oCol || !oCol->canCollide)
 			{
 				pCol->RemoveFromOverlappingVector(oCol);
-				it = pCol->overlappingColliders.begin();
+				it = pCol->collisionInfos.begin();
 				continue;
 			}
 
@@ -207,11 +211,10 @@ void Player::Update(){
 			else
 			{
 				pCol->RemoveFromOverlappingVector(oCol);
-				it = pCol->overlappingColliders.begin();
+				it = pCol->collisionInfos.begin();
 			}
 		}
 	}
-
 
 	AEGfxSetCamPosition(pos.x, pos.y);
 	GameObject::Update();

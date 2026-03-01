@@ -150,17 +150,20 @@ void HandleCollision(std::vector<GameObject*>& gos)
 
 					if (colliding)
 					{
+						// Calculate sides for each collider's perspective
+						int sidesForFirst = GetAllCollisionSides(
+							firstColl->GetPos2D(), secondColl->GetPos2D(),
+							firstColl->GetScale(), secondColl->GetScale()
+						);
+						int sidesForSecond = FlipCollisionSides(sidesForFirst);
 
-						//Add to list
-						firstColl->AddToOvelappingVector(secondColl);
-						secondColl->AddToOvelappingVector(firstColl);
-						//PhysicsManager::HandleCollision(firstColl, secondColl);
+						firstColl->AddToOvelappingVector(secondColl, sidesForFirst);
+						secondColl->AddToOvelappingVector(firstColl, sidesForSecond);
 					}
-					else {
-						//remove from list
+					else
+					{
 						firstColl->RemoveFromOverlappingVector(secondColl);
 						secondColl->RemoveFromOverlappingVector(firstColl);
-
 					}
 				}
 

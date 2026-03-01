@@ -78,27 +78,25 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 
         if (resolveX)
         {
-            if (dx > 0.0f)
+            if (dx > 0)
                 dynamicObj->pos.x += pxOverlap;
             else
                 dynamicObj->pos.x -= pxOverlap;
 
-            // Stop motion INTO wall
-
-            dynamic->velocity.x = 0.0f;
-            
+            dynamic->velocity.x = 0.f;
         }
         else
         {
-            dynamic->onCollider = false;
-            if (dynamic->velocity.y <= 0.f && dy > 0.f)
+            if (dy > 0)
             {
+                // landed on top
                 dynamicObj->pos.y += pyOverlap;
                 dynamic->velocity.y = 0.f;
                 dynamic->onCollider = true;
             }
-            else if (dynamic->velocity.y > 0.f && dy < 0.f)
+            else
             {
+                // hit ceiling
                 dynamicObj->pos.y -= pyOverlap;
                 dynamic->velocity.y = 0.f;
             }

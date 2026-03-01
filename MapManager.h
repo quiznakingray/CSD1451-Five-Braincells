@@ -150,12 +150,12 @@ struct SpikeTile : Tile {
 
 	void Init() override {
 		Tile::Init();
-		collider->OnTriggerOver = [](Collider* other) {
-			if (Player* tile = dynamic_cast<Player*>(other->owner))
+		collider->OnTriggerOver = [](Collider* other, int sides) {
+			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
 				std::cout << "In spike" << std::endl;
 			}
-		};
+			};
 	}
 };
 
@@ -267,20 +267,19 @@ struct CloudTile : Tile {
 		collider->size.x = 2.f;
 		collider->size.y = 1.5f;
 		//collider->is = true;
-		collider->OnCollisionEnter = [this](Collider* other) {
-			if (Player* tile = dynamic_cast<Player*>(other->owner))
+		collider->OnCollisionEnter = [this](Collider* other, int sides) {
+			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
 				if (!hasPlayerStepped) {
 					hasPlayerStepped = true;
 					if (!cloudTimer.IsActive())
-						cloudTimer.Start(2.0);  // fade duration
+						cloudTimer.Start(2.0);
 				}
 			}
-		};
-		collider->OnCollisionOver = [this](Collider* other) {
-		};
-		collider->OnCollisionExit = [this](Collider* other) {
-
+			};
+		collider->OnCollisionOver = [this](Collider* other, int sides) {
+			};
+		collider->OnCollisionExit = [this](Collider* other, int sides) {
 			};
 
 		//interactionTextBox->text = "[F]";
@@ -470,30 +469,22 @@ struct LeverTile : Tile {
 		collider->size.x = 2.f;
 		collider->size.y = 1.5f;
 		collider->isTrigger = true;
-		collider->OnTriggerEnter = [this](Collider* other) {
-			if (Player* tile = dynamic_cast<Player*>(other->owner))
+		collider->OnTriggerEnter = [this](Collider* other, int sides) {
+			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
-				
-				//std::cout << "In lever" << std::endl;
 				this->interactionTextBox->isActive = true;
-				//this->ToggleLever();
-		
-				//inputManager.OnInteractionTriggered = []() {
-				//	std::cout << "yipee" << std::endl;
-				//	//lever->ToggleLever();
-				//};
 			}
-		};
-		collider->OnTriggerOver = [this](Collider* other) {
-			if (Player* tile = dynamic_cast<Player*>(other->owner))
+			};
+		collider->OnTriggerOver = [this](Collider* other, int sides) {
+			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
-				//std::cout << "In lever" << std::endl;
-				this->interactionTextBox->isActive= true;
+				this->interactionTextBox->isActive = true;
 				if (AEInputCheckTriggered(AEVK_F))
 				{
 					this->ToggleLever();
 
-					TILE_ID tileId = currID == TILE_ID::LEVERREDOFF || currID == TILE_ID::LEVERREDON ? TILE_ID::LASERRED : TILE_ID::LASERGREEN;
+					TILE_ID tileId = currID == TILE_ID::LEVERREDOFF || currID == TILE_ID::LEVERREDON
+						? TILE_ID::LASERRED : TILE_ID::LASERGREEN;
 
 					std::vector<Tile*> taggedTiles = MapManager::GetTaggedTiles(currTag, tileId);
 
@@ -503,14 +494,13 @@ struct LeverTile : Tile {
 					}
 				}
 			}
-		};
-		collider->OnTriggerExit = [this](Collider* other) {
-			if (Player* tile = dynamic_cast<Player*>(other->owner))
+			};
+		collider->OnTriggerExit = [this](Collider* other, int sides) {
+			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
-				//std::cout << "In lever" << std::endl;
-				this->interactionTextBox->isActive= false;
+				this->interactionTextBox->isActive = false;
 			}
-		};
+			};
 
 		interactionTextBox->text = "[F]";
 
