@@ -33,6 +33,7 @@ enum class TILE_ID {
 	LEVERGREENON = 123,
 	LASERRED = 130,
 	LASERGREEN = 131,
+	CRATE = 140,
 	PLAYER = 200,
 	ENEMY = 250,
 	GOAL = 300,
@@ -247,10 +248,7 @@ struct CloudTile : Tile {
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
 
-		currSprite->texture = currID == TILE_ID::CLOUD ?
-			AEGfxTextureLoad("Assets/Environment/images.png")
-			:
-			AEGfxTextureLoad("Assets/Environment/images.png");
+		currSprite->texture =  AEGfxTextureLoad("Assets/Environment/images.png");
 	}
 	void StartCloudCountdown()
 	{
@@ -260,30 +258,41 @@ struct CloudTile : Tile {
 
 	void Init() override {
 		Tile::Init();
-
-		//showColliders = true;
-
-		collider->center.y = 0.5f;
-		collider->size.x = 2.f;
-		collider->size.y = 1.5f;
-		//collider->is = true;
 		collider->OnCollisionEnter = [this](Collider* other, int sides) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
-				if (!hasPlayerStepped) {
+				// Check player's X center is within this tile's X bounds
+				// Use a small tolerance to handle floating point edge cases
+				float tolerance = scale.x * 0.3f;
+				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
+					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
+
+				if (!hasPlayerStepped && (sides & COLLISION_SIDE::TOP) && playerWithinXBounds)
+				{
 					hasPlayerStepped = true;
 					if (!cloudTimer.IsActive())
 						cloudTimer.Start(2.0);
 				}
 			}
-			};
+		};
+
 		collider->OnCollisionOver = [this](Collider* other, int sides) {
-			};
+			if (Player* player = dynamic_cast<Player*>(other->owner))
+			{
+				float tolerance = scale.x * 0.3f;
+				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
+					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
+
+				if (!hasPlayerStepped && (sides & COLLISION_SIDE::TOP) && playerWithinXBounds)
+				{
+					hasPlayerStepped = true;
+					if (!cloudTimer.IsActive())
+						cloudTimer.Start(2.0);
+				}
+			}
+		};
 		collider->OnCollisionExit = [this](Collider* other, int sides) {
-			};
-
-		//interactionTextBox->text = "[F]";
-
+		};
 	}
 
 	void Update() override
@@ -294,7 +303,7 @@ struct CloudTile : Tile {
 
 		if (cloudTimer.Update(dt))
 		{
-			isActive = false;   // disappears after fade completes
+			isActive = false;
 			collider->canCollide = false;
 		}
 
@@ -303,6 +312,62 @@ struct CloudTile : Tile {
 			float progress = cloudTimer.GetProgress();
 			currSprite->opacity = (f32)(1.0f - progress);
 		}
+	}
+};
+
+struct CrateTile : Tile {
+	bool hasPlayerPushed = false;
+	bool isPlayerPushing = false;
+	CrateTile(
+		TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+
+		currSprite->texture = AEGfxTextureLoad("Assets/Environment/crate.png");
+	}
+
+
+	void Init() override {
+		Tile::Init();
+		collider->OnCollisionEnter = [this](Collider* other, int sides) {
+			if (Player* player = dynamic_cast<Player*>(other->owner))
+			{
+				// Check player's X center is within this tile's X bounds
+				// Use a small tolerance to handle floating point edge cases
+				float tolerance = scale.x * 0.3f;
+				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
+					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
+
+				if (!hasPlayerPushed && (sides & COLLISION_SIDE::LEFT) && playerWithinXBounds)
+				{
+					hasPlayerPushed = true;
+				}
+			}
+			};
+
+		collider->OnCollisionOver = [this](Collider* other, int sides) {
+			if (Player* player = dynamic_cast<Player*>(other->owner))
+			{
+				float tolerance = scale.x * 0.3f;
+				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
+					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
+
+				if (!hasPlayerPushed && (sides & COLLISION_SIDE::TOP) && playerWithinXBounds)
+				{
+					hasPlayerStepped = true;
+					if (!cloudTimer.IsActive())
+						cloudTimer.Start(2.0);
+				}
+			}
+			};
+		collider->OnCollisionExit = [this](Collider* other, int sides) {
+			};
 	}
 };
 

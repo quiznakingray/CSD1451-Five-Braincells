@@ -273,7 +273,6 @@ void UpdateGameObjects(std::vector<GameObject*> &gos)
 	HandleInteraction(gos);
 	HandleState(gos);
 }
-
 //void RenderGameObjects(std::vector<GameObject*>& gos)
 //{
 //	for (GameObject* go : gos)

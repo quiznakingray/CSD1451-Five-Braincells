@@ -131,20 +131,16 @@ void MapManager::FreeMap()
     size_t rowCount = (map.GetColumn<std::string>(0)).size();
     for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
-        // Load a particular CSV value into the arrMapInfo
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            if (static_cast<int>(arrMapInfo[uiRow][uiCol]->currID) > -1) {
-                delete arrMapInfo[uiRow][uiCol]->currSprite;
-                if (arrMapInfo[uiRow][uiCol]->bgSprite) {
-                    delete arrMapInfo[uiRow][uiCol]->bgSprite;
-                }
-                delete arrMapInfo[uiRow][uiCol];
+            Tile* tile = arrMapInfo[uiRow][uiCol];
+            if (tile && static_cast<int>(tile->currID) > -1)
+            {
+                tile->Free();   // frees all components (sprite, collider, text, etc.)
+                delete tile;
             }
-            
         }
     }
-    
 }
 #pragma endregion
 
@@ -256,6 +252,9 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
             break;
         case TILE_ID::CLOUD:
             newTile = new CloudTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+        case TILE_ID::CRATE:
+            newTile = new CrateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
             break;
         default:
             newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
