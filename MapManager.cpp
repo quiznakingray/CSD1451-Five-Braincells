@@ -477,12 +477,6 @@ AEVec2 MapManager::GetPlayerSpawnPos()
     AEVec2Set(&pos, player->pos.x, player->pos.y);
     return pos;
 }
-#pragma endregion
-
-void Tile::Update()
-{
-    GameObject::Update();
-}
 
 void  MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
 {
@@ -496,9 +490,192 @@ void  MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
         {
             Tile* currTile = arrMapInfo[uiRow][uiCol];
 
-            if(currTile->currID != TILE_ID::EMPTY) AddGameObjectToVector(currTile, gos);
+            if (currTile->currID != TILE_ID::EMPTY) AddGameObjectToVector(currTile, gos);
         }
     }
 }
+#pragma endregion
+
+void Tile::Update()
+{
+    GameObject::Update();
+}
+
+void CrateTile::Init()
+{
+    Tile::Init();
+    collider->OnCollisionEnter = [this](Collider* other, int sides) {
+        if (sides & COLLISION_SIDE::BOTTOM)
+            this->rb->onCollider = true;
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+        {
+            // Check player's X center is within this tile's X bounds
+            // Use a small tolerance to handle floating point edge cases
+            float tolerance = scale.x * 0.8f;
+            bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
+                other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
+
+            if (!hasPlayerPushed && (sides & COLLISION_SIDE::LEFT) || (sides & COLLISION_SIDE::RIGHT) && playerWithinXBounds)
+            {
+                hasPlayerPushed = true;
+                if (sides & COLLISION_SIDE::LEFT) {
+                    isLeft = true;
+                }
+                else if (sides & COLLISION_SIDE::RIGHT) {
+                    isLeft = false;
+                }
+            }
+        }
+        };
+
+    collider->OnCollisionOver = [this](Collider* other, int sides) {
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+        {
+            // Check player's X center is within this tile's X bounds
+            // Use a small tolerance to handle floating point edge cases
+            float tolerance = scale.x * 0.8f;
+            bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
+                other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
+
+            if (hasPlayerPushed && (sides & COLLISION_SIDE::LEFT) || (sides & COLLISION_SIDE::RIGHT) && playerWithinXBounds)
+            {
+                isPlayerPushing = true;
+            }
+        }
+        };
+    collider->OnCollisionExit = [this](Collider* other, int sides) {
+        if (Tile* tile = dynamic_cast<Tile*>(other->owner))
+        {
+            this->rb->onCollider = false;
+        }
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+        {
+            hasPlayerPushed = false;
+            isPlayerPushing = false;
+            //rb->velocity.x = 0.f;
+        }
+        };
+}
+
+void CrateTile::Update() {
+    Tile::Update();
+    double dt = AEFrameRateControllerGetFrameTime();
+
+   
+    // Check crate against nearby tiles
+    std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
+    std::vector<Collider*> colliders = GetComponents<Collider>();
+
+for (Collider* pCol : colliders)
+{
+    bool playerTouching = false;
+    bool playerOnLeft = false;   // player pushing from left side
+    bool playerOnRight = false;  // player pushing from right side
+    float pushForce = 1200.0f;     // tune this
+    float impulse = pushForce * dt;
+    RigidBody* playerRb{};
+    for (const auto& info : pCol->collisionInfos)
+    {
+        Collider* other = info.other;
+        if (!other || !other->owner) continue;
+
+        if (dynamic_cast<Player*>(other->owner))
+        {
+            playerTouching = true;
+            playerRb = (*other->owner).GetComponent<RigidBody>();
+            if (info.sides & COLLISION_SIDE::LEFT)
+            playerOnLeft = true;
+
+            if (info.sides & COLLISION_SIDE::RIGHT)
+                playerOnRight = true;
+        }
+    }
+    
+    if (playerTouching) {
+        if (playerTouching)
+        {
+            if (playerOnLeft && AEInputCheckCurr(AEVK_D))
+                PhysicsManager::ApplyImpulse(rb, impulse);
+
+            if (playerOnRight && AEInputCheckCurr(AEVK_A))
+                PhysicsManager::ApplyImpulse(rb, -impulse);
+        }
+    }
+
+    PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
+
+    float friction = 8.0f;  // tune this
+
+    if (!playerTouching)
+    {
+        if (rb->velocity.x > 0)
+        {
+            rb->velocity.x -= friction * dt;
+            if (rb->velocity.x < 0)
+                rb->velocity.x = 0;
+        }
+        else if (rb->velocity.x < 0)
+        {
+            rb->velocity.x += friction * dt;
+            if (rb->velocity.x > 0)
+                rb->velocity.x = 0;
+        }
+    }
+    // Check nearby tiles for new collisions
+    for (Tile* tile : nearbyTiles)
+    {
+        if (!tile->collider || !tile->collider->canCollide) continue;
+        if (tile == this) continue;  // don't collide with self
+
+        Collider* oCol = tile->collider;
+        if (BoxToBoxCollision(
+            pCol->GetPos2D(), oCol->GetPos2D(),
+            pCol->GetScale(), oCol->GetScale()))
+        {
+            int sidesForCrate = GetAllCollisionSides(
+                pCol->GetPos2D(), oCol->GetPos2D(),
+                pCol->GetScale(), oCol->GetScale()
+            );
+            int sidesForTile = FlipCollisionSides(sidesForCrate);
+
+            pCol->AddToOvelappingVector(oCol, sidesForCrate);
+            oCol->AddToOvelappingVector(pCol, sidesForTile);
+
+            PhysicsManager::HandleCollision(pCol, oCol);
+        }
+        else
+        {
+            pCol->RemoveFromOverlappingVector(oCol);
+            oCol->RemoveFromOverlappingVector(pCol);
+        }
+    }
+
+    // Then resolve already-overlapping colliders (player, enemies, etc.)
+    for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
+    {
+        Collider* oCol = it->other;
+        if (!oCol || !oCol->canCollide)
+        {
+            pCol->RemoveFromOverlappingVector(oCol);
+            it = pCol->collisionInfos.begin();
+            continue;
+        }
+        if (BoxToBoxCollision(
+            pCol->GetPos2D(), oCol->GetPos2D(),
+            pCol->GetScale(), oCol->GetScale()))
+        {
+            PhysicsManager::HandleCollision(pCol, oCol);
+            ++it;
+        }
+        else
+        {
+            pCol->RemoveFromOverlappingVector(oCol);
+            it = pCol->collisionInfos.begin();
+        }
+    }
 
 
+}
+
+
+}

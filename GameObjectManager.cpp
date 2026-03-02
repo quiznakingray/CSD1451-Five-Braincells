@@ -21,7 +21,7 @@ void GameObject::Update()
 		//{
 		//	std::cout << "This is a collider" << std::endl;
 		//}
-		if (!comp->isActive) return;
+		if (!comp->isActive) continue;
 		comp->Update();
 	}
 }

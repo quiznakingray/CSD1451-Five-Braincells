@@ -61,10 +61,6 @@ struct Tile : GameObject {
 	bool canInteract = false;
 	Text* interactionTextBox = nullptr;
 
-	union {
-		Spike spike{};
-	};
-
 	Tile(
 		TILE_ID curr_ID = TILE_ID::EMPTY,
 		TILE_ID bg_ID = TILE_ID::EMPTY,
@@ -263,7 +259,7 @@ struct CloudTile : Tile {
 			{
 				// Check player's X center is within this tile's X bounds
 				// Use a small tolerance to handle floating point edge cases
-				float tolerance = scale.x * 0.3f;
+				float tolerance = scale.x * 0.5f;
 				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
 					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
 
@@ -279,7 +275,7 @@ struct CloudTile : Tile {
 		collider->OnCollisionOver = [this](Collider* other, int sides) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
-				float tolerance = scale.x * 0.3f;
+				float tolerance = scale.x * 0.5f;
 				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
 					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
 
@@ -318,6 +314,12 @@ struct CloudTile : Tile {
 struct CrateTile : Tile {
 	bool hasPlayerPushed = false;
 	bool isPlayerPushing = false;
+	double pushSpeed = 1.0f;
+	bool isLeft = false;
+	float accel = 5000.0f;     // acceleration power
+	float decel = 400.0f;     // deceleration power
+	float maxSpeed = 5000.0f;
+	RigidBody* rb = nullptr;
 	CrateTile(
 		TILE_ID currID_,
 		TILE_ID bgID_,
@@ -330,45 +332,18 @@ struct CrateTile : Tile {
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
 		currSprite->texture = AEGfxTextureLoad("Assets/Environment/crate.png");
+		rb = AddComponent(
+			new RigidBody()
+		);
+
+		rb->type = RIGIDBODY_TYPE::DYNAMIC;
+		rb->mass = 5.f;
+		rb->invMass = 1.0f / rb->mass;
 	}
 
 
-	void Init() override {
-		Tile::Init();
-		collider->OnCollisionEnter = [this](Collider* other, int sides) {
-			if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				// Check player's X center is within this tile's X bounds
-				// Use a small tolerance to handle floating point edge cases
-				float tolerance = scale.x * 0.3f;
-				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
-					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
-
-				if (!hasPlayerPushed && (sides & COLLISION_SIDE::LEFT) && playerWithinXBounds)
-				{
-					hasPlayerPushed = true;
-				}
-			}
-			};
-
-		collider->OnCollisionOver = [this](Collider* other, int sides) {
-			if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				float tolerance = scale.x * 0.3f;
-				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
-					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
-
-				if (!hasPlayerPushed && (sides & COLLISION_SIDE::TOP) && playerWithinXBounds)
-				{
-					hasPlayerStepped = true;
-					if (!cloudTimer.IsActive())
-						cloudTimer.Start(2.0);
-				}
-			}
-			};
-		collider->OnCollisionExit = [this](Collider* other, int sides) {
-			};
-	}
+	void Init() override;
+	void Update() override;
 };
 
 //template <typename S>

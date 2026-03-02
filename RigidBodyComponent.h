@@ -18,6 +18,7 @@ struct RigidBody : ComponentBase {
 	AEVec2 prevVel{};
 	AEVec2 acceleration{};
 	f32 mass{};
+	f32 invMass{};
 	f32 drag{};
 
 	bool onCollider = false;

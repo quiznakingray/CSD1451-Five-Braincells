@@ -1,5 +1,6 @@
 #include "PhysicsManager.h"
 #include "GameObjectManager.h"
+#include <iostream>
 
 void PhysicsManager::UpdateRigidBody(RigidBody* rb, f32 dt)
 {
@@ -102,4 +103,11 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
             }
         }
     }
+}
+
+void PhysicsManager::ApplyImpulse(RigidBody* rb, float impulseX)
+{
+    if (!rb || rb->invMass == 0.0f) return;
+
+    rb->velocity.x += impulseX * rb->invMass;
 }

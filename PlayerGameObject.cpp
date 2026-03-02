@@ -147,6 +147,7 @@ void Player::Init()
 			{
 				if (sides & COLLISION_SIDE::BOTTOM)
 					this->rb->onCollider = true;
+
 			}
 		};
 
@@ -172,6 +173,7 @@ void Player::Init()
 		new RigidBody()
 	);
 	rb->type = RIGIDBODY_TYPE::DYNAMIC;
+	rb->mass = 10.f;
 
 	//showColliders = true;
 	speed = static_cast<f32>(200.0);
@@ -189,10 +191,9 @@ void Player::Update(){
 
 	for (Collider* pCol : colliders)
 	{
-		// Fix: iterate CollisionInfo structs not raw Collider*
 		for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
 		{
-			Collider* oCol = it->other; // Fix: extract pointer from struct
+			Collider* oCol = it->other;
 
 			if (!oCol || !oCol->canCollide)
 			{
@@ -215,7 +216,7 @@ void Player::Update(){
 			}
 		}
 	}
-
+	
 	AEGfxSetCamPosition(pos.x, pos.y);
 	GameObject::Update();
 }

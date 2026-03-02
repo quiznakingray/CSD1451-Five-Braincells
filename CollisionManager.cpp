@@ -18,32 +18,31 @@
 
 int GetAllCollisionSides(AEVec2 aPos, AEVec2 bPos, AEVec2 aScale, AEVec2 bScale)
 {
-	int sides = COLLISION_SIDE::NONE;
+	float dx = bPos.x - aPos.x;
+	float px = (aScale.x * 0.5f + bScale.x * 0.5f) - fabs(dx);
 
-	float aLeft = aPos.x - aScale.x * 0.5f;
-	float aRight = aPos.x + aScale.x * 0.5f;
-	float aTop = aPos.y + aScale.y * 0.5f;
-	float aBottom = aPos.y - aScale.y * 0.5f;
+	if (px <= 0) return COLLISION_SIDE::NONE;
 
-	float bLeft = bPos.x - bScale.x * 0.5f;
-	float bRight = bPos.x + bScale.x * 0.5f;
-	float bTop = bPos.y + bScale.y * 0.5f;
-	float bBottom = bPos.y - bScale.y * 0.5f;
+	float dy = bPos.y - aPos.y;
+	float py = (aScale.y * 0.5f + bScale.y * 0.5f) - fabs(dy);
 
-	float overlapLeft = aRight - bLeft;   // A's right into B's left
-	float overlapRight = bRight - aLeft;   // B's right into A's left
-	float overlapTop = aTop - bBottom; // A's top into B's bottom
-	float overlapBottom = bTop - aBottom; // B's top into A's bottom
+	if (py <= 0) return COLLISION_SIDE::NONE;
 
-	// Use a threshold to avoid floating point noise
-	float threshold = 1.0f;
-
-	if (overlapLeft > 0 && overlapLeft < aScale.x * 0.5f + threshold) sides |= COLLISION_SIDE::RIGHT;
-	if (overlapRight > 0 && overlapRight < aScale.x * 0.5f + threshold) sides |= COLLISION_SIDE::LEFT;
-	if (overlapTop > 0 && overlapTop < aScale.y * 0.5f + threshold) sides |= COLLISION_SIDE::TOP;
-	if (overlapBottom > 0 && overlapBottom < aScale.y * 0.5f + threshold) sides |= COLLISION_SIDE::BOTTOM;
-
-	return sides;
+	// Choose axis of least penetration
+	if (px < py)
+	{
+		if (dx > 0)
+			return COLLISION_SIDE::RIGHT;
+		else
+			return COLLISION_SIDE::LEFT;
+	}
+	else
+	{
+		if (dy > 0)
+			return COLLISION_SIDE::TOP;
+		else
+			return COLLISION_SIDE::BOTTOM;
+	}
 }
 
 bool BoxToBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size)
