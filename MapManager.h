@@ -316,7 +316,7 @@ struct CrateTile : Tile {
 	bool playerOnLeft = false;
 	bool playerOnRight = false;
 	float pushForce = 50.0f;
-	float friction = 30.0f;
+	float friction = 40.0f;
 	RigidBody* rb = nullptr;
 	CrateTile(
 		TILE_ID currID_,
@@ -340,7 +340,6 @@ struct CrateTile : Tile {
 		rb->maxImpulse = 50.f;
 		rb->maxSpeed = 75.f;
 	}
-
 
 	void Init() override;
 	void Update() override;
