@@ -38,12 +38,20 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 
     bool resolveX = pxOverlap < pyOverlap;
 
-    auto move = [](GameObject* obj, float amountX, float amountY, RigidBody* r) {
+    auto move = [](GameObject* obj, float amountX, float amountY, RigidBody* r, bool zeroXForStatic = false) {
         obj->pos.x += amountX;
         obj->pos.y += amountY;
-        if (r) {
-            if (amountX != 0) r->velocity.x = 0;
-            if (amountY != 0) r->velocity.y = 0;
+        if (!r) return;
+
+        // Only zero vertical velocity when resolving Y overlap
+        if (amountY != 0) {
+            r->velocity.y = 0;
+            if (amountY > 0) r->onCollider = true; // landed on floor
+        }
+
+        // Zero horizontal velocity only for static collisions
+        if (zeroXForStatic && amountX != 0) {
+            r->velocity.x = 0;
         }
         };
 
@@ -109,5 +117,11 @@ void PhysicsManager::ApplyImpulse(RigidBody* rb, float impulseX)
 {
     if (!rb || rb->invMass == 0.0f) return;
 
+    if (impulseX > rb->maxImpulse) impulseX = rb->maxImpulse;
+    else if (impulseX < -rb->maxImpulse) impulseX = -rb->maxImpulse;
+
     rb->velocity.x += impulseX * rb->invMass;
+
+    if (rb->velocity.x > rb->maxSpeed) rb->velocity.x = rb->maxSpeed;
+    else if (rb->velocity.x < -rb->maxSpeed) rb->velocity.x = -rb->maxSpeed;
 }

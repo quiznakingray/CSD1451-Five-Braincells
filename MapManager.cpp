@@ -505,54 +505,17 @@ void CrateTile::Init()
 {
     Tile::Init();
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
-        if (sides & COLLISION_SIDE::BOTTOM)
-            this->rb->onCollider = true;
-        if (Player* player = dynamic_cast<Player*>(other->owner))
-        {
-            // Check player's X center is within this tile's X bounds
-            // Use a small tolerance to handle floating point edge cases
-            float tolerance = scale.x * 0.8f;
-            bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
-                other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
-
-            if (!hasPlayerPushed && (sides & COLLISION_SIDE::LEFT) || (sides & COLLISION_SIDE::RIGHT) && playerWithinXBounds)
-            {
-                hasPlayerPushed = true;
-                if (sides & COLLISION_SIDE::LEFT) {
-                    isLeft = true;
-                }
-                else if (sides & COLLISION_SIDE::RIGHT) {
-                    isLeft = false;
-                }
-            }
-        }
-        };
+    };
 
     collider->OnCollisionOver = [this](Collider* other, int sides) {
-        if (Player* player = dynamic_cast<Player*>(other->owner))
-        {
-            // Check player's X center is within this tile's X bounds
-            // Use a small tolerance to handle floating point edge cases
-            float tolerance = scale.x * 0.8f;
-            bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
-                other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
 
-            if (hasPlayerPushed && (sides & COLLISION_SIDE::LEFT) || (sides & COLLISION_SIDE::RIGHT) && playerWithinXBounds)
-            {
-                isPlayerPushing = true;
-            }
-        }
         };
     collider->OnCollisionExit = [this](Collider* other, int sides) {
-        if (Tile* tile = dynamic_cast<Tile*>(other->owner))
-        {
-            this->rb->onCollider = false;
-        }
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
-            hasPlayerPushed = false;
-            isPlayerPushing = false;
-            //rb->velocity.x = 0.f;
+            playerTouching = false;
+            playerOnLeft = false;
+            playerOnRight = false;
         }
         };
 }
@@ -568,10 +531,6 @@ void CrateTile::Update() {
 
 for (Collider* pCol : colliders)
 {
-    bool playerTouching = false;
-    bool playerOnLeft = false;   // player pushing from left side
-    bool playerOnRight = false;  // player pushing from right side
-    float pushForce = 1200.0f;     // tune this
     float impulse = pushForce * dt;
     RigidBody* playerRb{};
     for (const auto& info : pCol->collisionInfos)
@@ -592,19 +551,22 @@ for (Collider* pCol : colliders)
     }
     
     if (playerTouching) {
-        if (playerTouching)
-        {
-            if (playerOnLeft && AEInputCheckCurr(AEVK_D))
-                PhysicsManager::ApplyImpulse(rb, impulse);
 
-            if (playerOnRight && AEInputCheckCurr(AEVK_A))
-                PhysicsManager::ApplyImpulse(rb, -impulse);
+        if (playerOnLeft && AEInputCheckCurr(AEVK_D))
+        {
+            PhysicsManager::ApplyImpulse(rb, impulse);
         }
+
+
+        if (playerOnRight && AEInputCheckCurr(AEVK_A))
+        {
+            PhysicsManager::ApplyImpulse(rb, -impulse);
+        }
+        std::cout << rb->velocity.x << '\n';
     }
 
     PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
 
-    float friction = 8.0f;  // tune this
 
     if (!playerTouching)
     {
@@ -613,12 +575,14 @@ for (Collider* pCol : colliders)
             rb->velocity.x -= friction * dt;
             if (rb->velocity.x < 0)
                 rb->velocity.x = 0;
+            std::cout << rb->velocity.x << '\n';
         }
         else if (rb->velocity.x < 0)
         {
             rb->velocity.x += friction * dt;
             if (rb->velocity.x > 0)
                 rb->velocity.x = 0;
+            std::cout << rb->velocity.x << '\n';
         }
     }
     // Check nearby tiles for new collisions

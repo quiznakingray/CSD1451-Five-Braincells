@@ -312,13 +312,11 @@ struct CloudTile : Tile {
 };
 
 struct CrateTile : Tile {
-	bool hasPlayerPushed = false;
-	bool isPlayerPushing = false;
-	double pushSpeed = 1.0f;
-	bool isLeft = false;
-	float accel = 5000.0f;     // acceleration power
-	float decel = 400.0f;     // deceleration power
-	float maxSpeed = 5000.0f;
+	bool playerTouching = false;
+	bool playerOnLeft = false;
+	bool playerOnRight = false;
+	float pushForce = 50.0f;
+	float friction = 30.0f;
 	RigidBody* rb = nullptr;
 	CrateTile(
 		TILE_ID currID_,
@@ -337,8 +335,10 @@ struct CrateTile : Tile {
 		);
 
 		rb->type = RIGIDBODY_TYPE::DYNAMIC;
-		rb->mass = 5.f;
+		rb->mass = 10.f;
 		rb->invMass = 1.0f / rb->mass;
+		rb->maxImpulse = 50.f;
+		rb->maxSpeed = 75.f;
 	}
 
 

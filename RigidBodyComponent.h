@@ -21,6 +21,9 @@ struct RigidBody : ComponentBase {
 	f32 invMass{};
 	f32 drag{};
 
+	f32 maxImpulse{};
+	f32 maxSpeed{};
+
 	bool onCollider = false;
 
 	bool hasGravity = true;
