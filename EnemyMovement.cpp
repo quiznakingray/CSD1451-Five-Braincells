@@ -26,10 +26,10 @@ void UpdateEnemyPatrol(EnemyGameObject* enemy, f32 dt)
 		enemy->rb->velocity.x = 0;
 	}
 
-	if (enemy->movement.movingRight)
-		std::cout << "[EnemyMovement] Turn right\n";
-	else
-		std::cout << "[EnemyMovement] Turn left\n";
+	//if (enemy->movement.movingRight)
+	//	std::cout << "[EnemyMovement] Turn right\n";
+	//else
+	//	std::cout << "[EnemyMovement] Turn left\n";
 }
 
 void EnemyPatrol(EnemyGameObject* enemy)

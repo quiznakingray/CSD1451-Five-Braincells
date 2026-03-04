@@ -65,7 +65,8 @@ struct Collider : ComponentBase {
 	//Collider() = default;
 	Collider(COLLIDER_TYPE c_type = COLLIDER_TYPE::BOX_COLLIDER, f32 center_x = 0.f, f32 center_y = 0.f, f32 size_x = 1.f, f32 size_y = 1.f) {
 		AEVec2Set(&center, center_x, center_y);
-		AEVec2Set(&size, size_x, size_y);
+		f32 sizeY = type == COLLIDER_TYPE::CIRCLE_COLLIDER ? size_x : size_y;
+		AEVec2Set(&size, size_x, sizeY);
 		type = c_type;
 	}
 
@@ -95,6 +96,8 @@ struct Collider : ComponentBase {
 
 //bool CheckBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size);
 int  GetAllCollisionSides(AEVec2 aPos, AEVec2 bPos, AEVec2 aScale, AEVec2 bScale);
+bool BoxToCircleCollision(AEVec2 boxPos, AEVec2 circlePos, AEVec2 boxScale, AEVec2 circleScale);
+bool CircleToCircleCollision(AEVec2 aPos, AEVec2 bPos, AEVec2 aScale, AEVec2 bScale);
 bool BoxToBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size);
 int FlipCollisionSides(int sides); // flips sides to get B's perspective from A's
 bool IsPosInRect(AEVec2 pos, AEVec2 rectPos, AEVec2 rectScale);

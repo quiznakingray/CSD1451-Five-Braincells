@@ -10,10 +10,9 @@
 
 #define COLORSIZE 4
 
-enum class SPRITE_DRAW_MODE {
-	SIMPLE,
-	TILED,
-	SLICED
+enum class SPRITE_SHAPE {
+	SHAPE_RECT,
+	SHAPE_CIRCLE,
 };
 
 struct Color { // range form 0 to 1
@@ -42,7 +41,7 @@ struct Sprite : ComponentBase{
 	AEGfxVertexList* mesh = nullptr;
 	AEGfxTexture* texture = nullptr;
 	std::string textureFileName{};
-
+	SPRITE_SHAPE spriteShape = SPRITE_SHAPE::SHAPE_RECT;
 	//std::array <f64, COLORSIZE > color{ };
 	struct SpriteSheet {
 		bool isSpriteSheet = false;
@@ -68,8 +67,9 @@ struct Sprite : ComponentBase{
 		f32 pos_x, f32 pos_y, f32 pos_z = 0.f, 
 		f32 rot = 0.f, 
 		u32 c = 0xFF000000,
-		AEGfxTexture* t = nullptr)
-		: meshColor(c),texture(t), spriteSheet(1, 1)
+		AEGfxTexture* t = nullptr,
+		SPRITE_SHAPE shape = SPRITE_SHAPE::SHAPE_RECT)
+		: meshColor(c),texture(t), spriteSheet(1, 1), spriteShape(shape)
 	{
 		//AEVec2Set(&pos, pos_x, pos_y);
 		//pos.z = pos_z;
@@ -86,7 +86,7 @@ struct Sprite : ComponentBase{
 
 };
 
-void RenderSprite(Sprite sprite, AEGfxVertexList* mesh);
+//void RenderSprite(Sprite sprite, AEGfxVertexList* mesh);
 
 void HandleSpriteInteraction(std::vector<Sprite*>& spriteArr);
 

@@ -71,30 +71,30 @@ void EnemyGameObject::Update()
 	GameObject::Update();
 	UpdateEnemyPatrol(this, AEFrameRateControllerGetFrameTime());
 
-	std::vector<Collider*> colliders = GetComponents<Collider>();
-
-	for (Collider* pCol : colliders)
-	{
-\
-		for (CollisionInfo& info : pCol->collisionInfos)
-		{
-			Collider* oCol = info.other; 
-
-			if (!oCol || !oCol->canCollide) continue;
-
-			if (BoxToBoxCollision(
-				pCol->GetPos2D(), oCol->GetPos2D(),
-				pCol->GetScale(), oCol->GetScale()))
-			{
-				PhysicsManager::HandleCollision(pCol, oCol);
-			}
-			else
-			{
-				pCol->RemoveFromOverlappingVector(oCol);
-				oCol->RemoveFromOverlappingVector(pCol);
-			}
-		}
-	}
+//	std::vector<Collider*> colliders = GetComponents<Collider>();
+//
+//	for (Collider* pCol : colliders)
+//	{
+//\
+//		for (CollisionInfo& info : pCol->collisionInfos)
+//		{
+//			Collider* oCol = info.other; 
+//
+//			if (!oCol || !oCol->canCollide) continue;
+//
+//			if (BoxToBoxCollision(
+//				pCol->GetPos2D(), oCol->GetPos2D(),
+//				pCol->GetScale(), oCol->GetScale()))
+//			{
+//				PhysicsManager::HandleCollision(pCol, oCol);
+//			}
+//			else
+//			{
+//				pCol->RemoveFromOverlappingVector(oCol);
+//				oCol->RemoveFromOverlappingVector(pCol);
+//			}
+//		}
+//	}
 }
 
 void EnemyGameObject::Render()

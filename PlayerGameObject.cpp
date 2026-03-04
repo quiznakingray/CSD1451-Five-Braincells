@@ -42,7 +42,6 @@ void Player::PlayerInput()
 	}
 	else
 	{
-		// KEY RELEASE DECELERATION (this is what you want)
 		if (rb->velocity.x > 0)
 		{
 			rb->velocity.x -= decel * dt;
@@ -55,6 +54,7 @@ void Player::PlayerInput()
 			if (rb->velocity.x > 0)
 				rb->velocity.x = 0;
 		}
+
 	}
 
 	if (rb->velocity.x > maxSpeed)
@@ -78,7 +78,38 @@ void Player::PlayerInput()
 	//if (AEInputCheckCurr(AEVK_N))
 	//{
 	//	animator->PlayAnimation(idleAnim);
+}
+
+void Player::PlayerAction()
+{
 	//}
+	if (rb->velocity.x != 0)
+	{
+		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
+	}
+	else {
+		currentAction = PlayerAction::IDLE;
+	}
+}
+
+void Player::PlayerAnimation()
+{
+	if (!animator) return;
+	Animation* anim = nullptr;
+	switch (currentAction)
+	{
+	case PlayerAction::IDLE:
+		anim = idleAnim;
+		break;
+	case PlayerAction::RUNNING:
+		anim = runningAnim;
+		break;
+	default:
+		anim = idleAnim;
+		break;
+	}
+
+	animator->PlayAnimation(anim);
 }
 
 void Player::Init()
@@ -92,7 +123,7 @@ void Player::Init()
 	objectState = STATE::IDLE;
 
 	//set scale
-	AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
+	AEVec2Set(&scale, MapManager::tileSize - 10, MapManager::tileSize - 10);
 
 	// set components
 
@@ -175,7 +206,7 @@ void Player::Init()
 	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 	rb->mass = 10.f;
 
-	//showColliders = true;
+	showColliders = true;
 	speed = static_cast<f32>(200.0);
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	AEGfxSetCamPosition(pos.x, pos.y);
@@ -186,37 +217,38 @@ void Player::Init()
 void Player::Update(){
 	
 	PlayerInput();
-	std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
-	std::vector<Collider*> colliders = GetComponents<Collider>();
+	//std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
+	//std::vector<Collider*> colliders = GetComponents<Collider>();
 
-	for (Collider* pCol : colliders)
-	{
-		for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
-		{
-			Collider* oCol = it->other;
+	//for (Collider* pCol : colliders)
+	//{
+	//	for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
+	//	{
+	//		Collider* oCol = it->other;
 
-			if (!oCol || !oCol->canCollide)
-			{
-				pCol->RemoveFromOverlappingVector(oCol);
-				it = pCol->collisionInfos.begin();
-				continue;
-			}
+	//		if (!oCol || !oCol->canCollide)
+	//		{
+	//			pCol->RemoveFromOverlappingVector(oCol);
+	//			it = pCol->collisionInfos.begin();
+	//			continue;
+	//		}
 
-			if (BoxToBoxCollision(
-				pCol->GetPos2D(), oCol->GetPos2D(),
-				pCol->GetScale(), oCol->GetScale()))
-			{
-				PhysicsManager::HandleCollision(pCol, oCol);
-				++it;
-			}
-			else
-			{
-				pCol->RemoveFromOverlappingVector(oCol);
-				it = pCol->collisionInfos.begin();
-			}
-		}
-	}
+	//		if (BoxToBoxCollision(
+	//			pCol->GetPos2D(), oCol->GetPos2D(),
+	//			pCol->GetScale(), oCol->GetScale()))
+	//		{
+	//			PhysicsManager::HandleCollision(pCol, oCol);
+	//			++it;
+	//		}
+	//		else
+	//		{
+	//			pCol->RemoveFromOverlappingVector(oCol);
+	//			it = pCol->collisionInfos.begin();
+	//		}
+	//	}
+	//}
 	
 	AEGfxSetCamPosition(pos.x, pos.y);
 	GameObject::Update();
+	std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
 }

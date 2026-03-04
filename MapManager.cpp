@@ -565,7 +565,7 @@ for (Collider* pCol : colliders)
         std::cout << rb->velocity.x << '\n';
     }
 
-    PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
+    //PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
 
 
     if (!playerTouching)
@@ -586,57 +586,57 @@ for (Collider* pCol : colliders)
         }
     }
     // Check nearby tiles for new collisions
-    for (Tile* tile : nearbyTiles)
-    {
-        if (!tile->collider || !tile->collider->canCollide) continue;
-        if (tile == this) continue;  // don't collide with self
+    //for (Tile* tile : nearbyTiles)
+    //{
+    //    if (!tile->collider || !tile->collider->canCollide) continue;
+    //    if (tile == this) continue;  // don't collide with self
 
-        Collider* oCol = tile->collider;
-        if (BoxToBoxCollision(
-            pCol->GetPos2D(), oCol->GetPos2D(),
-            pCol->GetScale(), oCol->GetScale()))
-        {
-            int sidesForCrate = GetAllCollisionSides(
-                pCol->GetPos2D(), oCol->GetPos2D(),
-                pCol->GetScale(), oCol->GetScale()
-            );
-            int sidesForTile = FlipCollisionSides(sidesForCrate);
+    //    Collider* oCol = tile->collider;
+    //    if (BoxToBoxCollision(
+    //        pCol->GetPos2D(), oCol->GetPos2D(),
+    //        pCol->GetScale(), oCol->GetScale()))
+    //    {
+    //        int sidesForCrate = GetAllCollisionSides(
+    //            pCol->GetPos2D(), oCol->GetPos2D(),
+    //            pCol->GetScale(), oCol->GetScale()
+    //        );
+    //        int sidesForTile = FlipCollisionSides(sidesForCrate);
 
-            pCol->AddToOvelappingVector(oCol, sidesForCrate);
-            oCol->AddToOvelappingVector(pCol, sidesForTile);
+    //        pCol->AddToOvelappingVector(oCol, sidesForCrate);
+    //        oCol->AddToOvelappingVector(pCol, sidesForTile);
 
-            PhysicsManager::HandleCollision(pCol, oCol);
-        }
-        else
-        {
-            pCol->RemoveFromOverlappingVector(oCol);
-            oCol->RemoveFromOverlappingVector(pCol);
-        }
-    }
+    //        PhysicsManager::HandleCollision(pCol, oCol);
+    //    }
+    //    else
+    //    {
+    //        pCol->RemoveFromOverlappingVector(oCol);
+    //        oCol->RemoveFromOverlappingVector(pCol);
+    //    }
+    //}
 
     // Then resolve already-overlapping colliders (player, enemies, etc.)
-    for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
-    {
-        Collider* oCol = it->other;
-        if (!oCol || !oCol->canCollide)
-        {
-            pCol->RemoveFromOverlappingVector(oCol);
-            it = pCol->collisionInfos.begin();
-            continue;
-        }
-        if (BoxToBoxCollision(
-            pCol->GetPos2D(), oCol->GetPos2D(),
-            pCol->GetScale(), oCol->GetScale()))
-        {
-            PhysicsManager::HandleCollision(pCol, oCol);
-            ++it;
-        }
-        else
-        {
-            pCol->RemoveFromOverlappingVector(oCol);
-            it = pCol->collisionInfos.begin();
-        }
-    }
+    //for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
+    //{
+    //    Collider* oCol = it->other;
+    //    if (!oCol || !oCol->canCollide)
+    //    {
+    //        pCol->RemoveFromOverlappingVector(oCol);
+    //        it = pCol->collisionInfos.begin();
+    //        continue;
+    //    }
+    //    if (BoxToBoxCollision(
+    //        pCol->GetPos2D(), oCol->GetPos2D(),
+    //        pCol->GetScale(), oCol->GetScale()))
+    //    {
+    //        PhysicsManager::HandleCollision(pCol, oCol);
+    //        ++it;
+    //    }
+    //    else
+    //    {
+    //        pCol->RemoveFromOverlappingVector(oCol);
+    //        it = pCol->collisionInfos.begin();
+    //    }
+    //}
 
 
 }

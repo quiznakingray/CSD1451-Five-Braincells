@@ -142,10 +142,23 @@ void HandleCollision(std::vector<GameObject*>& gos)
 							firstColl->GetScale(), secondColl->GetScale()
 						);
 					}
-					else {
-						// circle to circle
 						// circle to box
+					else if ((firstColl->type == COLLIDER_TYPE::BOX_COLLIDER
+						&& secondColl->type == COLLIDER_TYPE::CIRCLE_COLLIDER ) || 
+						(firstColl->type == COLLIDER_TYPE::CIRCLE_COLLIDER
+						&& secondColl->type == COLLIDER_TYPE::BOX_COLLIDER)){
 
+						Collider* box = firstColl->type == COLLIDER_TYPE::BOX_COLLIDER ? firstColl : secondColl;
+						Collider* circle = firstColl->type == COLLIDER_TYPE::CIRCLE_COLLIDER ? firstColl : secondColl;
+
+						colliding = BoxToCircleCollision(
+							box->GetPos2D(), circle->GetPos2D(),
+							box->GetScale(), circle->GetScale());
+
+					}
+					else {
+
+						// circle to circle
 					}
 
 					if (colliding)
