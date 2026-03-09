@@ -256,6 +256,12 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         case TILE_ID::CRATE:
             newTile = new CrateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
             break;
+        case TILE_ID::BUTTONBLUEUNPRESSED:
+            newTile = new ButtonTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+        case TILE_ID::GATE:
+            newTile = new GateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
         default:
             newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
             newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
@@ -320,6 +326,12 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
         break;
     case TILE_ID::LEVERGREENOFF:
         tTex = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
+        break;
+    case TILE_ID::BUTTONBLUEUNPRESSED:
+        tTex = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
+        break;
+    case TILE_ID::GATE:
+        tTex = AEGfxTextureLoad("Assets/Environment/gate.png");
         break;
     default:
         tTex = AEGfxTextureLoad("Assets/PlanetTexture.png");

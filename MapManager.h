@@ -34,6 +34,9 @@ enum class TILE_ID {
 	LASERRED = 130,
 	LASERGREEN = 131,
 	CRATE = 140,
+	BUTTONBLUEUNPRESSED = 150,
+	BUTTONBLUEPRESSED = 151,
+	GATE = 153,
 	PLAYER = 200,
 	ENEMY = 250,
 	GOAL = 300,
@@ -345,6 +348,25 @@ struct CrateTile : Tile {
 	void Update() override;
 };
 
+struct GateTile : Tile {
+	GateTile(TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+		currSprite->texture = AEGfxTextureLoad("Assets/Environment/gate.png");
+	}
+	void Init() override {
+		Tile::Init();
+		collider->size.x = 0.4f;
+	}
+
+};
+
 //template <typename S>
 struct MapManager : public Singleton<MapManager> {
 
@@ -546,5 +568,103 @@ struct LeverTile : Tile {
 	}
 
 };
-#endif // !MAP_MANAGER 
 
+struct ButtonTile : Tile {
+	bool isPressed = false;
+	bool playerOnButton = false;
+	bool crateOnButton = false;
+	ButtonTile(
+		TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+		SetTexture();
+	}
+	void SetTexture() {
+		switch (currID)
+		{
+		case TILE_ID::BUTTONBLUEUNPRESSED:
+			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
+			break;
+		case TILE_ID::BUTTONBLUEPRESSED:
+			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBluePressed.png");
+			break;
+		default:
+			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
+			break;
+		}
+	}
+
+	void ToggleButton()
+	{
+		switch (currID)
+		{
+		case TILE_ID::BUTTONBLUEPRESSED:
+			currID = TILE_ID::BUTTONBLUEUNPRESSED;
+			break;
+		case TILE_ID::BUTTONBLUEUNPRESSED:
+			currID = TILE_ID::BUTTONBLUEPRESSED;
+			break;
+		default:
+			currID = TILE_ID::BUTTONBLUEUNPRESSED;
+			break;
+		}
+		SetTexture();
+
+	}
+	void Init() override {
+		Tile::Init();
+
+		//showColliders = true;
+
+		collider->center.y = 0.f;
+		collider->size.x = 0.9f;
+		collider->size.y = 0.5f;
+		collider->isTrigger = true;
+		collider->OnTriggerEnter = [this](Collider* other, int sides) {
+			Player* player = dynamic_cast<Player*>(other->owner);
+			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
+
+			bool wasPressed = isPressed;
+			if (player) playerOnButton = true;
+			if (crate)  crateOnButton = true;
+
+			isPressed = playerOnButton || crateOnButton;
+
+			if (isPressed != wasPressed)
+				ToggleButton();
+			std::vector<Tile*> taggedTiles = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
+
+			for (Tile* gate : taggedTiles)
+			{
+				gate->isActive = false;
+			}
+			};
+
+		collider->OnTriggerExit = [this](Collider* other, int sides) {
+			Player* player = dynamic_cast<Player*>(other->owner);
+			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
+
+			bool wasPressed = isPressed;
+			if (player) playerOnButton = false;
+			if (crate)  crateOnButton = false;
+
+			isPressed = playerOnButton || crateOnButton;
+
+			if (isPressed != wasPressed)
+				ToggleButton();
+			std::vector<Tile*> taggedTiles = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
+
+			for (Tile* gate : taggedTiles)
+			{
+				gate->isActive = true;
+			}
+			};
+	}
+};
+#endif // !MAP_MANAGER 
