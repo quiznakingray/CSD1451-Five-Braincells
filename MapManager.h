@@ -385,6 +385,54 @@ struct GateTile : Tile {
 
 };
 
+struct GoalTile : Tile {
+	GoalTile(TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
+		currSprite->texture = AEGfxTextureLoad("Assets/Environment/doorclose.png");
+	}
+	void Init() override {
+		Tile::Init();
+
+		//showColliders = true;
+
+		collider->center.y = 0.5f;
+		collider->size.x = 2.f;
+		collider->size.y = 1.5f;
+		collider->isTrigger = true;
+		collider->OnTriggerEnter = [this](Collider* other, int sides) {
+			if (Player* player = dynamic_cast<Player*>(other->owner))
+			{
+				this->interactionTextBox->isActive = true;
+			}
+			};
+		collider->OnTriggerOver = [this](Collider* other, int sides) {
+			if (Player* player = dynamic_cast<Player*>(other->owner))
+			{
+				if (AEInputCheckTriggered(AEVK_F))
+				{
+					interactionTextBox->text = "You Win!";
+				}
+			}
+			};
+		collider->OnTriggerExit = [this](Collider* other, int sides) {
+			if (Player* player = dynamic_cast<Player*>(other->owner))
+			{
+				this->interactionTextBox->isActive = false;
+			}
+			};
+
+		interactionTextBox->text = "[F]";
+
+	}
+};
+
 //template <typename S>
 struct MapManager : public Singleton<MapManager> {
 

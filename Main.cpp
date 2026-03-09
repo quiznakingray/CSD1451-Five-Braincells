@@ -134,14 +134,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				AESysSetFullScreen(0);
 
 			if (AEInputCheckCurr(AEVK_3)) {
-				gameStateManager.ChangeState(GAME_STATE_TYPE::OTHER);
-				gameStateManager.Update();
-				mapManager.ChangeMap(1);
+				if (mapManager.mapCurrLevel != 1) {
+					gameStateManager.ChangeState(GAME_STATE_TYPE::OTHER);
+					gameStateManager.Update();
+					mapManager.ChangeMap(1);
+				}
+
 			}
 			if (AEInputCheckCurr(AEVK_4)) {
-				gameStateManager.ChangeState(GAME_STATE_TYPE::WORLD);
-				gameStateManager.Update();
-				mapManager.ChangeMap(0);
+				if (mapManager.mapCurrLevel != 0) {
+					gameStateManager.ChangeState(GAME_STATE_TYPE::WORLD);
+					gameStateManager.Update();
+					mapManager.ChangeMap(0);
+				}
 			}
 			// Informing the system about the loop's end
 
