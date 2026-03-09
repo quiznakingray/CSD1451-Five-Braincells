@@ -118,19 +118,20 @@ void HandleCollision(std::vector<GameObject*>& gos)
 		GameObject* firstGo = gos[i];
 		if (!firstGo->isOnCamera || !firstGo->isActive) continue;
 
+		auto isDynamic = [](GameObject* go) {
+			RigidBody* rb = go->GetComponent<RigidBody>();
+			return rb && rb->type == RIGIDBODY_TYPE::DYNAMIC;
+			};
 		// skip static vs static + cloudTile + crateTile entirely
-		bool firstIsStatic = dynamic_cast<Tile*>(firstGo)
-			&& !dynamic_cast<CrateTile*>(firstGo)
-			&& !dynamic_cast<CloudTile*>(firstGo);
+		bool firstIsStatic = dynamic_cast<Tile*>(firstGo) && !isDynamic(firstGo);
+
 
 		for (size_t j = i + 1; j < gos.size(); ++j)
 		{
 			GameObject* secondGo = gos[j];
 			if (!secondGo->isOnCamera || !secondGo->isActive) continue;
 
-			bool secondIsStatic = dynamic_cast<Tile*>(secondGo)
-				&& !dynamic_cast<CrateTile*>(secondGo)
-				&& !dynamic_cast<CloudTile*>(secondGo);
+			bool secondIsStatic = dynamic_cast<Tile*>(secondGo) && !isDynamic(secondGo);
 
 			// two static tiles never need collision checks
 			if (firstIsStatic && secondIsStatic) continue;

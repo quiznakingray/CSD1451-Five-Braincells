@@ -233,91 +233,6 @@ struct LaserTile : Tile {
 	}
 };
 
-
-struct CloudTile : Tile {
-	double maxTimer = 3.0;
-	double currTimer = 0.0;
-	bool hasPlayerStepped = false;
-	CooldownTimer cloudTimer;
-
-	CloudTile(TILE_ID currID_,
-		TILE_ID bgID_,
-		int currTag_,
-		bool bgActive,
-		bool currActive,
-		int row_,
-		int col_,
-		float tileSize)
-		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
-
-
-		currSprite->texture =  AEGfxTextureLoad("Assets/Environment/images.png");
-	}
-	void StartCloudCountdown()
-	{
-		cloudTimer.Start(2.0);
-	}
-
-
-	void Init() override {
-		Tile::Init();
-		collider->OnCollisionEnter = [this](Collider* other, int sides) {
-			if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				// Check player's X center is within this tile's X bounds
-				// Use a small tolerance to handle floating point edge cases
-				float tolerance = scale.x * 0.5f;
-				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
-					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
-
-				if (!hasPlayerStepped && (sides & COLLISION_SIDE::TOP) && playerWithinXBounds)
-				{
-					hasPlayerStepped = true;
-					if (!cloudTimer.IsActive())
-						cloudTimer.Start(2.0);
-				}
-			}
-		};
-
-		collider->OnCollisionOver = [this](Collider* other, int sides) {
-			if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				float tolerance = scale.x * 0.5f;
-				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
-					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
-
-				if (!hasPlayerStepped && (sides & COLLISION_SIDE::TOP) && playerWithinXBounds)
-				{
-					hasPlayerStepped = true;
-					if (!cloudTimer.IsActive())
-						cloudTimer.Start(2.0);
-				}
-			}
-		};
-		collider->OnCollisionExit = [this](Collider* other, int sides) {
-		};
-	}
-
-	void Update() override
-	{
-		Tile::Update();
-
-		double dt = AEFrameRateControllerGetFrameTime();
-
-		if (cloudTimer.Update(dt))
-		{
-			isActive = false;
-			collider->canCollide = false;
-		}
-
-		if (cloudTimer.IsActive())
-		{
-			float progress = cloudTimer.GetProgress();
-			currSprite->opacity = (f32)(1.0f - progress);
-		}
-	}
-};
-
 struct CrateTile : Tile {
 	bool playerTouching = false;
 	bool playerOnLeft = false;
@@ -346,10 +261,109 @@ struct CrateTile : Tile {
 		rb->invMass = 1.0f / rb->mass;
 		rb->maxImpulse = 50.f;
 		rb->maxSpeed = 75.f;
+		rb->hasGravity = true;
 	}
 
 	void Init() override;
 	void Update() override;
+};
+
+struct CloudTile : Tile {
+	double maxTimer = 3.0;
+	double currTimer = 0.0;
+	bool hasPlayerStepped = false;
+	CooldownTimer cloudTimer;
+	RigidBody* rb = nullptr;
+
+	CloudTile(TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+
+
+		currSprite->texture = AEGfxTextureLoad("Assets/Environment/images.png");
+
+		rb = AddComponent(
+			new RigidBody()
+		);
+
+		rb->type = RIGIDBODY_TYPE::STATIC;
+		rb->hasGravity = false;
+	}
+	void StartCloudCountdown()
+	{
+		cloudTimer.Start(2.0);
+	}
+
+
+	void Init() override {
+		Tile::Init();
+		collider->OnCollisionEnter = [this](Collider* other, int sides) {
+			Player* player = dynamic_cast<Player*>(other->owner);
+			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
+
+			if (player || crate)
+			{
+				// Check player's X center is within this tile's X bounds
+				// Use a small tolerance to handle floating point edge cases
+				float tolerance = scale.x * 0.5f;
+				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
+					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
+
+				if (!hasPlayerStepped && (sides & COLLISION_SIDE::TOP) && playerWithinXBounds)
+				{
+					hasPlayerStepped = true;
+					if (!cloudTimer.IsActive())
+						cloudTimer.Start(2.0);
+				}
+			}
+			};
+
+		collider->OnCollisionOver = [this](Collider* other, int sides) {
+			Player* player = dynamic_cast<Player*>(other->owner);
+			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
+
+			if (player || crate)
+			{
+				float tolerance = scale.x * 0.5f;
+				bool playerWithinXBounds = other->owner->pos.x >= (pos.x - scale.x * 0.5f - tolerance) &&
+					other->owner->pos.x <= (pos.x + scale.x * 0.5f + tolerance);
+
+				if (!hasPlayerStepped && (sides & COLLISION_SIDE::TOP) && playerWithinXBounds)
+				{
+					hasPlayerStepped = true;
+					if (!cloudTimer.IsActive())
+						cloudTimer.Start(2.0);
+				}
+			}
+			};
+		collider->OnCollisionExit = [this](Collider* other, int sides) {
+			};
+	}
+
+	void Update() override
+	{
+		Tile::Update();
+
+		double dt = AEFrameRateControllerGetFrameTime();
+
+		if (cloudTimer.Update(dt))
+		{
+			isActive = false;
+			collider->canCollide = false;
+		}
+
+		if (cloudTimer.IsActive())
+		{
+			float progress = cloudTimer.GetProgress();
+			currSprite->opacity = (f32)(1.0f - progress);
+		}
+	}
 };
 
 struct GateTile : Tile {

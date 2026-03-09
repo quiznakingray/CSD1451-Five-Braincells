@@ -601,7 +601,7 @@ void CrateTile::Update() {
     Tile::Update();
     double dt = AEFrameRateControllerGetFrameTime();
 
-   
+    rb->onCollider = false;
     // Check crate against nearby tiles
     std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
     std::vector<Collider*> colliders = GetComponents<Collider>();
@@ -610,6 +610,10 @@ for (Collider* pCol : colliders)
 {
     float impulse = pushForce * dt;
     RigidBody* playerRb{};
+    playerTouching = false;
+    playerOnLeft = false;
+    playerOnRight = false;
+
     for (const auto& info : pCol->collisionInfos)
     {
         Collider* other = info.other;
@@ -714,8 +718,6 @@ for (Collider* pCol : colliders)
             it = pCol->collisionInfos.begin();
         }
     }
-
-
 }
 
 
