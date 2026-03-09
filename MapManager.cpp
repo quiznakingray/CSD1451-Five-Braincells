@@ -376,6 +376,28 @@ void MapManager::RotateTile(double rotation, Tile tile)
 {
 
 }
+std::vector<Tile*> MapManager::GetTilesWithID(TILE_ID currID)
+{
+    size_t rowCount = (map.GetRow<std::string>(0)).size();
+    size_t colCount = (map.GetColumn<std::string>(0)).size();
+    int i = 0;
+    std::vector<Tile*> foundTiles;
+    //taggedTiles.resize(size, 0);
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        {
+            if (arrMapInfo[uiCol][uiRow]->currID == currID)
+            {
+                foundTiles.push_back(arrMapInfo[uiCol][uiRow]);
+                i++;
+            }
+
+        }
+    }
+    return foundTiles;
+}
+
 Tile* MapManager::GetTile(unsigned int col, unsigned int row)
 {
     return arrMapInfo[col][row];

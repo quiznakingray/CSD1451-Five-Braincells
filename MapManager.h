@@ -419,6 +419,9 @@ struct MapManager : public Singleton<MapManager> {
 	// Returns true if tile currID is on map regardless of position
 	bool FindTile(unsigned int* col, unsigned int* row, unsigned int currID);
 
+	// returns a vector of all tiles with given currID
+	std::vector<Tile*> GetTilesWithID(TILE_ID currID);
+
 	// Gets tile from col and row provided
 	Tile* GetTile(unsigned int col, unsigned int row);
 
