@@ -109,6 +109,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="MapManager.cpp" />
     <ClCompile Include="ParkourLevel.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
@@ -116,6 +117,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="PlayerGameObject.cpp" />
     <ClCompile Include="PowerUps.cpp" />
     <ClCompile Include="RigidBodyComponent.cpp" />
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="TextComponent.cpp" />
     <ClCompile Include="TileData.cpp" />
@@ -133,6 +135,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="Header.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Library\rapidcsv.h" />
+    <ClInclude Include="MainMenu.h" />
     <ClInclude Include="MapManager.h" />
     <ClInclude Include="ParkourLevel.h" />
     <ClInclude Include="PhysicsManager.h" />
@@ -140,6 +143,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="PlayerGameObject.h" />
     <ClInclude Include="PowerUps.h" />
     <ClInclude Include="RigidBodyComponent.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="SingletonTemplate.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="TextComponent.h" />

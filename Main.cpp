@@ -99,29 +99,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	printf("Hello World\n");
 
 	//GameInit();
-	gameStateManager.Initialize(GAME_STATE_TYPE::WORLD);
+	gameStateManager.Initialize(GAME_STATE_TYPE::MENU);
 
 	// Game Loop
 	while (gGameRunning)
 	{
 		// Informing the system about the loop's start
 		AESysFrameStart();
-		// --- INSERT MENU CALLS HERE FOR TESTING ---
-		MainMenu_Update();
-		MainMenu_Draw();
 		gameStateManager.Update();
 
 		//// Initialize the current game state
 		fpLoad();
 		fpInitialize();
-		while (next == current)
+		while (next == current && gGameRunning)
 		{
 			// Update game logic for the current frame
 			fpUpdate();
 			// Render graphics for the current frame
 			fpRender();
 			// check if forcing the application to quit
-			if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
+			if (AEInputCheckCurr(AEVK_ESCAPE)) {
+				next = GAME_STATE_TYPE::MENU;
+			}
+			if (0 == AESysDoesWindowExist())
 				gGameRunning = 0;
 
 			if (AEInputCheckCurr(AEVK_1))
