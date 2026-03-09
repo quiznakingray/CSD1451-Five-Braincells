@@ -31,8 +31,11 @@ enum class TILE_ID {
 	LEVERREDON = 121,
 	LEVERGREENOFF = 122,
 	LEVERGREENON = 123,
+	LEVERBLUEOFF = 124,
+	LEVERBLUEON = 125,
 	LASERRED = 130,
 	LASERGREEN = 131,
+	LASERBLUE = 132,
 	CRATE = 140,
 	BUTTONBLUEUNPRESSED = 150,
 	BUTTONBLUEPRESSED = 151,
@@ -40,7 +43,6 @@ enum class TILE_ID {
 	PLAYER = 200,
 	ENEMY = 250,
 	GOAL = 300,
-
 };
 //using TILE_ID = enum TILE_ID;
 
@@ -214,18 +216,20 @@ struct LaserTile : Tile {
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
-
-		currSprite->texture = currID == TILE_ID::LASERRED ?
-			AEGfxTextureLoad("Assets/Environment/laserRedVertical.png")
-			:
-			AEGfxTextureLoad("Assets/Environment/laserGreenVertical.png");
+		if (currID == TILE_ID::LASERRED)
+			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedVertical.png");
+		else if (currID == TILE_ID::LASERGREEN)
+			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenVertical.png");
+		else
+			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserBlueVertical.png");
 
 	}
 
 	void Init() override {
 		Tile::Init();
 		collider->size.x = 0.4f;
-		//showColliders = true;
+		isActive = isCurrActive;
+		collider->canCollide = isCurrActive;  // add this
 	}
 };
 
@@ -463,18 +467,19 @@ struct MapManager : public Singleton<MapManager> {
 
 
 struct LeverTile : Tile {
-
+	int altTag = 0;
 	LeverTile(
-		TILE_ID currID_,
-		TILE_ID bgID_,
-		int currTag_,
-		bool bgActive,
-		bool currActive,
-		int row_,
-		int col_,
-		float tileSize)
+		TILE_ID currID_ = TILE_ID::EMPTY,
+		TILE_ID bgID_ = TILE_ID::EMPTY,
+		int currTag_ = 0,
+		int altTag_ = 0,
+		bool bgActive = false,
+		bool currActive = true,
+		int row_ = 0,
+		int col_ = 0,
+		float tileSize = 0.f)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
-
+		altTag = altTag_;
 		SetTexture();
 		
 	}
@@ -493,6 +498,12 @@ struct LeverTile : Tile {
 				break;
 			case TILE_ID::LEVERGREENOFF:
 				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
+				break;
+			case TILE_ID::LEVERBLUEON:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserBlueSwitchOn.png");
+				break;
+			case TILE_ID::LEVERBLUEOFF:
+				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserBlueSwitchOff.png");
 				break;
 			default:
 				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
@@ -515,6 +526,12 @@ struct LeverTile : Tile {
 				break;
 			case TILE_ID::LEVERGREENOFF:
 				currID = TILE_ID::LEVERGREENON;
+				break;
+			case TILE_ID::LEVERBLUEON:
+				currID = TILE_ID::LEVERBLUEOFF;
+				break;
+			case TILE_ID::LEVERBLUEOFF:
+				currID = TILE_ID::LEVERBLUEON;
 				break;
 			default:
 				currID = TILE_ID::LEVERREDON;
@@ -542,19 +559,39 @@ struct LeverTile : Tile {
 		collider->OnTriggerOver = [this](Collider* other, int sides) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
+				
 				this->interactionTextBox->isActive = true;
 				if (AEInputCheckTriggered(AEVK_F))
 				{
-					this->ToggleLever();
 
-					TILE_ID tileId = currID == TILE_ID::LEVERREDOFF || currID == TILE_ID::LEVERREDON
-						? TILE_ID::LASERRED : TILE_ID::LASERGREEN;
+					//this->ToggleLever();
+					TILE_ID tileId;
+					if (currID == TILE_ID::LEVERREDON || currID == TILE_ID::LEVERREDOFF)
+						tileId = TILE_ID::LASERRED;
+					else if (currID == TILE_ID::LEVERGREENON || currID == TILE_ID::LEVERGREENOFF)
+						tileId = TILE_ID::LASERGREEN;
+					else
+						tileId = TILE_ID::LASERBLUE;
 
-					std::vector<Tile*> taggedTiles = MapManager::GetTaggedTiles(currTag, tileId);
+					this->ToggleLever();  // toggle first
 
-					for (Tile* laser : taggedTiles)
+					// now check the NEW state
+					bool activate = (currID == TILE_ID::LEVERREDON ||
+						currID == TILE_ID::LEVERGREENON ||
+						currID == TILE_ID::LEVERBLUEON);
+
+					for (Tile* laser : MapManager::GetTaggedTiles(currTag, tileId))
 					{
-						laser->isActive = (currID == TILE_ID::LEVERREDON || currID == TILE_ID::LEVERGREENON);
+						laser->isActive = activate;
+						laser->isCurrActive = activate;
+						if (laser->collider) laser->collider->canCollide = activate;
+					}
+
+					for (Tile* laser : MapManager::GetTaggedTiles(altTag, tileId))
+					{
+						laser->isActive = !activate;
+						laser->isCurrActive = !activate;
+						if (laser->collider) laser->collider->canCollide = !activate;
 					}
 				}
 			}
@@ -646,6 +683,7 @@ struct ButtonTile : Tile {
 			for (Tile* gate : taggedTiles)
 			{
 				gate->isActive = false;
+				gate->isCurrActive = false;
 			}
 			};
 
@@ -666,6 +704,7 @@ struct ButtonTile : Tile {
 			for (Tile* gate : taggedTiles)
 			{
 				gate->isActive = true;
+				gate->isCurrActive = true;
 			}
 			};
 	}
