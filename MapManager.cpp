@@ -256,6 +256,12 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         case TILE_ID::CRATE:
             newTile = new CrateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
             break;
+        case TILE_ID::BUTTONBLUEUNPRESSED:
+            newTile = new ButtonTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
+        case TILE_ID::GATE:
+            newTile = new GateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+            break;
         default:
             newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
             newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
@@ -321,6 +327,12 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     case TILE_ID::LEVERGREENOFF:
         tTex = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
         break;
+    case TILE_ID::BUTTONBLUEUNPRESSED:
+        tTex = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
+        break;
+    case TILE_ID::GATE:
+        tTex = AEGfxTextureLoad("Assets/Environment/gate.png");
+        break;
     default:
         tTex = AEGfxTextureLoad("Assets/PlanetTexture.png");
         break;
@@ -364,6 +376,28 @@ void MapManager::RotateTile(double rotation, Tile tile)
 {
 
 }
+std::vector<Tile*> MapManager::GetTilesWithID(TILE_ID currID)
+{
+    size_t rowCount = (map.GetRow<std::string>(0)).size();
+    size_t colCount = (map.GetColumn<std::string>(0)).size();
+    int i = 0;
+    std::vector<Tile*> foundTiles;
+    //taggedTiles.resize(size, 0);
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        {
+            if (arrMapInfo[uiCol][uiRow]->currID == currID)
+            {
+                foundTiles.push_back(arrMapInfo[uiCol][uiRow]);
+                i++;
+            }
+
+        }
+    }
+    return foundTiles;
+}
+
 Tile* MapManager::GetTile(unsigned int col, unsigned int row)
 {
     return arrMapInfo[col][row];
