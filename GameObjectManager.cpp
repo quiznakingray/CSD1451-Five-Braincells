@@ -1,9 +1,11 @@
 #include "GameObjectManager.h"
 #include "CollisionManager.h"
 #include "PhysicsManager.h"
+#include "MapManager.h"
 #include <type_traits>
 #include <iostream>
 #include <algorithm>
+
 
 
 void GameObject::Init()
@@ -116,23 +118,33 @@ void HandleCollision(std::vector<GameObject*>& gos)
 		GameObject* firstGo = gos[i];
 		if (!firstGo->isOnCamera || !firstGo->isActive) continue;
 
+		// skip static vs static + cloudTile + crateTile entirely
+		bool firstIsStatic = dynamic_cast<Tile*>(firstGo)
+			&& !dynamic_cast<CrateTile*>(firstGo)
+			&& !dynamic_cast<CloudTile*>(firstGo);
+
 		for (size_t j = i + 1; j < gos.size(); ++j)
 		{
 			GameObject* secondGo = gos[j];
-
 			if (!secondGo->isOnCamera || !secondGo->isActive) continue;
 
-			// collision to collision 
+			bool secondIsStatic = dynamic_cast<Tile*>(secondGo)
+				&& !dynamic_cast<CrateTile*>(secondGo)
+				&& !dynamic_cast<CloudTile*>(secondGo);
+
+			// two static tiles never need collision checks
+			if (firstIsStatic && secondIsStatic) continue;
+
 			std::vector<Collider*> firstGoColliders = firstGo->GetComponents<Collider>();
 			std::vector<Collider*> secondGoColliders = secondGo->GetComponents<Collider>();
-			
+
 			for (Collider* firstColl : firstGoColliders)
 			{
 				if (!firstColl->canCollide) continue;
 				for (Collider* secondColl : secondGoColliders)
 				{
 					if (!secondColl->canCollide) continue;
-					// check if there is collision between both colliders
+
 					bool colliding = false;
 					if (firstColl->type == COLLIDER_TYPE::BOX_COLLIDER
 						&& secondColl->type == COLLIDER_TYPE::BOX_COLLIDER)
@@ -142,21 +154,14 @@ void HandleCollision(std::vector<GameObject*>& gos)
 							firstColl->GetScale(), secondColl->GetScale()
 						);
 					}
-					else {
-						// circle to circle
-						// circle to box
-
-					}
 
 					if (colliding)
 					{
-						// Calculate sides for each collider's perspective
 						int sidesForFirst = GetAllCollisionSides(
 							firstColl->GetPos2D(), secondColl->GetPos2D(),
 							firstColl->GetScale(), secondColl->GetScale()
 						);
 						int sidesForSecond = FlipCollisionSides(sidesForFirst);
-
 						firstColl->AddToOvelappingVector(secondColl, sidesForFirst);
 						secondColl->AddToOvelappingVector(firstColl, sidesForSecond);
 					}
@@ -166,12 +171,8 @@ void HandleCollision(std::vector<GameObject*>& gos)
 						secondColl->RemoveFromOverlappingVector(firstColl);
 					}
 				}
-
 			}
-
 		}
-
-
 	}
 }
 
