@@ -85,8 +85,10 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     }
     else
     {
-        RigidBody* dynamic = ra && ra->type == RIGIDBODY_TYPE::DYNAMIC ? ra : rb;
-        GameObject* dynamicObj = dynamic->owner;
+        RigidBody* dynamicRb = (ra && ra->type == RIGIDBODY_TYPE::DYNAMIC) ? ra : rb;
+        if (!dynamicRb) return;
+        GameObject* dynamicObj = dynamicRb->owner;
+        if (!dynamicObj) return;
 
         if (!dynamicObj) return;
 
@@ -97,23 +99,23 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
             else
                 dynamicObj->pos.x -= pxOverlap;
 
-            dynamic->velocity.x = 0.f;
+            dynamicRb->velocity.x = 0.f;
         }
         else
         {
             // Only snap if dynamic is falling onto static
-            if (dynamic->velocity.y <= 0.f && dy > 0.f) // going down
+            if (dynamicRb->velocity.y <= 0.f && dy > 0.f) // going down
             {
                 // landed on top
                 dynamicObj->pos.y += pyOverlap;
-                dynamic->velocity.y = 0.f;
-                dynamic->onCollider = true;
+                dynamicRb->velocity.y = 0.f;
+                dynamicRb->onCollider = true;
             }
             else
             {
                 // hit ceiling
                 dynamicObj->pos.y -= pyOverlap;
-                dynamic->velocity.y = 0.f;
+                dynamicRb->velocity.y = 0.f;
             }
 
         }
