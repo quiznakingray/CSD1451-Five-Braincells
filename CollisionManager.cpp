@@ -46,6 +46,46 @@ int GetAllCollisionSides(AEVec2 aPos, AEVec2 bPos, AEVec2 aScale, AEVec2 bScale)
 	return sides;
 }
 
+bool BoxToCircleCollision(AEVec2 boxPos, AEVec2 circlePos, AEVec2 boxScale, AEVec2 circleScale)
+{
+	float halfW = boxScale.x * 0.5f;
+	float halfH = boxScale.y * 0.5f;
+
+	// Find closest point to circle inside box
+	float closestX = circlePos.x;
+	float closestY = circlePos.y;
+
+	if (circlePos.x < boxPos.x - halfW)
+		closestX = boxPos.x - halfW;
+	else if (circlePos.x > boxPos.x + halfW)
+		closestX = boxPos.x + halfW;
+
+	if (circlePos.y < boxPos.y - halfH)
+		closestY = boxPos.y - halfH;
+	else if (circlePos.y > boxPos.y + halfH)
+		closestY = boxPos.y + halfH;
+
+	float dx = circlePos.x - closestX;
+	float dy = circlePos.y - closestY;
+
+	float distanceSquared = dx * dx + dy * dy;
+
+	float radius = circleScale.x * 0.5f; 
+
+	return distanceSquared <= radius * radius;
+}
+
+bool CircleToCircleCollision(AEVec2 aPos, AEVec2 bPos, AEVec2 aScale, AEVec2 bScale)
+{
+	float dx = aPos.x - bPos.x;
+	float dy = aPos.y - bPos.y;
+
+	float distanceSq = dx * dx + dy * dy;
+	float radiusSum = aScale.x + bScale.x;
+
+	return distanceSq <= (radiusSum * radiusSum);
+}
+
 bool BoxToBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size)
 {
 	// Check X overlap
@@ -120,9 +160,11 @@ AEVec2 Collider::GetPos2D()
 AEVec2 Collider::GetScale()
 {
 	AEVec2 scale{};
+	f32 scaleY = owner->scale.y * size.y;
 	AEVec2Set(&scale, owner->scale.x * size.x, owner->scale.y * size.y);
 	return scale;
 }
+
 
 void Collider::AddToOvelappingVector(Collider* c, int inSides)
 {
@@ -191,6 +233,14 @@ void Collider::Render()
 
 	s->meshColor = isTrigger ? 0xFFFFFF00 : 0xFFFF0000;
 	s->opacity = 0.5f;
+
+	if (type == COLLIDER_TYPE::CIRCLE_COLLIDER)
+	{
+		s->spriteShape = SPRITE_SHAPE::SHAPE_CIRCLE;
+	}
+	else {
+		s->spriteShape = SPRITE_SHAPE::SHAPE_RECT;
+	}
 
 	c->Init();
 	c->Render();

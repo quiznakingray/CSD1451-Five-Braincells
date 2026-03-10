@@ -147,7 +147,7 @@ struct SpikeTile : Tile {
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true) {
 
-		currSprite->texture = AEGfxTextureLoad("Assets/Environment/spike.png");
+		currSprite->textureFileName = "Assets/Environment/spike.png";
 	}
 
 	void Init() override {
@@ -174,12 +174,13 @@ struct GroundTile : Tile {
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
 
-		currSprite->texture =  AEGfxTextureLoad("Assets/Environment/ground.png");
+		currSprite->textureFileName = "Assets/Environment/ground.png";
 
 	}
 
 	void Init() override {
 		Tile::Init();
+
 	}
 };
 
@@ -196,7 +197,7 @@ struct WallTile : Tile {
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
 
-		currSprite->texture = AEGfxTextureLoad("Assets/Environment/wall.png");
+		currSprite->textureFileName = "Assets/Environment/wall.png";
 
 	}
 
@@ -217,11 +218,11 @@ struct LaserTile : Tile {
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
 		if (currID == TILE_ID::LASERRED)
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedVertical.png");
+			currSprite->textureFileName = "Assets/Environment/laserRedVertical.png";
 		else if (currID == TILE_ID::LASERGREEN)
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenVertical.png");
+			currSprite->textureFileName = "Assets/Environment/laserGreenVertical.png";
 		else
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserBlueVertical.png");
+			currSprite->textureFileName = "Assets/Environment/laserBlueVertical.png";
 
 	}
 
@@ -231,6 +232,8 @@ struct LaserTile : Tile {
 		isActive = isCurrActive;
 		collider->canCollide = isCurrActive;  // add this
 	}
+
+
 };
 
 struct CrateTile : Tile {
@@ -251,7 +254,7 @@ struct CrateTile : Tile {
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
-		currSprite->texture = AEGfxTextureLoad("Assets/Environment/crate.png");
+		currSprite->textureFileName = "Assets/Environment/crate.png";
 		rb = AddComponent(
 			new RigidBody()
 		);
@@ -286,7 +289,7 @@ struct CloudTile : Tile {
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
 
-		currSprite->texture = AEGfxTextureLoad("Assets/Environment/images.png");
+
 
 		rb = AddComponent(
 			new RigidBody()
@@ -294,6 +297,7 @@ struct CloudTile : Tile {
 
 		rb->type = RIGIDBODY_TYPE::STATIC;
 		rb->hasGravity = false;
+		currSprite->textureFileName = "Assets/Environment/images.png";
 	}
 	void StartCloudCountdown()
 	{
@@ -376,7 +380,7 @@ struct GateTile : Tile {
 		int col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
-		currSprite->texture = AEGfxTextureLoad("Assets/Environment/gate.png");
+		currSprite->textureFileName = "Assets/Environment/gate.png";
 	}
 	void Init() override {
 		Tile::Init();
@@ -395,7 +399,7 @@ struct GoalTile : Tile {
 		int col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
-		currSprite->texture = AEGfxTextureLoad("Assets/Environment/doorclose.png");
+		currSprite->textureFileName = "Assets/Environment/doorclose.png";
 	}
 	void Init() override {
 		Tile::Init();
@@ -521,7 +525,7 @@ struct MapManager : public Singleton<MapManager> {
 #pragma endregion
 
 #pragma region GetFuncs
-	static Tile * GetTile(TILE_ID id);
+	static Tile* GetTile(TILE_ID id);
 	static AEVec2 GetPlayerSpawnPos();
 
 	void AddTilesToGameObjectVector(std::vector<GameObject*>& gos);
@@ -543,33 +547,33 @@ struct LeverTile : Tile {
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
 		altTag = altTag_;
 		SetTexture();
-		
+
 	}
 
 	void SetTexture() {
 		switch (currID)
 		{
-			case TILE_ID::LEVERREDON:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
-				break;
-			case TILE_ID::LEVERREDOFF:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOff.png");
-				break;
-			case TILE_ID::LEVERGREENON:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOn.png");
-				break;
-			case TILE_ID::LEVERGREENOFF:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
-				break;
-			case TILE_ID::LEVERBLUEON:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserBlueSwitchOn.png");
-				break;
-			case TILE_ID::LEVERBLUEOFF:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserBlueSwitchOff.png");
-				break;
-			default:
-				currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
-				break;
+		case TILE_ID::LEVERREDON:
+			currSprite->textureFileName = "Assets/Environment/laserRedSwitchOn.png";
+			break;
+		case TILE_ID::LEVERREDOFF:
+			currSprite->textureFileName = "Assets/Environment/laserRedSwitchOff.png";
+			break;
+		case TILE_ID::LEVERGREENON:
+			currSprite->textureFileName = "Assets/Environment/laserGreenSwitchOn.png";
+			break;
+		case TILE_ID::LEVERGREENOFF:
+			currSprite->textureFileName = "Assets/Environment/laserGreenSwitchOff.png";
+			break;
+		case TILE_ID::LEVERBLUEON:
+			currSprite->textureFileName = "Assets/Environment/laserBlueSwitchOn.png";
+			break;
+		case TILE_ID::LEVERBLUEOFF:
+			currSprite->textureFileName = "Assets/Environment/laserBlueSwitchOff.png";
+			break;
+		default:
+			currSprite->textureFileName = "Assets/Environment/laserRedSwitchOn.png";
+			break;
 		}
 	}
 
@@ -577,27 +581,27 @@ struct LeverTile : Tile {
 	{
 		switch (currID)
 		{
-			case TILE_ID::LEVERREDON:
-				currID = TILE_ID::LEVERREDOFF;
-				break;
-			case TILE_ID::LEVERREDOFF:
-				currID = TILE_ID::LEVERREDON;
-				break;
-			case TILE_ID::LEVERGREENON:
-				currID = TILE_ID::LEVERGREENOFF;
-				break;
-			case TILE_ID::LEVERGREENOFF:
-				currID = TILE_ID::LEVERGREENON;
-				break;
-			case TILE_ID::LEVERBLUEON:
-				currID = TILE_ID::LEVERBLUEOFF;
-				break;
-			case TILE_ID::LEVERBLUEOFF:
-				currID = TILE_ID::LEVERBLUEON;
-				break;
-			default:
-				currID = TILE_ID::LEVERREDON;
-				break;
+		case TILE_ID::LEVERREDON:
+			currID = TILE_ID::LEVERREDOFF;
+			break;
+		case TILE_ID::LEVERREDOFF:
+			currID = TILE_ID::LEVERREDON;
+			break;
+		case TILE_ID::LEVERGREENON:
+			currID = TILE_ID::LEVERGREENOFF;
+			break;
+		case TILE_ID::LEVERGREENOFF:
+			currID = TILE_ID::LEVERGREENON;
+			break;
+		case TILE_ID::LEVERBLUEON:
+			currID = TILE_ID::LEVERBLUEOFF;
+			break;
+		case TILE_ID::LEVERBLUEOFF:
+			currID = TILE_ID::LEVERBLUEON;
+			break;
+		default:
+			currID = TILE_ID::LEVERREDON;
+			break;
 		}
 
 		SetTexture();
@@ -621,7 +625,7 @@ struct LeverTile : Tile {
 		collider->OnTriggerOver = [this](Collider* other, int sides) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
-				
+
 				this->interactionTextBox->isActive = true;
 				if (AEInputCheckTriggered(AEVK_F))
 				{
@@ -691,13 +695,13 @@ struct ButtonTile : Tile {
 		switch (currID)
 		{
 		case TILE_ID::BUTTONBLUEUNPRESSED:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
+			currSprite->textureFileName = "Assets/Environment/buttonBlueUnpressed.png";
 			break;
 		case TILE_ID::BUTTONBLUEPRESSED:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBluePressed.png");
+			currSprite->textureFileName = "Assets/Environment/buttonBluePressed.png";
 			break;
 		default:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
+			currSprite->textureFileName = "Assets/Environment/buttonBlueUnpressed.png";
 			break;
 		}
 	}

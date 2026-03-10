@@ -5,11 +5,11 @@
 
 void Sprite::Init()
 {
-	AEGfxMeshStart();
 
 	// set sprite uv
 	f32 u0 = 0.0f, v0 = 0.0f;
 	f32 u1 = 1.0f, v1 = 1.0f;
+
 
 	if (spriteSheet.isSpriteSheet)
 	{
@@ -29,18 +29,59 @@ void Sprite::Init()
 	}
 
 
-
+	AEGfxMeshStart();
 	// add tri for rects
-	AEGfxTriAdd(
-		-0.5f, -0.5f, meshColor, u0, v1,
-		0.5f, -0.5f, meshColor, u1, v1,
-		-0.5f, 0.5f, meshColor, u0, v0);
+	if (spriteShape == SPRITE_SHAPE::SHAPE_RECT)
+	{
+		AEGfxTriAdd(
+			-0.5f, -0.5f, meshColor, u0, v1,
+			0.5f, -0.5f, meshColor, u1, v1,
+			-0.5f, 0.5f, meshColor, u0, v0);
 
-	AEGfxTriAdd(
-		0.5f, -0.5f, meshColor, u1, v1,
-		0.5f, 0.5f, meshColor, u1, v0,
-		-0.5f, 0.5f, meshColor, u0, v0);
+		AEGfxTriAdd(
+			0.5f, -0.5f, meshColor, u1, v1,
+			0.5f, 0.5f, meshColor, u1, v0,
+			-0.5f, 0.5f, meshColor, u0, v0);
+	}
+	else if (spriteShape == SPRITE_SHAPE::SHAPE_CIRCLE)
+	{
 
+
+		f32 slice = 40.0f;
+		f32 theta = 360.0f / slice;
+
+		for (int i = 1; i <= slice; i++)
+		{
+			f32 x1 = AECosDeg((i - 1) * theta);
+			f32 y1 = AESinDeg((i - 1) * theta);
+
+			f32 uCircle1 = (x1 + 1.0f) * 0.5f;
+			f32 vCircle1 = 1.0f - ((y1 + 1.0f) * 0.5f);
+
+			// Remap to sprite frame
+			f32 uFinal1 = u0 + uCircle1 * (u1 - u0);
+			f32 vFinal1 = v0 + vCircle1 * (v1 - v0);
+
+			AEGfxVertexAdd(x1, y1, meshColor, uFinal1, vFinal1);
+
+			// Center vertex
+			f32 centerU = u0 + 0.5f * (u1 - u0);
+			f32 centerV = v0 + 0.5f * (v1 - v0);
+
+			AEGfxVertexAdd(0.0f, 0.0f, meshColor, centerU, centerV);
+
+			f32 x2 = AECosDeg(i * theta);
+			f32 y2 = AESinDeg(i * theta);
+
+			f32 uCircle2 = (x2 + 1.0f) * 0.5f;
+			f32 vCircle2 = 1.0f - ((y2 + 1.0f) * 0.5f);
+
+			f32 uFinal2 = u0 + uCircle2 * (u1 - u0);
+			f32 vFinal2 = v0 + vCircle2 * (v1 - v0);
+
+			AEGfxVertexAdd(x2, y2, meshColor, uFinal2, vFinal2);
+		}
+	}
 	mesh = AEGfxMeshEnd(); // set to ui->mesh
 
 	if (!textureFileName.empty() && !texture)
@@ -70,10 +111,10 @@ void Sprite::Update()
 void Sprite::Render()  {
 
 	// calculate row and columns 
-
-
+	f32 scaleX = spriteShape == SPRITE_SHAPE::SHAPE_CIRCLE ? owner->scale.x / 2  : owner->scale.x;
+	f32 scaleY = spriteShape == SPRITE_SHAPE::SHAPE_CIRCLE ? owner->scale.x / 2 : owner->scale.y;
 	AEMtx33 scaleMtx = { 0 };
-	AEMtx33Scale(&scaleMtx, owner->scale.x, owner->scale.y);
+	AEMtx33Scale(&scaleMtx, scaleX, scaleY);
 
 
 	AEMtx33 rotateMtx = { 0 };
@@ -98,6 +139,7 @@ void Sprite::Render()  {
 	// Tell Alpha Engine to draw the mesh with the above settings.
 	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 
+
 }
 
 void Sprite::Free()
@@ -110,50 +152,50 @@ void Sprite::Free()
 }
 
 
-void RenderSprite(Sprite sprite, AEGfxVertexList* mesh)
-{
-	// Tell the engine to get ready to draw something with texture.
-	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-
-	// Set the the color to multiply to white, so that the sprite can 
-	// display the full range of colors (default is black).
-	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-
-	// Set the color to add to nothing, so that we don't alter the sprite's color
-	AEGfxSetColorToAdd(sprite.addColor.r, sprite.addColor.g, sprite.addColor.b, sprite.addColor.a);
-
-	// Set blend mode to AE_GFX_BM_BLEND
-	// This will allow transparency.
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-	AEGfxSetTransparency(1.0f);
-
-	// Set the texture to pTex
-	AEGfxTextureSet(sprite.texture, 0, 0);
-
-	AEMtx33 scale = { 0 };
-	AEMtx33Scale(&scale, sprite.owner->scale.x, sprite.owner->scale.y);
-
-
-	AEMtx33 rotate = { 0 };
-	AEMtx33Rot(&rotate, sprite.owner->rotation);
-
-
-	AEMtx33 translate = { 0 };
-	AEMtx33Trans(&translate, sprite.owner->pos.x, sprite.owner->pos.y);
-
-
-	AEMtx33 transform = { 0 };
-	AEMtx33Concat(&transform, &rotate, &scale);
-	AEMtx33Concat(&transform, &translate, &transform);;
-
-
-	// Tell Alpha Engine to use the matrix in 'transform' to apply onto all
-	AEGfxSetTransform(transform.m);
-	// the vertices of the mesh that we are about to choose to draw in the next line.
-
-	// Tell Alpha Engine to draw the mesh with the above settings.
-	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
-}
+//void RenderSprite(Sprite sprite, AEGfxVertexList* mesh)
+//{
+//	// Tell the engine to get ready to draw something with texture.
+//	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+//
+//	// Set the the color to multiply to white, so that the sprite can 
+//	// display the full range of colors (default is black).
+//	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+//
+//	// Set the color to add to nothing, so that we don't alter the sprite's color
+//	AEGfxSetColorToAdd(sprite.addColor.r, sprite.addColor.g, sprite.addColor.b, sprite.addColor.a);
+//
+//	// Set blend mode to AE_GFX_BM_BLEND
+//	// This will allow transparency.
+//	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+//	AEGfxSetTransparency(1.0f);
+//
+//	// Set the texture to pTex
+//	AEGfxTextureSet(sprite.texture, 0, 0);
+//
+//	AEMtx33 scale = { 0 };
+//	AEMtx33Scale(&scale, sprite.owner->scale.x, sprite.owner->scale.y);
+//
+//
+//	AEMtx33 rotate = { 0 };
+//	AEMtx33Rot(&rotate, sprite.owner->rotation);
+//
+//
+//	AEMtx33 translate = { 0 };
+//	AEMtx33Trans(&translate, sprite.owner->pos.x, sprite.owner->pos.y);
+//
+//
+//	AEMtx33 transform = { 0 };
+//	AEMtx33Concat(&transform, &rotate, &scale);
+//	AEMtx33Concat(&transform, &translate, &transform);;
+//
+//
+//	// Tell Alpha Engine to use the matrix in 'transform' to apply onto all
+//	AEGfxSetTransform(transform.m);
+//	// the vertices of the mesh that we are about to choose to draw in the next line.
+//
+//	// Tell Alpha Engine to draw the mesh with the above settings.
+//	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
+//}
 
 void UpdateSpriteArray(std::vector<Sprite*>& spriteArr)
 {

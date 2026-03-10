@@ -5,6 +5,12 @@
 #include "PhysicsManager.h"
 #include "AnimatorComponent.h"
 
+enum class PlayerAction {
+	IDLE,
+	RUNNING,
+	JUMPING
+};
+
 struct Player : GameObject {
 
 	Player() :GameObject()
@@ -24,10 +30,16 @@ struct Player : GameObject {
 	Animation* idleAnim = nullptr;
 	Animation* runningAnim = nullptr;
 
-	void PlayerInput();
-
 	void Init() override;
 	void Update() override;
+
+private:
+
+	PlayerAction currentAction = PlayerAction::IDLE;
+
+	void PlayerInput();
+	void PlayerAction();
+	void PlayerAnimation();
 };
 
 

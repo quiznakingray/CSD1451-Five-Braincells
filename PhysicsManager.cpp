@@ -6,9 +6,13 @@ void PhysicsManager::UpdateRigidBody(RigidBody* rb, f32 dt)
 {
     if (!rb) return;
 
+    rb->onCollider = false;
     // Apply gravity
-    if (rb->hasGravity && !rb->onCollider)
-        rb->velocity.y += rb->gravity * dt;
+    if (rb->hasGravity ) rb->velocity.y += rb->gravity * dt;
+
+    //// Update velocity from acceleration
+    //rb->velocity.x += rb->acceleration.x * dt;
+    //rb->velocity.y += rb->acceleration.y * dt;
 
     // Update position from velocity
     rb->owner->pos.x += rb->velocity.x * dt;
@@ -97,7 +101,8 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
         }
         else
         {
-            if (dy > 0)
+            // Only snap if dynamic is falling onto static
+            if (dynamic->velocity.y <= 0.f && dy > 0.f) // going down
             {
                 // landed on top
                 dynamicObj->pos.y += pyOverlap;
@@ -110,6 +115,7 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
                 dynamicObj->pos.y -= pyOverlap;
                 dynamic->velocity.y = 0.f;
             }
+
         }
     }
 }
