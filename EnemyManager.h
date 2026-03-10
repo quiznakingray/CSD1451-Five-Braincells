@@ -16,11 +16,14 @@ public:
 
     static void RegisterEnemy(EnemyGameObject* enemy);
 
-    static void SpawnEnemies(int numBasic, int numMiniBoss);
+    static void SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects);
 
     static void UpdateAllEnemies(f32 dt);
 
     static AEVec2 GetPlayerPos();
+
+    // Getter for rendering
+    static const std::vector<EnemyGameObject*>& GetEnemies() { return enemies; }
 };
 
 #endif

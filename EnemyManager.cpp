@@ -21,7 +21,7 @@ AEVec2 EnemyManager::GetPlayerPos() {
     return player ? player->pos : AEVec2{ 0, 0 };
 }
 
-void EnemyManager::SpawnEnemies(int numBasic, int numMiniBoss) {
+void EnemyManager::SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects) {
     std::vector<Tile*> enemyTiles = mapManager.GetTilesWithID(TILE_ID::ENEMY);
 
     int spawned = 0;
@@ -31,6 +31,7 @@ void EnemyManager::SpawnEnemies(int numBasic, int numMiniBoss) {
         EnemyType type = (spawned < numBasic) ? EnemyType::BASIC : EnemyType::MINI_BOSS;
         EnemyGameObject* enemy = new EnemyGameObject();
         enemy->Init(type, tile);
+        AddGameObjectToVector(enemy, gameObjects);
         RegisterEnemy(enemy);
         spawned++;
     }

@@ -8,18 +8,21 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     InitEnemyBase(base, type);
     EnemyMovement::InitEnemyMovement(movement);
 
-    if (!spawnTile) return;
+    if (!spawnTile) {
+        std::cout << "[EnemyGameObject] No spawn tile provided!\n";
+        return;
+    }
 
     // Position
-    AEVec2Set(&pos, spawnTile->pos.x, spawnTile->pos.y);
+    AEVec2Set(&pos, spawnTile->pos.x + 50, spawnTile->pos.y);
     pos.z = 1.f;
 
     // Scale
     AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
 
     // Patrol points around spawn
-    base.patrolStart = { pos.x - 100.f, pos.y };
-    base.patrolEnd = { pos.x + 150.f, pos.y };
+    base.patrolStart = { spawnTile->pos.x - 100.f, spawnTile->pos.y - 100.f };
+    base.patrolEnd = { spawnTile->pos.x + 150.f, spawnTile->pos.y - 100.f };
 
     // Sprite setup
     Sprite* s = AddComponent(new Sprite());
@@ -31,15 +34,21 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     idleAnim = new Animation(s);
     walkAnim = new Animation(s);
 
+    // Add Rigidbody first
+    rb = AddComponent(new RigidBody());
+
+    // Add Animator after Rigidbody
     animator = AddComponent(new Animator(idleAnim));
 
     // Collider
     Collider* c = AddComponent(new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0, 0, 1, 1));
-    rb = AddComponent(new RigidBody());
 
     base.isAlive = true;
 
-    EnemyManager::RegisterEnemy(this);
+    // Register enemy last
+    //EnemyManager::RegisterEnemy(this);
+
+    std::cout << "[EnemyGameObject] Initialized at (" << pos.x << ", " << pos.y << ")\n";
 }
 
 void EnemyGameObject::Update() {

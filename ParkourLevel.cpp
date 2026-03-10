@@ -3,10 +3,12 @@
 #include "MapManager.h"
 #include "EnemyGameObject.h"
 #include "PlayerManager.h"
+#include "EnemyManager.h"
 
 //Player* player1 = nullptr;
 PlayerManager playerManager;
-EnemyGameObject* enemy1 = nullptr;
+
+//EnemyGameObject* enemy1 = nullptr;
 
 std::vector<GameObject*> gameObjects1{};
 
@@ -31,11 +33,13 @@ void ParkourLevel::Init()
 	//player->Init();
 	//player1 = new Player();
 	playerManager.Init();
-	enemy1 = new EnemyGameObject();
 	AddGameObjectToVector(playerManager.meleePlayer, gameObjects1);
 	AddGameObjectToVector(playerManager.rangedPlayer, gameObjects1);
 	AddGameObjectToVector(playerManager.rangePlayerArrow, gameObjects1);
-	AddGameObjectToVector(enemy1, gameObjects1);
+	EnemyManager::Init(playerManager.currentPlayer);
+	EnemyManager::SpawnEnemies(5, 1, gameObjects1);
+	AddGameObjectToVector(player1, gameObjects1);
+	//AddGameObjectToVector(enemy1, gameObjects1);
 
 	InitGameObjects(gameObjects1);
 	
@@ -56,7 +60,9 @@ void ParkourLevel::Render()
 
 	//player1->Render();
 	playerManager.Render();
-	enemy1->Render();
+	// enemy1->Render();
+	// player1->Render();
+	//enemy1->Render();
 
 }
 
