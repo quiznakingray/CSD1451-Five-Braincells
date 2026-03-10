@@ -59,6 +59,13 @@ struct Sprite : ComponentBase{
 
 	} spriteSheet;
 
+	// line render
+	struct LinePoint {
+		AEVec2 pos;
+	};
+	std::vector<LinePoint*> linePoints;
+	f32 thickness;
+	bool dotted = false;
 
 	Sprite() : meshColor(0x00000000), texture(nullptr) , spriteSheet(1, 1){
 
@@ -77,6 +84,10 @@ struct Sprite : ComponentBase{
 		//AEVec2Set(&scale, scale_x, scale_y);
 
 	}
+
+	void RenderRect(f32 u0, f32 v0, f32 u1, f32 v1);
+	void RenderCircle(f32 u0, f32 v0, f32 u1, f32 v1);
+	void RenderLine();
 
 	void UpdateFrame();
 	void Init() override;
