@@ -139,6 +139,7 @@ void Sprite::Render()  {
 	// Tell Alpha Engine to draw the mesh with the above settings.
 	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 
+
 }
 
 void Sprite::Free()

@@ -176,91 +176,134 @@ void MapManager::DrawTile(Sprite sprite, AEMtx33 transform)
 Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t row)
 {
     // saves first int as current currID of tile
+    if (cell == "") {
+        return nullptr;
+    }
     TILE_ID currID = static_cast<TILE_ID>(stoi(cell));
     cell.erase(0, 4);
     TILE_ID bgID = currID;
     int currTag = 0;
+    int altTag = 0;
     bool bgActive = true;
     bool currActive = true;
-    
+
+    auto trim = [](std::string s) {
+        s.erase(0, s.find_first_not_of(" \t"));
+        s.erase(s.find_last_not_of(" \t") + 1);
+        return s;
+        };
+
+    auto nextToken = [&]() -> std::string {
+        size_t pos = cell.find(delimiter);
+        std::string token;
+        if (pos == std::string::npos) {
+            token = trim(cell);
+            cell.clear();  // ends the loop
+        }
+        else {
+            token = trim(cell.substr(0, pos));
+            cell.erase(0, pos + 1);
+        }
+        return token;
+        };
+
+    bool tagSetAtZero = false;
+
     int delimitCount = 0;
     while (!cell.empty()) {
+        std::string token = nextToken();
+
         if (delimitCount == 0) {
-            if (cell.length() == 1) {
-                currTag = stoi(cell);
-                cell.erase(0, cell.find(delimiter) + 1);
+            if (token.length() == 1 || token.length() == 3) {
+                currTag = stoi(token);
+                tagSetAtZero = true;  // tag was here, next slot is altTag
             }
             else {
-                bgID = static_cast<TILE_ID>(stoi(cell));
-                cell.erase(0, cell.find(delimiter) + 1);
+                bgID = static_cast<TILE_ID>(stoi(token));
             }
         }
-        if (delimitCount == 1) {
-            std::string third = cell.substr(0, cell.find(delimiter));
-            if (third.length() == 1) {
-                currTag = stoi(cell);
-                cell.erase(0, cell.find(delimiter) + 1);
-            }
-            else {
-                cell.erase(0, cell.find(delimiter) + 1);
-                currActive = stoi(third);
+        else if (delimitCount == 1) {
+            if (!token.empty()) {
+                if (tagSetAtZero)
+                {
+                    int num = stoi(token);
+                    if (num == 0 || num == 1) {
+                        currActive = stoi(token);
+                        continue;
+                    }
+                    altTag = stoi(token);   // currTag already set, this is altTag
+                }
+
+                else
+                    currTag = stoi(token);  // bgID was at slot 0, this is currTag
             }
         }
         else if (delimitCount == 2) {
-            std::string fourth = cell.substr(0, cell.find(delimiter));
-            cell.erase(0, cell.find(delimiter) + 1);
-            currActive = stoi(fourth);
+            if (!token.empty()) altTag = stoi(token);  // altTag after bgID+currTag case
         }
         else if (delimitCount == 3) {
-            std::string fifth = cell.substr(0, cell.find(delimiter));
-            cell.erase(0, cell.length());
-            bgActive = stoi(fifth);
+            if (!token.empty()) currActive = stoi(token);
+        }
+        else if (delimitCount == 4) {
+            if (!token.empty()) bgActive = stoi(token);
         }
         delimitCount++;
     }
 
     // do checking here
     Tile* newTile{};
-    
+
     switch (currID)
     {
         // dont do anythign for 
-        case TILE_ID::SPIKEDOWN:
-        case TILE_ID::SPIKEUP:
-        case TILE_ID::SPIKELEFT:
-        case TILE_ID::SPIKERIGHT:
-            newTile = new SpikeTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
-        
-        case TILE_ID::LEVERREDON:
-        case TILE_ID::LEVERREDOFF:
-        case TILE_ID::LEVERGREENON:
-        case TILE_ID::LEVERGREENOFF:
-            newTile = new LeverTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
+    case TILE_ID::SPIKEDOWN:
+    case TILE_ID::SPIKEUP:
+    case TILE_ID::SPIKELEFT:
+    case TILE_ID::SPIKERIGHT:
+        newTile = new SpikeTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
 
-        case TILE_ID::GROUND:
-            newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
-        case TILE_ID::WALL:
-            newTile = new WallTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
+    case TILE_ID::LEVERREDON:
+    case TILE_ID::LEVERREDOFF:
+    case TILE_ID::LEVERGREENON:
+    case TILE_ID::LEVERGREENOFF:
+    case TILE_ID::LEVERBLUEON:
+    case TILE_ID::LEVERBLUEOFF:
+        newTile = new LeverTile(currID, bgID, currTag, altTag, bgActive, currActive, row, col, tileSize);
+        break;
 
-        case TILE_ID::LASERRED:
-        case TILE_ID::LASERGREEN:
-            newTile = new LaserTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
-        case TILE_ID::CLOUD:
-            newTile = new CloudTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
-        case TILE_ID::CRATE:
-            newTile = new CrateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
-        default:
-            newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
-            newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
+    case TILE_ID::GROUND:
+        newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::WALL:
+        newTile = new WallTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
 
-            break;
+    case TILE_ID::LASERRED:
+    case TILE_ID::LASERGREEN:
+    case TILE_ID::LASERBLUE:
+        newTile = new LaserTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::CLOUD:
+        newTile = new CloudTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::CRATE:
+        newTile = new CrateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::BUTTONBLUEUNPRESSED:
+        newTile = new ButtonTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::GATE:
+        newTile = new GateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::GOAL:
+        newTile = new GoalTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    default:
+        newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
+        newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
+
+        break;
     }
 
     if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMY) {
@@ -270,7 +313,7 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     CheckTileToInit(newTile);
 
     // if bg tile sprite is present
-    if (bgID != currID) 
+    if (bgID != currID)
     {
         newTile->bgSprite = newTile->AddComponent(
             new Sprite()
@@ -309,6 +352,9 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     case TILE_ID::LASERGREEN:
         tTex = AEGfxTextureLoad("Assets/Environment/laserGreenVertical.png");
         break;
+    case TILE_ID::LASERBLUE:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserBlueVertical.png");
+        break;
     case TILE_ID::LEVERREDON:
         tTex = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
         break;
@@ -320,6 +366,18 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
         break;
     case TILE_ID::LEVERGREENOFF:
         tTex = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
+        break;
+    case TILE_ID::LEVERBLUEON:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserBlueSwitchOn.png");
+        break;
+    case TILE_ID::LEVERBLUEOFF:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserBlueSwitchOff.png");
+        break;
+    case TILE_ID::BUTTONBLUEUNPRESSED:
+        tTex = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
+        break;
+    case TILE_ID::GATE:
+        tTex = AEGfxTextureLoad("Assets/Environment/gate.png");
         break;
     default:
         tTex = AEGfxTextureLoad("Assets/PlanetTexture.png");
@@ -364,6 +422,28 @@ void MapManager::RotateTile(double rotation, Tile tile)
 {
 
 }
+std::vector<Tile*> MapManager::GetTilesWithID(TILE_ID currID)
+{
+    size_t rowCount = (map.GetRow<std::string>(0)).size();
+    size_t colCount = (map.GetColumn<std::string>(0)).size();
+    int i = 0;
+    std::vector<Tile*> foundTiles;
+    //taggedTiles.resize(size, 0);
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        {
+            if (arrMapInfo[uiCol][uiRow]->currID == currID)
+            {
+                foundTiles.push_back(arrMapInfo[uiCol][uiRow]);
+                i++;
+            }
+
+        }
+    }
+    return foundTiles;
+}
+
 Tile* MapManager::GetTile(unsigned int col, unsigned int row)
 {
     return arrMapInfo[col][row];
@@ -524,7 +604,7 @@ void CrateTile::Update() {
     Tile::Update();
     double dt = AEFrameRateControllerGetFrameTime();
 
-   
+    rb->onCollider = false;
     // Check crate against nearby tiles
     std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
     std::vector<Collider*> colliders = GetComponents<Collider>();
@@ -533,6 +613,10 @@ for (Collider* pCol : colliders)
 {
     float impulse = pushForce * dt;
     RigidBody* playerRb{};
+    playerTouching = false;
+    playerOnLeft = false;
+    playerOnRight = false;
+
     for (const auto& info : pCol->collisionInfos)
     {
         Collider* other = info.other;

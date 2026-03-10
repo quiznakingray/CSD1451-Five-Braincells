@@ -13,6 +13,7 @@
 enum class SPRITE_SHAPE {
 	SHAPE_RECT,
 	SHAPE_CIRCLE,
+	SHAPE_LINE
 };
 
 struct Color { // range form 0 to 1

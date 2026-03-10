@@ -23,6 +23,7 @@ void ParkourLevel::Init()
 
 	mapManager1.InitMap("Assets/Maps/Map_Level_01.csv", 0);
 	mapManager1.PrintMap();
+	
 
 	mapManager1.AddTilesToGameObjectVector(gameObjects1);
 
@@ -33,6 +34,7 @@ void ParkourLevel::Init()
 	AddGameObjectToVector(enemy1, gameObjects1);
 
 	InitGameObjects(gameObjects1);
+	
 }
 
 void ParkourLevel::Update()
