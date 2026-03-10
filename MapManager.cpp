@@ -656,7 +656,7 @@ for (Collider* pCol : colliders)
         {
             PhysicsManager::ApplyImpulse(rb, -impulse);
         }
-        std::cout << rb->velocity.x << '\n';
+        //std::cout << rb->velocity.x << '\n';
     }
 
     //PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
