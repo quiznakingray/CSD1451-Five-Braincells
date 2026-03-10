@@ -5,62 +5,71 @@
 
 void Sprite::Init()
 {
+
+	// set sprite uv
+	f32 u0 = 0.0f, v0 = 0.0f;
+	f32 u1 = 1.0f, v1 = 1.0f;
+
+
+	if (spriteSheet.isSpriteSheet)
+	{
+		spriteSheet.currentFrame = 0;
+		spriteSheet.maxFrames = spriteSheet.rows * spriteSheet.columns;
+		spriteSheet.UVWidth = 1.f / spriteSheet.columns;
+		spriteSheet.UVHeight = 1.f / spriteSheet.rows;
+
+		u32 currentSpriteRow = spriteSheet.currentFrame / spriteSheet.columns;
+		u32 currentSpriteCol = spriteSheet.currentFrame % spriteSheet.columns;
+
+		u0 = spriteSheet.UVWidth * currentSpriteCol;
+		v0 = spriteSheet.UVHeight * currentSpriteRow;
+
+		u1 = u0 + spriteSheet.UVWidth;
+		v1 = v0 + spriteSheet.UVHeight;
+	}
+
+
 	AEGfxMeshStart();
-
-	//f32 row = spriteSheet.isSpriteSheet ?  spriteSheet.currentFrame / spriteSheet.rows : 1.f;
-	//f32 column = spriteSheet.isSpriteSheet ? column * spriteSheet.currentFrame / spriteSheet.columns : 1.f;
-
 	// add tri for rects
-	AEGfxTriAdd(
-		-0.5f, -0.5f, meshColor, 0.0f, 1.0f,
-		0.5f, -0.5f, meshColor, 1.0f, 1.0f,
-		-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
-
-	AEGfxTriAdd(
-		0.5f, -0.5f, meshColor, 1.0f, 1.0f,
-		0.5f, 0.5f, meshColor, 1.0f, 0.0f,
-		-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
-
-
+	if (spriteShape == SPRITE_SHAPE::SHAPE_RECT)
+	{
+		RenderRect(u0, v0, u1, v1);
+	}
+	else if (spriteShape == SPRITE_SHAPE::SHAPE_CIRCLE)
+	{
+		RenderCircle(u0, v0, u1, v1);
+	}
+	else if (spriteShape == SPRITE_SHAPE::SHAPE_LINE)
+	{
+		RenderLine();
+	}
 	mesh = AEGfxMeshEnd(); // set to ui->mesh
+
+	if (!textureFileName.empty() && !texture)
+	{
+		texture = AEGfxTextureLoad(textureFileName.c_str());
+	}
 }
 
 void Sprite::Update()
 {
-	//AEVec2Set(&pos, owner->pos.x, owner->pos.y);
-	//pos.z = owner->pos.z;
-	//AEVec2Set(&scale, owner->scale.x, owner->scale.y);
+	if (spriteShape == SPRITE_SHAPE::SHAPE_LINE)
+	{
+		if (mesh) AEGfxMeshFree(mesh);
+
+		AEGfxMeshStart();
+		RenderLine();
+		mesh = AEGfxMeshEnd();
+	}
 }
 
 void Sprite::Render()  {
 
 	// calculate row and columns 
-
-	if (spriteSheet.isSpriteSheet)
-	{
-		AEGfxMeshStart();
-
-		//f32 row = spriteSheet.isSpriteSheet ?  spriteSheet.currentFrame / spriteSheet.rows : 1.f;
-		//f32 column = spriteSheet.isSpriteSheet ? column * spriteSheet.currentFrame / spriteSheet.columns : 1.f;
-
-		// add tri for rects
-		AEGfxTriAdd(
-			-0.5f, -0.5f, meshColor, 0.0f, 1.0f,
-			0.5f, -0.5f, meshColor, 1.0f, 1.0f,
-			-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
-
-		AEGfxTriAdd(
-			0.5f, -0.5f, meshColor, 1.0f, 1.0f,
-			0.5f, 0.5f, meshColor, 1.0f, 0.0f,
-			-0.5f, 0.5f, meshColor, 0.0f, 0.0f);
-
-
-		mesh = AEGfxMeshEnd(); // set to ui->mesh
-
-	}
-
+	f32 scaleX = spriteShape == SPRITE_SHAPE::SHAPE_CIRCLE ? owner->scale.x / 2  : owner->scale.x;
+	f32 scaleY = spriteShape == SPRITE_SHAPE::SHAPE_CIRCLE ? owner->scale.x / 2 : owner->scale.y;
 	AEMtx33 scaleMtx = { 0 };
-	AEMtx33Scale(&scaleMtx, owner->scale.x, owner->scale.y);
+	AEMtx33Scale(&scaleMtx, scaleX, scaleY);
 
 
 	AEMtx33 rotateMtx = { 0 };
@@ -72,8 +81,15 @@ void Sprite::Render()  {
 
 
 	AEMtx33 transform = { 0 };
-	AEMtx33Concat(&transform, &rotateMtx, &scaleMtx);
-	AEMtx33Concat(&transform, &translateMtx, &transform);
+	if (spriteShape == SPRITE_SHAPE::SHAPE_LINE)
+	{
+		AEMtx33Concat(&transform, &translateMtx, &rotateMtx);
+	}
+	else
+	{
+		AEMtx33Concat(&transform, &rotateMtx, &scaleMtx);
+		AEMtx33Concat(&transform, &translateMtx, &transform);
+	}
 
 	AEGfxSetRenderMode(texture == nullptr  ? AE_GFX_RM_COLOR: AE_GFX_RM_TEXTURE);
 	AEGfxSetColorToMultiply(multiplyColor.r, multiplyColor.g, multiplyColor.b, multiplyColor.a);
@@ -81,63 +97,67 @@ void Sprite::Render()  {
 	AEGfxSetBlendMode(blendMode);
 	AEGfxSetTransparency(opacity);
 	AEGfxSetTransform(transform.m);
-	if (texture != nullptr) AEGfxTextureSet(texture, 0, 0);
+	if (texture != nullptr) AEGfxTextureSet(texture, spriteSheet.isSpriteSheet ? spriteSheet.UVOffsetX : 0, spriteSheet.isSpriteSheet ? spriteSheet.UVOffsetY : 0);
 	// Tell Alpha Engine to draw the mesh with the above settings.
 	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
+
 
 }
 
 void Sprite::Free()
 {
 	if (mesh != nullptr) AEGfxMeshFree(mesh);
-	if (texture != nullptr)AEGfxTextureUnload(texture);
+	if (texture != nullptr) {
+		AEGfxTextureUnload(texture);
+		texture = nullptr;
+	}
 }
 
 
-void RenderSprite(Sprite sprite, AEGfxVertexList* mesh)
-{
-	// Tell the engine to get ready to draw something with texture.
-	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-
-	// Set the the color to multiply to white, so that the sprite can 
-	// display the full range of colors (default is black).
-	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-
-	// Set the color to add to nothing, so that we don't alter the sprite's color
-	AEGfxSetColorToAdd(sprite.addColor.r, sprite.addColor.g, sprite.addColor.b, sprite.addColor.a);
-
-	// Set blend mode to AE_GFX_BM_BLEND
-	// This will allow transparency.
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-	AEGfxSetTransparency(1.0f);
-
-	// Set the texture to pTex
-	AEGfxTextureSet(sprite.texture, 0, 0);
-
-	AEMtx33 scale = { 0 };
-	AEMtx33Scale(&scale, sprite.owner->scale.x, sprite.owner->scale.y);
-
-
-	AEMtx33 rotate = { 0 };
-	AEMtx33Rot(&rotate, sprite.owner->rotation);
-
-
-	AEMtx33 translate = { 0 };
-	AEMtx33Trans(&translate, sprite.owner->pos.x, sprite.owner->pos.y);
-
-
-	AEMtx33 transform = { 0 };
-	AEMtx33Concat(&transform, &rotate, &scale);
-	AEMtx33Concat(&transform, &translate, &transform);;
-
-
-	// Tell Alpha Engine to use the matrix in 'transform' to apply onto all
-	AEGfxSetTransform(transform.m);
-	// the vertices of the mesh that we are about to choose to draw in the next line.
-
-	// Tell Alpha Engine to draw the mesh with the above settings.
-	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
-}
+//void RenderSprite(Sprite sprite, AEGfxVertexList* mesh)
+//{
+//	// Tell the engine to get ready to draw something with texture.
+//	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+//
+//	// Set the the color to multiply to white, so that the sprite can 
+//	// display the full range of colors (default is black).
+//	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+//
+//	// Set the color to add to nothing, so that we don't alter the sprite's color
+//	AEGfxSetColorToAdd(sprite.addColor.r, sprite.addColor.g, sprite.addColor.b, sprite.addColor.a);
+//
+//	// Set blend mode to AE_GFX_BM_BLEND
+//	// This will allow transparency.
+//	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+//	AEGfxSetTransparency(1.0f);
+//
+//	// Set the texture to pTex
+//	AEGfxTextureSet(sprite.texture, 0, 0);
+//
+//	AEMtx33 scale = { 0 };
+//	AEMtx33Scale(&scale, sprite.owner->scale.x, sprite.owner->scale.y);
+//
+//
+//	AEMtx33 rotate = { 0 };
+//	AEMtx33Rot(&rotate, sprite.owner->rotation);
+//
+//
+//	AEMtx33 translate = { 0 };
+//	AEMtx33Trans(&translate, sprite.owner->pos.x, sprite.owner->pos.y);
+//
+//
+//	AEMtx33 transform = { 0 };
+//	AEMtx33Concat(&transform, &rotate, &scale);
+//	AEMtx33Concat(&transform, &translate, &transform);;
+//
+//
+//	// Tell Alpha Engine to use the matrix in 'transform' to apply onto all
+//	AEGfxSetTransform(transform.m);
+//	// the vertices of the mesh that we are about to choose to draw in the next line.
+//
+//	// Tell Alpha Engine to draw the mesh with the above settings.
+//	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
+//}
 
 void UpdateSpriteArray(std::vector<Sprite*>& spriteArr)
 {
@@ -248,4 +268,112 @@ void FreeSprite(Sprite* sprite)
 {
 	if (sprite->mesh != nullptr)	AEGfxMeshFree(sprite->mesh);
 	if (sprite->texture != nullptr)AEGfxTextureUnload(sprite->texture);
+}
+
+void Sprite::RenderRect(f32 u0, f32 v0, f32 u1, f32 v1)
+{
+	AEGfxTriAdd(
+		-0.5f, -0.5f, meshColor, u0, v1,
+		0.5f, -0.5f, meshColor, u1, v1,
+		-0.5f, 0.5f, meshColor, u0, v0);
+
+	AEGfxTriAdd(
+		0.5f, -0.5f, meshColor, u1, v1,
+		0.5f, 0.5f, meshColor, u1, v0,
+		-0.5f, 0.5f, meshColor, u0, v0);
+}
+
+void Sprite::RenderCircle(f32 u0, f32 v0, f32 u1, f32 v1)
+{
+
+	f32 slice = 40.0f;
+	f32 theta = 360.0f / slice;
+
+	for (int i = 1; i <= slice; i++)
+	{
+		f32 x1 = AECosDeg((i - 1) * theta);
+		f32 y1 = AESinDeg((i - 1) * theta);
+
+		f32 uCircle1 = (x1 + 1.0f) * 0.5f;
+		f32 vCircle1 = 1.0f - ((y1 + 1.0f) * 0.5f);
+
+		// Remap to sprite frame
+		f32 uFinal1 = u0 + uCircle1 * (u1 - u0);
+		f32 vFinal1 = v0 + vCircle1 * (v1 - v0);
+
+		AEGfxVertexAdd(x1, y1, meshColor, uFinal1, vFinal1);
+
+		// Center vertex
+		f32 centerU = u0 + 0.5f * (u1 - u0);
+		f32 centerV = v0 + 0.5f * (v1 - v0);
+
+		AEGfxVertexAdd(0.0f, 0.0f, meshColor, centerU, centerV);
+
+		f32 x2 = AECosDeg(i * theta);
+		f32 y2 = AESinDeg(i * theta);
+
+		f32 uCircle2 = (x2 + 1.0f) * 0.5f;
+		f32 vCircle2 = 1.0f - ((y2 + 1.0f) * 0.5f);
+
+		f32 uFinal2 = u0 + uCircle2 * (u1 - u0);
+		f32 vFinal2 = v0 + vCircle2 * (v1 - v0);
+
+		AEGfxVertexAdd(x2, y2, meshColor, uFinal2, vFinal2);
+	}
+}
+
+void Sprite::RenderLine()
+{
+	if (linePoints.size() < 2) return;
+	f32 half = thickness * 0.5f;
+
+	for (size_t i = 0; i < linePoints.size() -1; i++)
+	{
+		AEVec2 p0 = linePoints[i]->pos;
+		AEVec2 p1 = linePoints[i + 1]->pos;
+
+		AEVec2Sub(&p0, &p0, &owner->pos);
+		AEVec2Sub(&p1, &p1, &owner->pos);
+
+		AEVec2 dir;
+		AEVec2Sub(&dir, &p1, &p0);
+		AEVec2Normalize(&dir, &dir);
+
+		AEVec2 normal = { -dir.y, dir.x };
+
+		AEVec2 offset;
+		AEVec2Scale(&offset, &normal, half);
+
+		AEVec2 v0, v1, v2, v3;
+
+		AEVec2Sub(&v0, &p0, &offset);
+		AEVec2Add(&v1, &p0, &offset);
+		AEVec2Add(&v2, &p1, &offset);
+		AEVec2Sub(&v3, &p1, &offset);
+
+
+		AEGfxTriAdd(
+			v0.x, v0.y, meshColor, 0, 0,
+			v1.x, v1.y, meshColor, 0, 0,
+			v2.x, v2.y, meshColor, 0, 0
+		);
+
+		AEGfxTriAdd(
+			v0.x, v0.y, meshColor, 0, 0,
+			v2.x, v2.y, meshColor, 0, 0,
+			v3.x, v3.y, meshColor, 0, 0
+		);
+	}
+}
+
+void Sprite::UpdateFrame()
+{
+	u32 currentSpriteRow = spriteSheet.currentFrame / spriteSheet.columns;
+	u32 currentSpriteCol = spriteSheet.currentFrame % spriteSheet.columns;
+
+	f32 u0 = spriteSheet.UVWidth * currentSpriteCol;
+	f32 v0 = spriteSheet.UVHeight * currentSpriteRow;
+
+	spriteSheet.UVOffsetX = u0;
+	spriteSheet.UVOffsetY = v0;
 }

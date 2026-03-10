@@ -8,30 +8,38 @@
 #pragma region MapFuncs
 
 rapidcsv::Document map;
-std::vector<std::vector<std::vector<Tile*>>> arrMapInfo{};
+std::vector<std::vector<Tile*>> arrMapInfo{};
 AEGfxVertexList* mesh;
 
-int MapManager::mapCurrLevel = 0;
+unsigned int MapManager::mapCurrLevel = 0;
+unsigned int MapManager::rowCount = 0;
+unsigned int MapManager::colCount = 0;
 
 void MapManager::InitMap(std::string fileName, unsigned int currLevel)
 {
     map = rapidcsv::Document(fileName);
+    //mapCurrLevel = currLevel;
     // Read a row from the CSV file
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
-    arrMapInfo.resize(MAX_LEVELS, std::vector<std::vector<Tile *>>(y, std::vector<Tile *>(x)));
+    colCount = (map.GetRow<std::string>(0)).size();
+    rowCount = (map.GetColumn<std::string>(0)).size();
+    arrMapInfo.resize(rowCount);
+
+    for (auto& row : arrMapInfo)
+    {
+        row.resize(colCount);
+    }
 
     // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
         // Read a row from the CSV file
         std::vector<std::string> row = map.GetRow<std::string>(uiRow);
 
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; ++uiCol)
+        for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
         {
 
-            arrMapInfo[currLevel][uiRow][uiCol] = InitTile(currLevel, row[uiCol], uiCol, uiRow);
+            arrMapInfo[uiRow][uiCol] = InitTile(mapCurrLevel, row[uiCol], uiCol, uiRow);
         }
     }
     AEGfxMeshStart();
@@ -47,11 +55,16 @@ void MapManager::InitMap(std::string fileName, unsigned int currLevel)
 
     // Saving the mesh (list of triangles) in pMesh
     mesh = AEGfxMeshEnd();
-    mapCurrLevel = currLevel;
 }
 
-void MapManager::PrintMap(unsigned int currLevel) {
-    size_t x = (map.GetRow<std::string>(0)).size();
+void MapManager::ChangeMap(unsigned int currLevel)
+{
+    mapCurrLevel = currLevel;
+
+}
+
+void MapManager::PrintMap() {
+    size_t colCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
@@ -60,9 +73,9 @@ void MapManager::PrintMap(unsigned int currLevel) {
         std::vector<std::string> row = map.GetRow<std::string>(uiRow);
 
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; ++uiCol)
+        for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
         {
-            std::cout << static_cast<int>(arrMapInfo[currLevel][uiRow][uiCol]->currID) << ' ';
+            std::cout << static_cast<int>(arrMapInfo[uiRow][uiCol]->currID) << ' ';
 
         }
         std::cout << '\n';
@@ -70,30 +83,30 @@ void MapManager::PrintMap(unsigned int currLevel) {
 }
 void MapManager::LoopMap(void* (mapfunc)())
 {    
-    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; ++uiCol)
+        for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
         {
             mapfunc();
         }
         std::cout << '\n';
     }
 }
-void MapManager::DrawMapSprite(int currLevel)
+void MapManager::DrawMapSprite()
 {
-    size_t x = (map.GetRow<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            Tile * currTile = arrMapInfo[currLevel][uiRow][uiCol];
+            Tile * currTile = arrMapInfo[uiRow][uiCol];
             if (currTile->currID != TILE_ID::EMPTY) {
                 if (currTile->currID != currTile->bgID && 
                      currTile->isBGActive)
@@ -111,34 +124,23 @@ void MapManager::DrawMapSprite(int currLevel)
     }
 }
 
-// change this function to turn on/off tile collision
-void MapManager::DrawMapCollision(int currLevel)
-{
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
-    // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
-    {
-        // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
-        {
-            //if (arrMapInfo[currLevel][uiRow][uiCol].currID) {
-            //    if (arrMapInfo[currLevel][uiRow][uiCol].currID != arrMapInfo[currLevel][uiRow][uiCol].bgID &&
-            //        arrMapInfo[currLevel][uiRow][uiCol].isBGActive)
-            //    {
-            //        RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].bgSprite, mesh);
-            //    }
-            //    if (arrMapInfo[currLevel][uiRow][uiCol].isCurrActive) {
-            //        RenderSprite(arrMapInfo[currLevel][uiRow][uiCol].currSprite, mesh);
-            //    }
-            //}
-        }
-    }
-}
-
 void MapManager::FreeMap()
 {
     AEGfxMeshFree(mesh);
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        {
+            Tile* tile = arrMapInfo[uiRow][uiCol];
+            if (tile && static_cast<int>(tile->currID) > -1)
+            {
+                tile->Free();   // frees all components (sprite, collider, text, etc.)
+                delete tile;
+            }
+        }
+    }
 }
 #pragma endregion
 
@@ -174,45 +176,76 @@ void MapManager::DrawTile(Sprite sprite, AEMtx33 transform)
 Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t row)
 {
     // saves first int as current currID of tile
+    if (cell == "") {
+        return nullptr;
+    }
     TILE_ID currID = static_cast<TILE_ID>(stoi(cell));
     cell.erase(0, 4);
     TILE_ID bgID = currID;
     int currTag = 0;
+    int altTag = 0;
     bool bgActive = true;
     bool currActive = true;
 
+    auto trim = [](std::string s) {
+        s.erase(0, s.find_first_not_of(" \t"));
+        s.erase(s.find_last_not_of(" \t") + 1);
+        return s;
+        };
+
+    auto nextToken = [&]() -> std::string {
+        size_t pos = cell.find(delimiter);
+        std::string token;
+        if (pos == std::string::npos) {
+            token = trim(cell);
+            cell.clear();  // ends the loop
+        }
+        else {
+            token = trim(cell.substr(0, pos));
+            cell.erase(0, pos + 1);
+        }
+        return token;
+        };
+
+    bool tagSetAtZero = false;
+
     int delimitCount = 0;
     while (!cell.empty()) {
+        std::string token = nextToken();
+
         if (delimitCount == 0) {
-            if (cell.length() == 1) {
-                currTag = stoi(cell);
-                cell.erase(0, cell.find(delimiter) + 1);
+            if (token.length() == 1 || token.length() == 3) {
+                currTag = stoi(token);
+                tagSetAtZero = true;  // tag was here, next slot is altTag
             }
             else {
-                bgID = static_cast<TILE_ID>(stoi(cell));
-                cell.erase(0, cell.find(delimiter) + 1);
+                bgID = static_cast<TILE_ID>(stoi(token));
             }
         }
-        if (delimitCount == 1) {
-            std::string third = cell.substr(0, cell.find(delimiter));
-            if (third.length() == 1) {
-                currTag = stoi(cell);
-                cell.erase(0, cell.find(delimiter) + 1);
-            }
-            else {
-                cell.erase(0, cell.find(delimiter) + 1);
-                currActive = stoi(third);
+        else if (delimitCount == 1) {
+            if (!token.empty()) {
+                if (tagSetAtZero)
+                {
+                    int num = stoi(token);
+                    if (num == 0 || num == 1) {
+                        currActive = stoi(token);
+                        continue;
+                    }
+                    altTag = stoi(token);   // currTag already set, this is altTag
+                }
+
+                else
+                    currTag = stoi(token);  // bgID was at slot 0, this is currTag
             }
         }
         else if (delimitCount == 2) {
-            std::string fourth = cell.substr(0, cell.find(delimiter));
-            cell.erase(0, cell.find(delimiter) + 1);
-            currActive = stoi(fourth);
+            if (!token.empty()) altTag = stoi(token);  // altTag after bgID+currTag case
         }
         else if (delimitCount == 3) {
-            std::string fifth = cell.substr(0, cell.find(delimiter));
-            cell.erase(0, cell.length());
-            bgActive = stoi(fifth);
+            if (!token.empty()) currActive = stoi(token);
+        }
+        else if (delimitCount == 4) {
+            if (!token.empty()) bgActive = stoi(token);
         }
         delimitCount++;
     }
@@ -223,79 +256,71 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     switch (currID)
     {
         // dont do anythign for 
-        case TILE_ID::SPIKEDOWN:
-        case TILE_ID::SPIKEUP:
-        case TILE_ID::SPIKELEFT:
-        case TILE_ID::SPIKERIGHT:
-            newTile = new SpikeTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
-        
-        case TILE_ID::LEVERREDON:
-        case TILE_ID::LEVERREDOFF:
-        case TILE_ID::LEVERGREENON:
-        case TILE_ID::LEVERGREENOFF:
-            newTile = new LeverTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
+    case TILE_ID::SPIKEDOWN:
+    case TILE_ID::SPIKEUP:
+    case TILE_ID::SPIKELEFT:
+    case TILE_ID::SPIKERIGHT:
+        newTile = new SpikeTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
 
-        case TILE_ID::GROUND:
-            newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
-        case TILE_ID::WALL:
-            newTile = new WallTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
+    case TILE_ID::LEVERREDON:
+    case TILE_ID::LEVERREDOFF:
+    case TILE_ID::LEVERGREENON:
+    case TILE_ID::LEVERGREENOFF:
+    case TILE_ID::LEVERBLUEON:
+    case TILE_ID::LEVERBLUEOFF:
+        newTile = new LeverTile(currID, bgID, currTag, altTag, bgActive, currActive, row, col, tileSize);
+        break;
 
-        case TILE_ID::LASERRED:
-        case TILE_ID::LASERGREEN:
-            newTile = new LaserTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
-            break;
-        default:
-            newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
-            newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
+    case TILE_ID::GROUND:
+        newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::WALL:
+        newTile = new WallTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
 
-            break;
+    case TILE_ID::LASERRED:
+    case TILE_ID::LASERGREEN:
+    case TILE_ID::LASERBLUE:
+        newTile = new LaserTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::CLOUD:
+        newTile = new CloudTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::CRATE:
+        newTile = new CrateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::BUTTONBLUEUNPRESSED:
+        newTile = new ButtonTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::GATE:
+        newTile = new GateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::GOAL:
+        newTile = new GoalTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    default:
+        newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
+        newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
+
+        break;
     }
 
     if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMY) {
         return newTile;
     }
 
-    //newTile->currID = currID;
-    //newTile->bgID = bgID;
-    //newTile->currTag = currTag;
-    //newTile->ogTag = currTag;
-    //newTile->isBGActive = bgActive;
-    //newTile->isCurrActive = currActive;
-    // sets size, position, row, col of tile
-    //AEVec2Set(&newTile->scale, tileSize, tileSize);
-    //AEVec2 size = newTile->scale;
-    //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-    //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
-    //AEVec2Set(&newTile->pos, x, y);
     CheckTileToInit(newTile);
 
-    //newTile->row = row;
-    //newTile->col = col;
     // if bg tile sprite is present
-    if (bgID != currID) 
+    if (bgID != currID)
     {
-        //AEVec2Set(&newTile->bgSprite.scale, tileSize, tileSize);
-        //AEVec2 size = newTile->bgSprite.scale;
-        //f32 x = -((f32)AEGfxGetWindowWidth() * 0.5f) + ((size.x) * (col + 1));
-        //f32 y = ((f32)AEGfxGetWindowHeight() * 0.5f) - ((size.y) * (row + 1));
-        //AEVec2Set(&newTile->bgSprite.pos, x, y);
         newTile->bgSprite = newTile->AddComponent(
             new Sprite()
         );
         newTile->bgSprite->texture = SetTileTexture(bgID);
 
     }
-
-
-    //newTile->SetColliders();
-    //newTile->SetText();
-
-
-    //newTile->showColliders = true;
 
     return newTile;
 }
@@ -327,6 +352,9 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     case TILE_ID::LASERGREEN:
         tTex = AEGfxTextureLoad("Assets/Environment/laserGreenVertical.png");
         break;
+    case TILE_ID::LASERBLUE:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserBlueVertical.png");
+        break;
     case TILE_ID::LEVERREDON:
         tTex = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
         break;
@@ -339,6 +367,18 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     case TILE_ID::LEVERGREENOFF:
         tTex = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
         break;
+    case TILE_ID::LEVERBLUEON:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserBlueSwitchOn.png");
+        break;
+    case TILE_ID::LEVERBLUEOFF:
+        tTex = AEGfxTextureLoad("Assets/Environment/laserBlueSwitchOff.png");
+        break;
+    case TILE_ID::BUTTONBLUEUNPRESSED:
+        tTex = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
+        break;
+    case TILE_ID::GATE:
+        tTex = AEGfxTextureLoad("Assets/Environment/gate.png");
+        break;
     default:
         tTex = AEGfxTextureLoad("Assets/PlanetTexture.png");
         break;
@@ -348,11 +388,12 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     }
 	return tTex;
 }
+
 void MapManager::CheckTileToInit(Tile* tile)
 {
-    if ((std::find(spikes.begin(), spikes.end(), tile->currID) != spikes.end())) 
+    if ((std::find(spikes.begin(), spikes.end(), tile->currID) != spikes.end()))
     {
-        switch (tile->currID){
+        switch (tile->currID) {
         case TILE_ID::SPIKEDOWN:
         {
             tile->rotation = 0;
@@ -373,31 +414,54 @@ void MapManager::CheckTileToInit(Tile* tile)
             tile->rotation = PI / 2;
             break;
         }
-    }
+        }
     }
 }
+
 void MapManager::RotateTile(double rotation, Tile tile)
 {
 
 }
+std::vector<Tile*> MapManager::GetTilesWithID(TILE_ID currID)
+{
+    size_t rowCount = (map.GetRow<std::string>(0)).size();
+    size_t colCount = (map.GetColumn<std::string>(0)).size();
+    int i = 0;
+    std::vector<Tile*> foundTiles;
+    //taggedTiles.resize(size, 0);
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        {
+            if (arrMapInfo[uiCol][uiRow]->currID == currID)
+            {
+                foundTiles.push_back(arrMapInfo[uiCol][uiRow]);
+                i++;
+            }
+
+        }
+    }
+    return foundTiles;
+}
+
 Tile* MapManager::GetTile(unsigned int col, unsigned int row)
 {
-    return arrMapInfo[mapCurrLevel][col][row];
+    return arrMapInfo[col][row];
 }
 std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
 {
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> taggedTiles;
     //taggedTiles.resize(size, 0);
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            if (arrMapInfo[mapCurrLevel][uiCol][uiRow]->currTag == tag)
+            if (arrMapInfo[uiCol][uiRow]->currTag == tag)
             {
-                taggedTiles.push_back(arrMapInfo[mapCurrLevel][uiCol][uiRow]);
+                taggedTiles.push_back(arrMapInfo[uiCol][uiRow]);
                 i++;
             }
 
@@ -409,16 +473,16 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
 
 std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
 {
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> taggedTiles;
     //taggedTiles.resize(size, 0);
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
-            Tile* currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
+            Tile* currTile = arrMapInfo[uiRow][uiCol];
             if (currTile->currTag == tag && 
                 currTile->currID == id)
             {
@@ -433,27 +497,9 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
 
 #pragma endregion
 
+
+
 #pragma region LaserFuncs
-std::vector<Tile*> MapManager::GetTilesNearPos(AEVec2 pos, AEVec2 scale)
-{
-
-
-    std::vector<Tile*> nearbyTiles;
-
-    for (std::vector<Tile*> row : arrMapInfo[mapCurrLevel])
-    {
-        // Load a particular CSV value into the arrMapInfo
-        for (Tile* tile : row)
-        {
-            //Tile* currTile = arrMapInfo[mapCurrLevel][uiCol][uiRow];
-            if (BoxToBoxCollision(pos, tile->pos, scale,  tile->scale) && tile->currID != TILE_ID::PLAYER)
-            {
-                nearbyTiles.push_back(tile);
-            }
-        }
-    }
-    return nearbyTiles;
-}
 void MapManager::SetLaserActive(Tile tile, bool active)
 {
     std::vector<Tile*> lasers = GetTaggedTiles(tile.currTag, tile.currID);
@@ -461,9 +507,35 @@ void MapManager::SetLaserActive(Tile tile, bool active)
         laser->isCurrActive = active;
     }
 }
+#pragma endregion
+
+
+
+#pragma region GetFuncs
+std::vector<Tile*> MapManager::GetTilesNearPos(AEVec2 pos, AEVec2 scale)
+{
+
+
+    std::vector<Tile*> nearbyTiles;
+
+    for (std::vector<Tile*> row : arrMapInfo)
+    {
+        // Load a particular CSV value into the arrMapInfo
+        for (Tile* tile : row)
+        {
+            //Tile* currTile = arrMapInfo[mapCurrLevel][uiCol][uiRow];
+            if (BoxToBoxCollision(pos, tile->pos, scale, tile->scale) && tile->currID != TILE_ID::PLAYER)
+            {
+                nearbyTiles.push_back(tile);
+            }
+        }
+    }
+    return nearbyTiles;
+}
+
 Tile* MapManager::GetTile(TILE_ID id)
 {
-    for (std::vector<Tile*> row : arrMapInfo[mapCurrLevel])
+    for (std::vector<Tile*> row : arrMapInfo)
     {
         // Load a particular CSV value into the arrMapInfo
         for (Tile* tile : row)
@@ -485,27 +557,173 @@ AEVec2 MapManager::GetPlayerSpawnPos()
     AEVec2Set(&pos, player->pos.x, player->pos.y);
     return pos;
 }
-#pragma endregion
 
+void  MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
+{
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    // Read the rows and columns of CSV data into arrMapInfo
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    {
+        // Load a particular CSV value into the arrMapInfo
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        {
+            Tile* currTile = arrMapInfo[uiRow][uiCol];
+
+            if (currTile->currID != TILE_ID::EMPTY) AddGameObjectToVector(currTile, gos);
+        }
+    }
+}
+#pragma endregion
 
 void Tile::Update()
 {
     GameObject::Update();
 }
 
-void  MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
+void CrateTile::Init()
 {
-    size_t x = (map.GetRow<std::string>(0)).size();
-    size_t y = (map.GetColumn<std::string>(0)).size();
-    // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < y; uiRow++)
-    {
-        // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < x; uiCol++)
-        {
-            Tile* currTile = arrMapInfo[mapCurrLevel][uiRow][uiCol];
+    Tile::Init();
+    collider->OnCollisionEnter = [this](Collider* other, int sides) {
+    };
 
-            if(currTile->currID != TILE_ID::EMPTY) AddGameObjectToVector(currTile, gos);
+    collider->OnCollisionOver = [this](Collider* other, int sides) {
+
+        };
+    collider->OnCollisionExit = [this](Collider* other, int sides) {
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+        {
+            playerTouching = false;
+            playerOnLeft = false;
+            playerOnRight = false;
+        }
+        };
+}
+
+void CrateTile::Update() {
+    Tile::Update();
+    double dt = AEFrameRateControllerGetFrameTime();
+
+    rb->onCollider = false;
+    // Check crate against nearby tiles
+    std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
+    std::vector<Collider*> colliders = GetComponents<Collider>();
+
+for (Collider* pCol : colliders)
+{
+    float impulse = pushForce * dt;
+    RigidBody* playerRb{};
+    playerTouching = false;
+    playerOnLeft = false;
+    playerOnRight = false;
+
+    for (const auto& info : pCol->collisionInfos)
+    {
+        Collider* other = info.other;
+        if (!other || !other->owner) continue;
+
+        if (dynamic_cast<Player*>(other->owner))
+        {
+            playerTouching = true;
+            playerRb = (*other->owner).GetComponent<RigidBody>();
+            if (info.sides & COLLISION_SIDE::LEFT)
+            playerOnLeft = true;
+
+            if (info.sides & COLLISION_SIDE::RIGHT)
+                playerOnRight = true;
         }
     }
+    
+    if (playerTouching) {
+
+        if (playerOnLeft && AEInputCheckCurr(AEVK_D))
+        {
+            PhysicsManager::ApplyImpulse(rb, impulse);
+        }
+
+
+        if (playerOnRight && AEInputCheckCurr(AEVK_A))
+        {
+            PhysicsManager::ApplyImpulse(rb, -impulse);
+        }
+        std::cout << rb->velocity.x << '\n';
+    }
+
+    //PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
+
+
+    if (!playerTouching)
+    {
+        if (rb->velocity.x > 0)
+        {
+            rb->velocity.x -= friction * dt;
+            if (rb->velocity.x < 0)
+                rb->velocity.x = 0;
+            std::cout << rb->velocity.x << '\n';
+        }
+        else if (rb->velocity.x < 0)
+        {
+            rb->velocity.x += friction * dt;
+            if (rb->velocity.x > 0)
+                rb->velocity.x = 0;
+            std::cout << rb->velocity.x << '\n';
+        }
+    }
+    // Check nearby tiles for new collisions
+    //for (Tile* tile : nearbyTiles)
+    //{
+    //    if (!tile->collider || !tile->collider->canCollide) continue;
+    //    if (tile == this) continue;  // don't collide with self
+
+    //    Collider* oCol = tile->collider;
+    //    if (BoxToBoxCollision(
+    //        pCol->GetPos2D(), oCol->GetPos2D(),
+    //        pCol->GetScale(), oCol->GetScale()))
+    //    {
+    //        int sidesForCrate = GetAllCollisionSides(
+    //            pCol->GetPos2D(), oCol->GetPos2D(),
+    //            pCol->GetScale(), oCol->GetScale()
+    //        );
+    //        int sidesForTile = FlipCollisionSides(sidesForCrate);
+
+    //        pCol->AddToOvelappingVector(oCol, sidesForCrate);
+    //        oCol->AddToOvelappingVector(pCol, sidesForTile);
+
+    //        PhysicsManager::HandleCollision(pCol, oCol);
+    //    }
+    //    else
+    //    {
+    //        pCol->RemoveFromOverlappingVector(oCol);
+    //        oCol->RemoveFromOverlappingVector(pCol);
+    //    }
+    //}
+
+    // Then resolve already-overlapping colliders (player, enemies, etc.)
+    //for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
+    //{
+    //    Collider* oCol = it->other;
+    //    if (!oCol || !oCol->canCollide)
+    //    {
+    //        pCol->RemoveFromOverlappingVector(oCol);
+    //        it = pCol->collisionInfos.begin();
+    //        continue;
+    //    }
+    //    if (BoxToBoxCollision(
+    //        pCol->GetPos2D(), oCol->GetPos2D(),
+    //        pCol->GetScale(), oCol->GetScale()))
+    //    {
+    //        PhysicsManager::HandleCollision(pCol, oCol);
+    //        ++it;
+    //    }
+    //    else
+    //    {
+    //        pCol->RemoveFromOverlappingVector(oCol);
+    //        it = pCol->collisionInfos.begin();
+    //    }
+    //}
+
+
+}
+
+
 }

@@ -99,6 +99,8 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AnimatorComponent.cpp" />
+    <ClCompile Include="BossLevel.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="ComponentBase.cpp" />
     <ClCompile Include="EnemyBase.cpp" />
@@ -107,6 +109,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="EnemyMovement.cpp" />
     <ClCompile Include="GameObjectManager.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
+    <ClCompile Include="Helper.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainMenu.cpp" />
@@ -124,6 +127,8 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnimatorComponent.h" />
+    <ClInclude Include="BossLevel.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="ComponentBase.h" />
     <ClInclude Include="EnemyBase.h" />
@@ -133,6 +138,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="GameObjectManager.h" />
     <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="Header.h" />
+    <ClInclude Include="Helper.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Library\rapidcsv.h" />
     <ClInclude Include="MainMenu.h" />

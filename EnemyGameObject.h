@@ -14,6 +14,8 @@ struct EnemyGameObject : GameObject
 
 	void Init() override;
 	void Update() override;
+
+	void Render() override;
 };
 
 #endif

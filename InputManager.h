@@ -7,7 +7,7 @@
 
 #include <functional>
 
-struct InputManager : Singleton {
+struct InputManager : public Singleton <InputManager> {
 
 	u8 interactKey = AEVK_F;
 

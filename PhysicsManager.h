@@ -9,6 +9,8 @@ struct PhysicsManager {
 	static void UpdateRigidBody(RigidBody* rb, f32 dt);
 	
 	static void HandleCollision(Collider* a, Collider* b);
+
+	static void ApplyImpulse(RigidBody* rb, float impulseX);
 };
 #endif // !PHYSICS_MANAGER
 

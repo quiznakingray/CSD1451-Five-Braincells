@@ -2,6 +2,8 @@
 // includes
 
 #include <crtdbg.h> // To check for memory leaks
+#include <vector>
+#include <iostream>
 #include "AEEngine.h"
 #include "MapManager.h"
 #include "PlayerGameObject.h"
@@ -32,7 +34,7 @@ void RenderGraphics() {
 	// Your own rendering logic goes here
 	// Set the background to black.
 	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
-	mapManager.DrawMapSprite(0);
+	mapManager.DrawMapSprite();
 
 	player->Render();
 
@@ -55,7 +57,8 @@ void GameInit()
 	TextManager::Init();
 
 	mapManager.InitMap("Assets/Maps/Map_Level_01.csv", 0);
-	mapManager.PrintMap(0);
+
+	mapManager.PrintMap();
 
 	mapManager.AddTilesToGameObjectVector(gameObjects);
 
@@ -66,8 +69,10 @@ void GameInit()
 	InitGameObjects(gameObjects);
 }
 void GameUpdate() {
+	double dt = AEFrameRateControllerGetFrameTime();
 	UpdateGameObjects(gameObjects);
 	RenderGraphics();
+
 	//player->Update();
 }
 #pragma endregion
@@ -85,8 +90,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
+
+	int gGameRunning = 1;
+
 	// Initialization of your own variables go here
-	
+
 	// Using custom window procedure
 	AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
 
@@ -105,7 +113,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	while (gGameRunning)
 	{
 		// Informing the system about the loop's start
-		AESysFrameStart();
 		gameStateManager.Update();
 
 		//// Initialize the current game state
@@ -113,6 +120,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		fpInitialize();
 		while (next == current && gGameRunning)
 		{
+			AESysFrameStart();
 			// Update game logic for the current frame
 			fpUpdate();
 			// Render graphics for the current frame
@@ -128,10 +136,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				AESysSetFullScreen(1);
 			if (AEInputCheckCurr(AEVK_2))
 				AESysSetFullScreen(0);
-			// Informing the system about the loop's end
-			AESysFrameEnd();
-			AESysFrameStart();
 
+			if (AEInputCheckCurr(AEVK_3)) {
+				if (mapManager.mapCurrLevel != 1) {
+					gameStateManager.ChangeState(GAME_STATE_TYPE::OTHER);
+					gameStateManager.Update();
+					mapManager.ChangeMap(1);
+				}
+
+			}
+			if (AEInputCheckCurr(AEVK_4)) {
+				if (mapManager.mapCurrLevel != 0) {
+					gameStateManager.ChangeState(GAME_STATE_TYPE::WORLD);
+					gameStateManager.Update();
+					mapManager.ChangeMap(0);
+				}
+			}
+			// Informing the system about the loop's end
+
+			AESysFrameEnd();
 		}
 		//GameUpdate();
 

@@ -2,16 +2,88 @@
 #include "GameObjectManager.h"  
 #include "SpriteManager.h"  
 
-bool CheckBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size)
+//bool CheckBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size)
+//{
+//	// collision x-axis?
+//	bool collisionX = obj1Pos.x + obj2Size.x >= obj2Pos.x &&
+//		obj2Pos.x + obj2Size.x >= obj1Pos.x;
+//	// collision y-axis?
+//	bool collisionY = obj1Pos.y + obj1Size.y >= obj2Pos.y &&
+//		obj2Pos.y + obj2Size.y >= obj1Pos.y;
+//	// collision only if on both axes
+//	return collisionX && collisionY;
+//}
+
+
+
+int GetAllCollisionSides(AEVec2 aPos, AEVec2 bPos, AEVec2 aScale, AEVec2 bScale)
 {
-	// collision x-axis?
-	bool collisionX = obj1Pos.x + obj2Size.x >= obj2Pos.x &&
-		obj2Pos.x + obj2Size.x >= obj1Pos.x;
-	// collision y-axis?
-	bool collisionY = obj1Pos.y + obj1Size.y >= obj2Pos.y &&
-		obj2Pos.y + obj2Size.y >= obj1Pos.y;
-	// collision only if on both axes
-	return collisionX && collisionY;
+	int sides = COLLISION_SIDE::NONE;
+
+	float aLeft = aPos.x - aScale.x * 0.5f;
+	float aRight = aPos.x + aScale.x * 0.5f;
+	float aTop = aPos.y + aScale.y * 0.5f;
+	float aBottom = aPos.y - aScale.y * 0.5f;
+
+	float bLeft = bPos.x - bScale.x * 0.5f;
+	float bRight = bPos.x + bScale.x * 0.5f;
+	float bTop = bPos.y + bScale.y * 0.5f;
+	float bBottom = bPos.y - bScale.y * 0.5f;
+
+	float overlapLeft = aRight - bLeft;   // A's right into B's left
+	float overlapRight = bRight - aLeft;   // B's right into A's left
+	float overlapTop = aTop - bBottom; // A's top into B's bottom
+	float overlapBottom = bTop - aBottom; // B's top into A's bottom
+
+	// Use a threshold to avoid floating point noise
+	float threshold = 1.0f;
+
+	if (overlapLeft > 0 && overlapLeft < aScale.x * 0.5f + threshold) sides |= COLLISION_SIDE::RIGHT;
+	if (overlapRight > 0 && overlapRight < aScale.x * 0.5f + threshold) sides |= COLLISION_SIDE::LEFT;
+	if (overlapTop > 0 && overlapTop < aScale.y * 0.5f + threshold) sides |= COLLISION_SIDE::TOP;
+	if (overlapBottom > 0 && overlapBottom < aScale.y * 0.5f + threshold) sides |= COLLISION_SIDE::BOTTOM;
+
+	return sides;
+}
+
+bool BoxToCircleCollision(AEVec2 boxPos, AEVec2 circlePos, AEVec2 boxScale, AEVec2 circleScale)
+{
+	float halfW = boxScale.x * 0.5f;
+	float halfH = boxScale.y * 0.5f;
+
+	// Find closest point to circle inside box
+	float closestX = circlePos.x;
+	float closestY = circlePos.y;
+
+	if (circlePos.x < boxPos.x - halfW)
+		closestX = boxPos.x - halfW;
+	else if (circlePos.x > boxPos.x + halfW)
+		closestX = boxPos.x + halfW;
+
+	if (circlePos.y < boxPos.y - halfH)
+		closestY = boxPos.y - halfH;
+	else if (circlePos.y > boxPos.y + halfH)
+		closestY = boxPos.y + halfH;
+
+	float dx = circlePos.x - closestX;
+	float dy = circlePos.y - closestY;
+
+	float distanceSquared = dx * dx + dy * dy;
+
+	float radius = circleScale.x * 0.5f; 
+
+	return distanceSquared <= radius * radius;
+}
+
+bool CircleToCircleCollision(AEVec2 aPos, AEVec2 bPos, AEVec2 aScale, AEVec2 bScale)
+{
+	float dx = aPos.x - bPos.x;
+	float dy = aPos.y - bPos.y;
+
+	float distanceSq = dx * dx + dy * dy;
+	float radiusSum = aScale.x + bScale.x;
+
+	return distanceSq <= (radiusSum * radiusSum);
 }
 
 bool BoxToBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size)
@@ -25,6 +97,16 @@ bool BoxToBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 o
 		return false;
 
 	return true;
+}
+
+int FlipCollisionSides(int sides)
+{
+	int flipped = COLLISION_SIDE::NONE;
+	if (sides & COLLISION_SIDE::TOP)    flipped |= COLLISION_SIDE::BOTTOM;
+	if (sides & COLLISION_SIDE::BOTTOM) flipped |= COLLISION_SIDE::TOP;
+	if (sides & COLLISION_SIDE::LEFT)   flipped |= COLLISION_SIDE::RIGHT;
+	if (sides & COLLISION_SIDE::RIGHT)  flipped |= COLLISION_SIDE::LEFT;
+	return flipped;
 }
 
 
@@ -78,57 +160,54 @@ AEVec2 Collider::GetPos2D()
 AEVec2 Collider::GetScale()
 {
 	AEVec2 scale{};
+	f32 scaleY = owner->scale.y * size.y;
 	AEVec2Set(&scale, owner->scale.x * size.x, owner->scale.y * size.y);
 	return scale;
 }
 
-void Collider::AddToOvelappingVector(Collider* c)
+
+void Collider::AddToOvelappingVector(Collider* c, int inSides)
 {
-	auto it = std::find(overlappingColliders.begin(), overlappingColliders.end(), c);
-	// if not in list , call on collison enter & add to list
-	if (it == overlappingColliders.end()) // cant find
+	auto it = std::find_if(collisionInfos.begin(), collisionInfos.end(),
+		[c](const CollisionInfo& info) { return info.other == c; });
+
+	if (it == collisionInfos.end())
 	{
-		if (isTrigger)
-		{
-			if (OnTriggerEnter) OnTriggerEnter(c);
-		}else{
-
-			if (OnCollisionEnter) OnCollisionEnter(c);
-		}
-		overlappingColliders.push_back(c);
+		collisionInfos.push_back({ c, inSides });
+		if (isTrigger) { if (OnTriggerEnter) OnTriggerEnter(c, inSides); }
+		else { if (OnCollisionEnter) OnCollisionEnter(c, inSides); }
 	}
-	// if still in list, keep calling oncollisionover
-	else {
-		if (isTrigger)
-		{
-			if (OnTriggerOver) OnTriggerOver(c);
-		}
-		else {
-
-			if (OnCollisionOver) OnCollisionOver(c);
-		}
+	else
+	{
+		it->sides = inSides;
+		if (isTrigger) { if (OnTriggerOver) OnTriggerOver(c, inSides); }
+		else { if (OnCollisionOver) OnCollisionOver(c, inSides); }
 	}
+
+	// Rebuild the combined sides bitmask across ALL current collisions
+	sides = COLLISION_SIDE::NONE;
+	for (const CollisionInfo& info : collisionInfos)
+		sides |= info.sides;
 }
 
 void Collider::RemoveFromOverlappingVector(Collider* c)
 {
+	auto it = std::find_if(collisionInfos.begin(), collisionInfos.end(),
+		[c](const CollisionInfo& info) { return info.other == c; });
 
-	auto it = std::find(overlappingColliders.begin(), overlappingColliders.end(), c);
+	if (it == collisionInfos.end()) return;
 
-	if (it == overlappingColliders.end()) return;
+	int lastSides = it->sides; // capture sides before removing
 
-	// if still in list but no colliion, call oncollision exit and remove from list
-	if (isTrigger)
-	{
-		if (OnTriggerExit) OnTriggerExit(c);
+	if (isTrigger) { if (OnTriggerExit)   OnTriggerExit(c, lastSides); }
+	else { if (OnCollisionExit) OnCollisionExit(c, lastSides); }
 
-	}
-	else {
+	collisionInfos.erase(it);
 
-		if (OnCollisionExit) OnCollisionExit(c);
-	}
-	overlappingColliders.erase(it);
-	//delete* it;
+	// Rebuild combined sides bitmask now that this collider is removed
+	sides = COLLISION_SIDE::NONE;
+	for (const CollisionInfo& info : collisionInfos)
+		sides |= info.sides;
 }
 
 void Collider::Update()
@@ -155,19 +234,36 @@ void Collider::Render()
 	s->meshColor = isTrigger ? 0xFFFFFF00 : 0xFFFF0000;
 	s->opacity = 0.5f;
 
+	if (type == COLLIDER_TYPE::CIRCLE_COLLIDER)
+	{
+		s->spriteShape = SPRITE_SHAPE::SHAPE_CIRCLE;
+	}
+	else {
+		s->spriteShape = SPRITE_SHAPE::SHAPE_RECT;
+	}
+
 	c->Init();
 	c->Render();
 
-	//Sprite* s = new Sprite(
-	//	owner->scale.x * size.x,
-	//	owner->scale.y * size.y,
-	//	owner->pos.x + center.x,
-	//	owner->pos.y + center.y,
-	//	owner->pos.z,
-	//	0.f,
-	//	0xFF000000
-	//	);
-	//s->opacity = 0.5f;
 
-	//s->Render();
+}
+
+void Collider::Free()
+{
+	// Tell every collider we're overlapping with that we're gone
+	for (CollisionInfo& info : collisionInfos)
+	{
+		if (!info.other) continue;
+
+		// Remove this collider from the other's list without triggering callbacks
+		auto& otherInfos = info.other->collisionInfos;
+		auto it = std::find_if(otherInfos.begin(), otherInfos.end(),
+			[this](const CollisionInfo& i) { return i.other == this; });
+
+		if (it != otherInfos.end())
+			otherInfos.erase(it);
+	}
+
+	collisionInfos.clear();
+	sides = COLLISION_SIDE::NONE;
 }

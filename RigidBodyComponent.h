@@ -15,9 +15,14 @@ struct RigidBody : ComponentBase {
 	RIGIDBODY_TYPE type = RIGIDBODY_TYPE::DYNAMIC;
 
 	AEVec2 velocity{};
+	AEVec2 prevVel{};
 	AEVec2 acceleration{};
 	f32 mass{};
+	f32 invMass{};
 	f32 drag{};
+
+	f32 maxImpulse{};
+	f32 maxSpeed{};
 
 	bool onCollider = false;
 

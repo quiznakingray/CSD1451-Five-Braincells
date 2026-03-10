@@ -1,9 +1,11 @@
 #include "GameObjectManager.h"
 #include "CollisionManager.h"
 #include "PhysicsManager.h"
+#include "MapManager.h"
 #include <type_traits>
 #include <iostream>
 #include <algorithm>
+
 
 
 void GameObject::Init()
@@ -21,7 +23,7 @@ void GameObject::Update()
 		//{
 		//	std::cout << "This is a collider" << std::endl;
 		//}
-		if (!comp->isActive) return;
+		if (!comp->isActive) continue;
 		comp->Update();
 	}
 }
@@ -43,6 +45,32 @@ void GameObject::Free()
 	}
 
 	components.clear();
+}
+
+void HandleState(std::vector<GameObject*>& gos)
+{
+	for (size_t i = 0; i < gos.size(); ++i)
+	{
+		GameObject* go = gos[i];
+		
+		RigidBody* rb = go->GetComponent<RigidBody>();
+		if (!go->isOnCamera || !go->isActive || rb == nullptr) continue;
+		if (rb->velocity.x == rb->prevVel.x && rb->velocity.y == rb->prevVel.y)
+			return; // no change, skip state update
+		if (rb->velocity.y < 0) {
+			go->objectState = STATE::FALL;
+		}
+		else if (rb->velocity.y > 0) {
+			go->objectState = STATE::JUMP;
+		}
+		else {
+			if (fabs(rb->velocity.x) > 0.1f)
+				go->objectState = STATE::WALK;
+			else
+				go->objectState = STATE::IDLE;
+		}
+		rb->prevVel = rb->velocity;
+	}
 }
 
 bool GameObject::isGameObjectOnScreen()
@@ -89,23 +117,35 @@ void HandleCollision(std::vector<GameObject*>& gos)
 	{
 		GameObject* firstGo = gos[i];
 		if (!firstGo->isOnCamera || !firstGo->isActive) continue;
+
+		auto isDynamic = [](GameObject* go) {
+			RigidBody* rb = go->GetComponent<RigidBody>();
+			return rb && rb->type == RIGIDBODY_TYPE::DYNAMIC;
+			};
+		// skip static vs static + cloudTile + crateTile entirely
+		bool firstIsStatic = dynamic_cast<Tile*>(firstGo) && !isDynamic(firstGo);
+
+
 		for (size_t j = i + 1; j < gos.size(); ++j)
 		{
 			GameObject* secondGo = gos[j];
-
 			if (!secondGo->isOnCamera || !secondGo->isActive) continue;
 
-			// collision to collision 
+			bool secondIsStatic = dynamic_cast<Tile*>(secondGo) && !isDynamic(secondGo);
+
+			// two static tiles never need collision checks
+			if (firstIsStatic && secondIsStatic) continue;
+
 			std::vector<Collider*> firstGoColliders = firstGo->GetComponents<Collider>();
 			std::vector<Collider*> secondGoColliders = secondGo->GetComponents<Collider>();
-			
+
 			for (Collider* firstColl : firstGoColliders)
 			{
 				if (!firstColl->canCollide) continue;
 				for (Collider* secondColl : secondGoColliders)
 				{
 					if (!secondColl->canCollide) continue;
-					// check if there is collision between both colliders
+
 					bool colliding = false;
 					if (firstColl->type == COLLIDER_TYPE::BOX_COLLIDER
 						&& secondColl->type == COLLIDER_TYPE::BOX_COLLIDER)
@@ -115,34 +155,43 @@ void HandleCollision(std::vector<GameObject*>& gos)
 							firstColl->GetScale(), secondColl->GetScale()
 						);
 					}
-					else {
-						// circle to circle
 						// circle to box
+					else if ((firstColl->type == COLLIDER_TYPE::BOX_COLLIDER
+						&& secondColl->type == COLLIDER_TYPE::CIRCLE_COLLIDER ) || 
+						(firstColl->type == COLLIDER_TYPE::CIRCLE_COLLIDER
+						&& secondColl->type == COLLIDER_TYPE::BOX_COLLIDER)){
 
+						Collider* box = firstColl->type == COLLIDER_TYPE::BOX_COLLIDER ? firstColl : secondColl;
+						Collider* circle = firstColl->type == COLLIDER_TYPE::CIRCLE_COLLIDER ? firstColl : secondColl;
+
+						colliding = BoxToCircleCollision(
+							box->GetPos2D(), circle->GetPos2D(),
+							box->GetScale(), circle->GetScale());
+
+					}
+					else {
+
+						// circle to circle
 					}
 
 					if (colliding)
 					{
-
-						//Add to list
-						firstColl->AddToOvelappingVector(secondColl);
-						secondColl->AddToOvelappingVector(firstColl);
-						
-						//PhysicsManager::HandleCollision(firstColl, secondColl);
+						int sidesForFirst = GetAllCollisionSides(
+							firstColl->GetPos2D(), secondColl->GetPos2D(),
+							firstColl->GetScale(), secondColl->GetScale()
+						);
+						int sidesForSecond = FlipCollisionSides(sidesForFirst);
+						firstColl->AddToOvelappingVector(secondColl, sidesForFirst);
+						secondColl->AddToOvelappingVector(firstColl, sidesForSecond);
 					}
-					else {
-						//remove from list
+					else
+					{
 						firstColl->RemoveFromOverlappingVector(secondColl);
 						secondColl->RemoveFromOverlappingVector(firstColl);
-
 					}
 				}
-
 			}
-
 		}
-
-
 	}
 }
 
@@ -242,8 +291,8 @@ void UpdateGameObjects(std::vector<GameObject*> &gos)
 	}
 	HandleCollision(gos);
 	HandleInteraction(gos);
+	HandleState(gos);
 }
-
 //void RenderGameObjects(std::vector<GameObject*>& gos)
 //{
 //	for (GameObject* go : gos)
