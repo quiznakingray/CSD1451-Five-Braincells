@@ -70,7 +70,7 @@ void Player::PlayerInput()
 	// Set velocity
 	//rb->velocity.x = moveDir.x * speed;
 	//rb->velocity.y += moveDir.y ;
-	
+
 	//if (AEInputCheckCurr(AEVK_M))
 	//{
 	//	animator->PlayAnimation(runningAnim);
@@ -78,11 +78,12 @@ void Player::PlayerInput()
 	//if (AEInputCheckCurr(AEVK_N))
 	//{
 	//	animator->PlayAnimation(idleAnim);
+	//}
 }
 
 void Player::PlayerAction()
 {
-	//}
+
 	if (rb->velocity.x != 0)
 	{
 		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
@@ -116,7 +117,7 @@ void Player::Init()
 {
 
 	//set pos
-	AEVec2Set(&pos,MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y + 200.f);
+	//AEVec2Set(&pos,MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y + 200.f);
 	pos.z = 1.f;
 
 	// set state
@@ -206,17 +207,54 @@ void Player::Init()
 	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 	rb->mass = 10.f;
 
+	//AEGfxSetCamPosition(pos.x, pos.y);
+
+
+	//s32 screenX, screenY;
+	//f32 camPosX, camPosY;
+	//f32 worldPosX, worldPosY;
+	//AEInputGetCursorPosition(&screenX, &screenY);
+	//AEGfxGetCamPosition(&camPosX, &camPosY);
+	//worldPosX = camPosX - screenX / 2.f;
+	//worldPosY = camPosY - screenY / 2.f;
+	line = AddComponent(new Sprite()
+	);
+	line->spriteShape = SPRITE_SHAPE::SHAPE_LINE;
+	line->thickness = 5.f;
+	line->meshColor = 0xFFFF0000;
+	playerLinePos = new Sprite::LinePoint;
+	aimLinePos = new Sprite::LinePoint;
+	playerLinePos->pos.x = pos.x;
+	playerLinePos->pos.y = pos.y;
+	aimLinePos->pos.x = pos.x + 10.f;
+	aimLinePos->pos.y = pos.y;
+	line->linePoints.push_back(playerLinePos);
+	line->linePoints.push_back(aimLinePos);
+
 	showColliders = true;
 	speed = static_cast<f32>(200.0);
 	//AEVec2Set(&velocity, 0.f, 0.f);
-	AEGfxSetCamPosition(pos.x, pos.y);
 
 	GameObject::Init();
 }
 
 void Player::Update(){
 	
-	PlayerInput();
+	//PlayerInput();
+	PlayerAction();
+	PlayerAnimation();
+	s32 screenX, screenY;
+	//f32 camPosX, camPosY;
+	f32 worldPosX, worldPosY;
+	AEInputGetCursorPosition(&screenX, &screenY);
+	//AEGfxGetCamPosition(&camPosX, &camPosY);
+	worldPosX = screenX + AEGfxGetWinMinX();
+	worldPosY = -(screenY - AEGfxGetWinMaxY());
+	std::cout << worldPosX << "   " << worldPosY << std::endl;
+	playerLinePos->pos.x = pos.x;
+	playerLinePos->pos.y = pos.y;
+	aimLinePos->pos.x = worldPosX;
+	aimLinePos->pos.y = worldPosY;
 	//std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
 	//std::vector<Collider*> colliders = GetComponents<Collider>();
 

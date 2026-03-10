@@ -134,7 +134,8 @@ void MapManager::FreeMap()
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
             Tile* tile = arrMapInfo[uiRow][uiCol];
-            if (tile && static_cast<int>(tile->currID) > -1)
+            // prevents double free 
+            if (tile && static_cast<int>(tile->currID) > -1 && static_cast<int>(tile->currID) <= 300)
             {
                 tile->Free();   // frees all components (sprite, collider, text, etc.)
                 delete tile;
@@ -214,12 +215,18 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         std::string token = nextToken();
 
         if (delimitCount == 0) {
-            if (token.length() == 1 || token.length() == 3) {
-                currTag = stoi(token);
-                tagSetAtZero = true;  // tag was here, next slot is altTag
-            }
-            else {
-                bgID = static_cast<TILE_ID>(stoi(token));
+            if (!token.empty()) {
+                int num = stoi(token);
+                if (token.length() == 3) {
+                    bgID = static_cast<TILE_ID>(num);
+                }
+                else if (num == 0 || num == 1) {
+                    currActive = num;
+                }
+                else {
+                    currTag = num;
+                    tagSetAtZero = true;
+                }
             }
         }
         else if (delimitCount == 1) {
@@ -239,7 +246,8 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
             }
         }
         else if (delimitCount == 2) {
-            if (!token.empty()) altTag = stoi(token);  // altTag after bgID+currTag case
+            int num = stoi(token);
+            if (!token.empty() && (num != 0 && num != 1)) altTag = stoi(token);  // altTag after bgID+currTag case
         }
         else if (delimitCount == 3) {
             if (!token.empty()) currActive = stoi(token);
@@ -271,7 +279,7 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     case TILE_ID::LEVERBLUEOFF:
         newTile = new LeverTile(currID, bgID, currTag, altTag, bgActive, currActive, row, col, tileSize);
         break;
-
+    case TILE_ID::NOCOLLISIONGROUND:
     case TILE_ID::GROUND:
         newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
@@ -291,7 +299,7 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         newTile = new CrateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
     case TILE_ID::BUTTONBLUEUNPRESSED:
-        newTile = new ButtonTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        newTile = new ButtonTile(currID, bgID, currTag, altTag, bgActive, currActive, row, col, tileSize);
         break;
     case TILE_ID::GATE:
         newTile = new GateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
@@ -584,6 +592,8 @@ void Tile::Update()
 void CrateTile::Init()
 {
     Tile::Init();
+    collider->size.x = 0.6f;
+    collider->size.y = 0.6f;
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
     };
 

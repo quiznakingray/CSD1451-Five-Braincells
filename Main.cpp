@@ -22,9 +22,8 @@ MapManager mapManager;
 TextManager textManager;
 s8 TextManager::pFont = 0;
 
-Player* player = new Player();
 
-std::vector<GameObject*> gameObjects{};
+//std::vector<GameObject*> gameObjects{};
 
 GameStateManager gameStateManager;
 #pragma region tempFuncs
@@ -35,8 +34,6 @@ void RenderGraphics() {
 	// Set the background to black.
 	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
 	mapManager.DrawMapSprite();
-
-	player->Render();
 
 	// check if forcing the application to quit
 	if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
@@ -60,20 +57,18 @@ void GameInit()
 
 	mapManager.PrintMap();
 
-	mapManager.AddTilesToGameObjectVector(gameObjects);
+	//mapManager.AddTilesToGameObjectVector(gameObjects);
 
-	//player->Init();
-	AddGameObjectToVector(player, gameObjects);
+	//AddGameObjectToVector(player, gameObjects);
 	
 	
-	InitGameObjects(gameObjects);
+	//InitGameObjects(gameObjects);
 }
 void GameUpdate() {
 	double dt = AEFrameRateControllerGetFrameTime();
-	UpdateGameObjects(gameObjects);
+	//UpdateGameObjects(gameObjects);
 	RenderGraphics();
 
-	//player->Update();
 }
 #pragma endregion
 

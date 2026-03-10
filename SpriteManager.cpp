@@ -69,15 +69,15 @@ void Sprite::Render()  {
 	f32 scaleX = spriteShape == SPRITE_SHAPE::SHAPE_CIRCLE ? owner->scale.x / 2  : owner->scale.x;
 	f32 scaleY = spriteShape == SPRITE_SHAPE::SHAPE_CIRCLE ? owner->scale.x / 2 : owner->scale.y;
 	AEMtx33 scaleMtx = { 0 };
-	AEMtx33Scale(&scaleMtx, scaleX, scaleY);
+	AEMtx33Scale(&scaleMtx, scaleX * size.x, scaleY * size.y);
 
 
 	AEMtx33 rotateMtx = { 0 };
-	AEMtx33Rot(&rotateMtx, owner->rotation);
+	AEMtx33Rot(&rotateMtx, owner->rotation + rot);
 
 
 	AEMtx33 translateMtx = { 0 };
-	AEMtx33Trans(&translateMtx, owner->pos.x, owner->pos.y);
+	AEMtx33Trans(&translateMtx, owner->pos.x + offset.x, owner->pos.y + offset.y);
 
 
 	AEMtx33 transform = { 0 };

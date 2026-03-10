@@ -30,14 +30,17 @@ struct Player : GameObject {
 	Animation* idleAnim = nullptr;
 	Animation* runningAnim = nullptr;
 
+	Sprite* line = nullptr;
+	Sprite::LinePoint* playerLinePos = nullptr;
+	Sprite::LinePoint* aimLinePos = nullptr;
 	void Init() override;
 	void Update() override;
 
+	void PlayerInput();
 private:
 
 	PlayerAction currentAction = PlayerAction::IDLE;
 
-	void PlayerInput();
 	void PlayerAction();
 	void PlayerAnimation();
 };
