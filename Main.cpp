@@ -11,7 +11,8 @@
 //#include "TextComponent.h"
 #include "GameStateManager.h"
 #include <filesystem>
-
+#include "EnemyGameObject.h"
+#include "EnemyManager.h"
 
 int gGameRunning = 1;
 //AEGfxVertexList* pMesh = 0;
@@ -63,7 +64,8 @@ void GameInit()
 
 	//player->Init();
 	AddGameObjectToVector(player, gameObjects);
-	
+	EnemyManager::Init(player);
+	EnemyManager::SpawnEnemies(3, 1); // 3 basic, 1 miniboss
 	
 	InitGameObjects(gameObjects);
 }
@@ -71,7 +73,7 @@ void GameUpdate() {
 	double dt = AEFrameRateControllerGetFrameTime();
 	UpdateGameObjects(gameObjects);
 	RenderGraphics();
-
+	EnemyManager::UpdateAllEnemies((f32)dt);
 	//player->Update();
 }
 #pragma endregion

@@ -1,136 +1,82 @@
 #include "EnemyGameObject.h"
-#include "CollisionManager.h"
-#include "MapManager.h"
-#include "PlayerGameObject.h"
-#include "PhysicsManager.h"
-#include "GameStateManager.h"
+#include "EnemyManager.h"
 #include <iostream>
+#include "EnemyMovement.h"
 
-void EnemyGameObject::Init()
-{
-	GameObject::Init();
-	InitEnemyBase(base, EnemyType::BASIC);
-	InitEnemyMovement(movement);
+void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
+    GameObject::Init();
+    InitEnemyBase(base, type);
+    EnemyMovement::InitEnemyMovement(movement);
 
-	Tile* spawnTile = MapManager::GetTile(TILE_ID::ENEMY);
-	if (spawnTile == nullptr) {
-		return;
-	}
-	AEVec2Set(&pos, spawnTile->pos.x + 50, spawnTile->pos.y);
-	pos.z = 1.f;
-	AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
+    if (!spawnTile) return;
 
-	base.patrolStart = { spawnTile->pos.x - 100.f, spawnTile->pos.y - 100.f };
-	base.patrolEnd = { spawnTile->pos.x + 150.f, spawnTile->pos.y - 100.f };
+    // Position
+    AEVec2Set(&pos, spawnTile->pos.x, spawnTile->pos.y);
+    pos.z = 1.f;
 
-	Sprite* s = AddComponent(new Sprite());
-	s->meshColor = 0xFF0000FF;
+    // Scale
+    AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
 
-	Collider* c = AddComponent(new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0, 0, 1, 1));
+    // Patrol points around spawn
+    base.patrolStart = { pos.x - 100.f, pos.y };
+    base.patrolEnd = { pos.x + 150.f, pos.y };
 
-	c->OnCollisionEnter = [this](Collider* other, int sides)
-		{
-			if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				std::cout << "[EnemyGameObj] Collided with PLAYER\n";
-				next = GAME_STATE_TYPE::COMBAT;
-			}
-			else if (Tile* tile = dynamic_cast<Tile*>(other->owner))
-			{
-				std::cout << "[EnemyGameObj] Collided with TILE\n";
+    // Sprite setup
+    Sprite* s = AddComponent(new Sprite());
+    s->meshColor = (type == EnemyType::BASIC) ? 0xFF0000FF : 0xFFFF0000;
+    s->textureFileName = "Assets/SpriteSheets/testRed4x6.png";
+    s->spriteSheet = Sprite::SpriteSheet(6, 4);
+    s->spriteSheet.isSpriteSheet = true;
 
-				// Only flip direction if hitting a wall on the left or right
-				// instead of always flipping (which caused flipping on ground too)
-				if (sides & COLLISION_SIDE::LEFT || sides & COLLISION_SIDE::RIGHT)
-					movement.movingRight = !movement.movingRight;
-			}
-			else
-			{
-				std::cout << "[EnemyGameObj] Collided with UNKNOWN\n";
-			}
-		};
+    idleAnim = new Animation(s);
+    walkAnim = new Animation(s);
 
-	c->OnCollisionOver = [this](Collider* other, int sides)
-		{
-			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
-			{
-				// Continuously correct direction if somehow pushed into a wall
-				if (sides & COLLISION_SIDE::RIGHT && movement.movingRight)
-					movement.movingRight = false;
-				else if (sides & COLLISION_SIDE::LEFT && !movement.movingRight)
-					movement.movingRight = true;
-			}
-		};
+    animator = AddComponent(new Animator(idleAnim));
 
-	rb = AddComponent(new RigidBody());
-	showColliders = true;
+    // Collider
+    Collider* c = AddComponent(new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0, 0, 1, 1));
+    rb = AddComponent(new RigidBody());
+
+    base.isAlive = true;
+
+    EnemyManager::RegisterEnemy(this);
 }
 
-void EnemyGameObject::Update()
-{
-	GameObject::Update();
-	UpdateEnemyPatrol(this, AEFrameRateControllerGetFrameTime());
-
-//	std::vector<Collider*> colliders = GetComponents<Collider>();
-//
-//	for (Collider* pCol : colliders)
-//	{
-//\
-//		for (CollisionInfo& info : pCol->collisionInfos)
-//		{
-//			Collider* oCol = info.other; 
-//
-//			if (!oCol || !oCol->canCollide) continue;
-//
-//			if (BoxToBoxCollision(
-//				pCol->GetPos2D(), oCol->GetPos2D(),
-//				pCol->GetScale(), oCol->GetScale()))
-//			{
-//				PhysicsManager::HandleCollision(pCol, oCol);
-//			}
-//			else
-//			{
-//				pCol->RemoveFromOverlappingVector(oCol);
-//				oCol->RemoveFromOverlappingVector(pCol);
-//			}
-//		}
-//	}
+void EnemyGameObject::Update() {
+    GameObject::Update();
+    UpdateAnimation();
 }
 
-void EnemyGameObject::Render()
-{
-	GameObject::Render();
+void EnemyGameObject::Patrol(f32 dt) {
+    EnemyMovement::UpdateEnemyPatrol(this, dt);
+    currentState = EnemyState::WALK;
+}
 
+void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f32 dt) {
+    // Call A* pathfinding to update velocity
+    std::vector<AEVec2> path = EnemyMovement::FindPath(pos, playerPos);
+    if (!path.empty()) {
+        AEVec2 next = path.front();
+        f32 dir = (next.x > pos.x) ? 1.f : -1.f;
+        rb->velocity.x = dir * base.stats.speed;
+        currentState = EnemyState::WALK;
+    }
+}
 
-	// render patrol points
+void EnemyGameObject::UpdateAnimation() {
+    if (!animator) return;
 
-	GameObject* patrolStartGO = new GameObject(
-		60.f, 60.f,
-		base.patrolStart.x,
-		base.patrolStart.y,
-		1.f);
+    Animation* anim = nullptr;
+    switch (currentState) {
+    case EnemyState::IDLE: anim = idleAnim; break;
+    case EnemyState::WALK: anim = walkAnim; break;
+    case EnemyState::ATTACK: anim = walkAnim; break; // Can add attack later
+    default: anim = idleAnim; break;
+    }
 
-	Sprite* patrolStartSprite = patrolStartGO->AddComponent(
-		new Sprite()
-	);
+    animator->PlayAnimation(anim);
+}
 
-	patrolStartSprite->meshColor = 0xFFFF0000;
-
-	patrolStartGO->Init();
-	patrolStartGO->Render();
-
-	GameObject* patrolEndGO = new GameObject(
-		60.f, 60.f,
-		base.patrolEnd.x,
-		base.patrolEnd.y,
-		1.f);
-
-	Sprite* patrolEndSprite = patrolEndGO->AddComponent(
-		new Sprite()
-	);
-
-	patrolEndSprite->meshColor = 0xFFFF0000;
-
-	patrolEndGO->Init();
-	patrolEndGO->Render();
+void EnemyGameObject::Render() {
+    GameObject::Render();
 }

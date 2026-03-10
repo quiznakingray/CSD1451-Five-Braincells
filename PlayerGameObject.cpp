@@ -250,5 +250,5 @@ void Player::Update(){
 	
 	AEGfxSetCamPosition(pos.x, pos.y);
 	GameObject::Update();
-	std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
+	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
 }

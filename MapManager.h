@@ -153,7 +153,7 @@ struct SpikeTile : Tile {
 		collider->OnTriggerOver = [](Collider* other, int sides) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
-				std::cout << "In spike" << std::endl;
+				//std::cout << "In spike" << std::endl;
 			}
 			};
 	}
