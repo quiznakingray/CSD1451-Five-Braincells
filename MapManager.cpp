@@ -188,13 +188,13 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     bool bgActive = true;
     bool currActive = true;
 
-    std::function<std::string(std::string)> trim = [](std::string s) {
+    auto trim = [](std::string s) {
         s.erase(0, s.find_first_not_of(" \t"));
         s.erase(s.find_last_not_of(" \t") + 1);
         return s;
         };
 
-    std::function<std::string(std::string)> nextToken = [&]() -> std::string {
+    auto nextToken = [&]() -> std::string {
         size_t pos = cell.find(delimiter);
         std::string token;
         if (pos == std::string::npos) {
