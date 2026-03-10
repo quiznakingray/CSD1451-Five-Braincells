@@ -37,7 +37,10 @@ void RenderGraphics() {
 	mapManager.DrawMapSprite();
 
 	player->Render();
-
+	// Render enemies
+	for (auto enemy : EnemyManager::GetEnemies()) {
+		enemy->Render();
+	}
 	// check if forcing the application to quit
 	if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
 		gGameRunning = 0;
@@ -65,9 +68,12 @@ void GameInit()
 	//player->Init();
 	AddGameObjectToVector(player, gameObjects);
 	EnemyManager::Init(player);
-	EnemyManager::SpawnEnemies(3, 1); // 3 basic, 1 miniboss
+	EnemyManager::SpawnEnemies(5, 1, gameObjects);
 	
 	InitGameObjects(gameObjects);
+
+	/*EnemyManager::Init(player);
+	EnemyManager::SpawnEnemies(5, 1, gameObjects);*/
 }
 void GameUpdate() {
 	double dt = AEFrameRateControllerGetFrameTime();
@@ -109,7 +115,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	//GameInit();
 	gameStateManager.Initialize(GAME_STATE_TYPE::WORLD);
-
+	double dt = AEFrameRateControllerGetFrameTime();
 	// Game Loop
 	while (gGameRunning)
 	{
