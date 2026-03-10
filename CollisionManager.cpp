@@ -225,7 +225,7 @@ void Collider::Render()
 			owner->scale.y * size.y,
 			owner->pos.x + center.x,
 			owner->pos.y + center.y,
-			owner->pos.z + 1);
+			owner->pos.z + 1, owner->rotation);
 
 	Sprite* s = c->AddComponent(
 		new Sprite()

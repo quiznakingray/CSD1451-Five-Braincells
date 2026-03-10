@@ -1,6 +1,7 @@
 #include "AEEngine.h"
 #include "PlayerGameObject.h"
 #include "MapManager.h"
+#include "PlayerManager.h"
 
 #include <iostream>
 #include <vector>
@@ -129,22 +130,29 @@ void Player::Init()
 	// set components
 
 	//set animation
+	if (!idleAnim)
+	{
+		Sprite * s = new Sprite();
+		s->meshColor = 0xFF0000FF;
+		s->textureFileName = "Assets/SpriteSheets/test2x12.png";
+		s->spriteSheet = Sprite::SpriteSheet(12, 2);
+		s->spriteSheet.isSpriteSheet = true;
 
-	Sprite * s = new Sprite();
-	s->meshColor = 0xFF0000FF;
-	s->textureFileName = "Assets/SpriteSheets/test2x12.png";
-	s->spriteSheet = Sprite::SpriteSheet(12, 2);
-	s->spriteSheet.isSpriteSheet = true;
+		idleAnim = new Animation(s);
 
-	idleAnim = new Animation(s);
+	}
 
-	Sprite * run = new Sprite();
-	run->meshColor = 0xFF0000FF;
-	run->textureFileName = "Assets/SpriteSheets/testRed4x6.png";
-	run->spriteSheet = Sprite::SpriteSheet(6, 4);
-	run->spriteSheet.isSpriteSheet = true;
+	if (!runningAnim)
+	{
+		Sprite * run = new Sprite();
+		run->meshColor = 0xFF0000FF;
+		run->textureFileName = "Assets/SpriteSheets/testRed4x6.png";
+		run->spriteSheet = Sprite::SpriteSheet(6, 4);
+		run->spriteSheet.isSpriteSheet = true;
 
-	runningAnim = new Animation(run);
+		runningAnim = new Animation(run);
+
+	}
 
 	animator = AddComponent(
 		new Animator(idleAnim)
@@ -217,19 +225,6 @@ void Player::Init()
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
 	//worldPosX = camPosX - screenX / 2.f;
 	//worldPosY = camPosY - screenY / 2.f;
-	line = AddComponent(new Sprite()
-	);
-	line->spriteShape = SPRITE_SHAPE::SHAPE_LINE;
-	line->thickness = 5.f;
-	line->meshColor = 0xFFFF0000;
-	playerLinePos = new Sprite::LinePoint;
-	aimLinePos = new Sprite::LinePoint;
-	playerLinePos->pos.x = pos.x;
-	playerLinePos->pos.y = pos.y;
-	aimLinePos->pos.x = pos.x + 10.f;
-	aimLinePos->pos.y = pos.y;
-	line->linePoints.push_back(playerLinePos);
-	line->linePoints.push_back(aimLinePos);
 
 	showColliders = true;
 	speed = static_cast<f32>(200.0);
@@ -243,6 +238,82 @@ void Player::Update(){
 	//PlayerInput();
 	PlayerAction();
 	PlayerAnimation();
+
+	runningAnim->sprite->size.x =
+		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
+
+
+	GameObject::Update();
+	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
+}
+
+void MeleePlayer::Init()
+{
+
+	Sprite* s = new Sprite();
+	s->meshColor = 0xFF0000FF;
+	s->textureFileName = "Assets/SpriteSheets/Player_Melee_Idle.png";
+	s->spriteSheet = Sprite::SpriteSheet(2, 7);
+	s->spriteSheet.isSpriteSheet = true;
+
+	idleAnim = new Animation(s);
+	idleAnim->loopAnimation = true;
+	idleAnim->animationFPS = 10.f;
+	
+	Sprite* run = new Sprite();
+	run->meshColor = 0xFF0000FF;
+	run->textureFileName = "Assets/SpriteSheets/Player_Melee_Run.png";
+	run->spriteSheet = Sprite::SpriteSheet(2, 7);
+	run->spriteSheet.isSpriteSheet = true;
+
+	runningAnim = new Animation(run);
+	runningAnim->loopAnimation = true;
+	runningAnim->animationFPS = 30.f;
+	Player::Init();
+}
+
+void RangePlayer::Init()
+{
+
+	Sprite* s = new Sprite();
+	s->meshColor = 0xFF0000FF;
+	s->textureFileName = "Assets/SpriteSheets/Player_Range_Idle.png";
+	s->spriteSheet = Sprite::SpriteSheet(2, 7);
+	s->spriteSheet.isSpriteSheet = true;
+
+	idleAnim = new Animation(s);
+	idleAnim->loopAnimation = true;
+	idleAnim->animationFPS = 10.f;
+	
+	Sprite* run = new Sprite();
+	run->meshColor = 0xFF0000FF;
+	run->textureFileName = "Assets/SpriteSheets/Player_Range_Run.png";
+	run->spriteSheet = Sprite::SpriteSheet(2, 7);
+	run->spriteSheet.isSpriteSheet = true;
+
+	runningAnim = new Animation(run);
+	runningAnim->loopAnimation = true;
+	runningAnim->animationFPS = 30.f;
+
+	line = AddComponent(new Sprite()
+	);
+	line->spriteShape = SPRITE_SHAPE::SHAPE_LINE;
+	line->thickness = 5.f;
+	line->meshColor = 0xFFFF0000;
+	playerLinePos = new Sprite::LinePoint;
+	aimLinePos = new Sprite::LinePoint;
+	playerLinePos->pos.x = pos.x + MapManager::tileSize /2.f;
+	playerLinePos->pos.y = pos.y;
+	aimLinePos->pos.x = pos.x + 10.f;
+	aimLinePos->pos.y = pos.y;
+	line->linePoints.push_back(playerLinePos);
+	line->linePoints.push_back(aimLinePos);
+
+	Player::Init();
+}
+
+void RangePlayer::Update()
+{
 	s32 screenX, screenY;
 	//f32 camPosX, camPosY;
 	f32 worldPosX, worldPosY;
@@ -251,42 +322,107 @@ void Player::Update(){
 	worldPosX = screenX + AEGfxGetWinMinX();
 	worldPosY = -(screenY - AEGfxGetWinMaxY());
 	std::cout << worldPosX << "   " << worldPosY << std::endl;
-	playerLinePos->pos.x = pos.x;
+	playerLinePos->pos.x = pos.x + (worldPosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
 	aimLinePos->pos.x = worldPosX;
 	aimLinePos->pos.y = worldPosY;
-	//std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
-	//std::vector<Collider*> colliders = GetComponents<Collider>();
+	Player::Update();
+}
 
-	//for (Collider* pCol : colliders)
-	//{
-	//	for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
-	//	{
-	//		Collider* oCol = it->other;
+void RangePlayer::PlayerAction()
+{
+	if (rb->velocity.x != 0)
+	{
+		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
+	}
+	else if (AEInputCheckCurr(AEVK_LBUTTON))
+	{
+		currentAction = PlayerAction::AIMING;
+		if (AEInputCheckTriggered(AEVK_RBUTTON))
+		{
+			// fire arrow
+			AEVec2 dir;
+			AEVec2Sub(&dir, &aimLinePos->pos, &playerLinePos->pos);
 
-	//		if (!oCol || !oCol->canCollide)
-	//		{
-	//			pCol->RemoveFromOverlappingVector(oCol);
-	//			it = pCol->collisionInfos.begin();
-	//			continue;
-	//		}
+			// normalize so components are between -1 and 1
+			AEVec2Normalize(&dir, &dir);
 
-	//		if (BoxToBoxCollision(
-	//			pCol->GetPos2D(), oCol->GetPos2D(),
-	//			pCol->GetScale(), oCol->GetScale()))
-	//		{
-	//			PhysicsManager::HandleCollision(pCol, oCol);
-	//			++it;
-	//		}
-	//		else
-	//		{
-	//			pCol->RemoveFromOverlappingVector(oCol);
-	//			it = pCol->collisionInfos.begin();
-	//		}
-	//	}
-	//}
-	
-	AEGfxSetCamPosition(pos.x, pos.y);
+			PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir);
+		}
+	}
+	else {
+		currentAction = PlayerAction::IDLE;
+	}
+}
+
+void Arrow::Init()
+{
+	AEVec2Set(&scale, MapManager::tileSize , MapManager::tileSize );
+	Sprite* s = AddComponent( new Sprite());
+	s->meshColor = 0xFF0000FF;
+	s->textureFileName = "Assets/SpriteSheets/arrow.png";
+
+	Collider* c = AddComponent(
+		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.f, 1.f, 0.5f)
+	);
+	c->OnTriggerEnter = [this](Collider* other, int sides)
+		{
+			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
+			{
+				if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) || 
+					((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
+				{
+					isActive = false;
+					timer = 0.0f;
+
+				}
+
+			}
+		};
+	c->isTrigger = true;
+	showColliders = true;
+
+	rb = AddComponent(
+		new RigidBody()
+	);
+	rb->type = RIGIDBODY_TYPE::DYNAMIC;
+	rb->hasGravity = false;
+	isActive = false;
+	GameObject::Init();
+}
+
+void Arrow::Update()
+{
 	GameObject::Update();
-	std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
+	if (isActive)
+	{
+		double dt = AEFrameRateControllerGetFrameTime();
+		timer += dt;
+		if (timer >= lifetime)
+		{
+			isActive = false;
+			timer = 0.0f;
+		}
+	}
+}
+
+void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir)
+{
+	if (isActive) return;
+	pos.x = startPos.x;
+	pos.y = startPos.y;
+	isActive = true;
+
+	// set velocity
+	AEVec2Scale(&rb->velocity, &dir, speed);
+
+	// rotate arrow to match direction
+	rotation = atan2f(dir.y, dir.x);
+
+	// flip sprite if moving left
+	Sprite* s = GetComponent<Sprite>();
+	if (rb->velocity.x < 0)
+		s->size.x = -fabs(s->size.x);
+	else
+		s->size.x = fabs(s->size.x);
 }

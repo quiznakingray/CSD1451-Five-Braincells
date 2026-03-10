@@ -8,7 +8,9 @@
 enum class PlayerAction {
 	IDLE,
 	RUNNING,
-	JUMPING
+	JUMPING,
+	ATTACKING,
+	AIMING,
 };
 
 struct Player : GameObject {
@@ -30,20 +32,44 @@ struct Player : GameObject {
 	Animation* idleAnim = nullptr;
 	Animation* runningAnim = nullptr;
 
-	Sprite* line = nullptr;
-	Sprite::LinePoint* playerLinePos = nullptr;
-	Sprite::LinePoint* aimLinePos = nullptr;
 	void Init() override;
 	void Update() override;
 
 	void PlayerInput();
-private:
-
 	PlayerAction currentAction = PlayerAction::IDLE;
 
-	void PlayerAction();
+	virtual void PlayerAction();
+private:
+
+
 	void PlayerAnimation();
 };
 
+struct MeleePlayer : Player {
 
+	void Init() override;
+};
+
+struct RangePlayer : Player {
+
+	Sprite* line = nullptr;
+	Sprite::LinePoint* playerLinePos = nullptr;
+	Sprite::LinePoint* aimLinePos = nullptr;
+
+	void Init() override;
+	void Update() override;
+
+	void PlayerAction() override;
+};
+
+struct Arrow : GameObject {
+
+	RigidBody* rb = nullptr;
+	f32 speed = 500.f;
+	f32 timer = 0.0f;
+	f32 lifetime = 5.f;
+	void Init() override;
+	void Update() override;
+	void ShootArrow(AEVec2 startPos , AEVec2 dir);
+};
 #endif // ! PLAYER_GAME_OBJECT_H
