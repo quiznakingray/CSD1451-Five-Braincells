@@ -91,7 +91,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 
-	int gGameRunning = 1;
+	//int gGameRunning = 1;
 
 	// Initialization of your own variables go here
 
