@@ -594,146 +594,231 @@ void CrateTile::Init()
     Tile::Init();
     collider->size.x = 0.6f;
     collider->size.y = 0.6f;
+
+    interactionTextBox->text = "[F] Grab";
+
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
-    };
+        Player* player = dynamic_cast<Player*>(other->owner);
+        if (player && !pushState)
+            interactionTextBox->isActive = true;
+        };
 
     collider->OnCollisionOver = [this](Collider* other, int sides) {
-
-        };
-    collider->OnCollisionExit = [this](Collider* other, int sides) {
-        if (Player* player = dynamic_cast<Player*>(other->owner))
+        Player* player = dynamic_cast<Player*>(other->owner);
+        if (player)
         {
-            playerTouching = false;
-            playerOnLeft = false;
-            playerOnRight = false;
+            if (AEInputCheckTriggered(AEVK_F)) {
+                pushState = !pushState;
+                if (pushState) {
+                    grabbedPlayer = player;
+                    grabbedPlayer->currentAction = PlayerAction::CRATEINTERACT;
+                    // store which side the player is on when grab starts
+                    grabbedSide = playerOnLeft ? COLLISION_SIDE::LEFT : COLLISION_SIDE::RIGHT;
+                    interactionTextBox->isActive = false;
+                }
+                else {
+                    grabbedPlayer->currentAction = PlayerAction::IDLE;
+                    grabbedPlayer = nullptr;
+                    grabbedSide = 0;
+                    interactionTextBox->isActive = true;
+                }
+            }
         }
         };
+
+    collider->OnCollisionExit = [this](Collider* other, int sides) {
+        Player* player = dynamic_cast<Player*>(other->owner);
+        if (player && !pushState)
+        {
+                playerTouching = false;
+                playerOnLeft = false;
+                playerOnRight = false;
+                grabbedPlayer = nullptr;
+                interactionTextBox->isActive = false;
+        }
+    };
 }
 
 void CrateTile::Update() {
     Tile::Update();
     double dt = AEFrameRateControllerGetFrameTime();
 
-    rb->onCollider = false;
-    // Check crate against nearby tiles
     std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
     std::vector<Collider*> colliders = GetComponents<Collider>();
 
-for (Collider* pCol : colliders)
-{
-    float impulse = pushForce * dt;
-    RigidBody* playerRb{};
-    playerTouching = false;
-    playerOnLeft = false;
-    playerOnRight = false;
-
-    for (const auto& info : pCol->collisionInfos)
+    // cancel grab if player is too far
+    if (pushState && grabbedPlayer)
     {
-        Collider* other = info.other;
-        if (!other || !other->owner) continue;
-
-        if (dynamic_cast<Player*>(other->owner))
+        float dist = AEVec2Distance(&pos, &grabbedPlayer->pos);
+        if (dist > scale.x * 2.0f)
         {
-            playerTouching = true;
-            playerRb = (*other->owner).GetComponent<RigidBody>();
-            if (info.sides & COLLISION_SIDE::LEFT)
-            playerOnLeft = true;
-
-            if (info.sides & COLLISION_SIDE::RIGHT)
-                playerOnRight = true;
+            pushState = false;
+            grabbedPlayer->currentAction = PlayerAction::IDLE;
+            grabbedPlayer = nullptr;
+            grabbedSide = 0;
         }
     }
-    
-    if (playerTouching) {
 
-        if (playerOnLeft && AEInputCheckCurr(AEVK_D))
-        {
-            PhysicsManager::ApplyImpulse(rb, impulse);
-        }
-
-
-        if (playerOnRight && AEInputCheckCurr(AEVK_A))
-        {
-            PhysicsManager::ApplyImpulse(rb, -impulse);
-        }
-        std::cout << rb->velocity.x << '\n';
-    }
-
-    //PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
-
-
-    if (!playerTouching)
+    if (pushState && grabbedPlayer && grabbedPlayer->currentAction == PlayerAction::CRATEINTERACT)
     {
-        if (rb->velocity.x > 0)
+        // release grab when F is pressed
+        if (AEInputCheckTriggered(AEVK_F))
         {
-            rb->velocity.x -= friction * dt;
-            if (rb->velocity.x < 0)
-                rb->velocity.x = 0;
-            std::cout << rb->velocity.x << '\n';
+            pushState = false;
+            grabbedPlayer->currentAction = PlayerAction::IDLE;
+            grabbedPlayer = nullptr;
+            grabbedSide = 0;
+            interactionTextBox->isActive = false;  // hide on release
+            return;
         }
-        else if (rb->velocity.x < 0)
+        // crate on right when moving right
+        if (grabbedPlayer->rb->velocity.x > 0)
         {
-            rb->velocity.x += friction * dt;
-            if (rb->velocity.x > 0)
-                rb->velocity.x = 0;
-            std::cout << rb->velocity.x << '\n';
+            grabbedSide = COLLISION_SIDE::RIGHT;
+        }
+
+        // crate on left when moving left
+        else if (grabbedPlayer->rb->velocity.x < 0)
+        {
+            grabbedSide = COLLISION_SIDE::LEFT;
+
+        }
+
+
+        // crate moves with player
+        if (grabbedSide == COLLISION_SIDE::RIGHT)
+        {
+            pos.x = grabbedPlayer->pos.x + grabbedPlayer->scale.x * 0.5f + scale.x * 0.5f;
+        }
+        else if (grabbedSide == COLLISION_SIDE::LEFT)
+        {
+            pos.x = grabbedPlayer->pos.x - grabbedPlayer->scale.x * 0.5f - scale.x * 0.5f;
+        }
+        pos.y = grabbedPlayer->pos.y;
+
+        rb->velocity.x = 0;
+        rb->velocity.y = 0;
+        rb->onCollider = grabbedPlayer->rb->onCollider;
+
+        // prevents crate from clipping into collidables
+        for (Tile* tile : nearbyTiles)
+        {
+            if (!tile->collider || !tile->collider->canCollide) continue;
+            if (tile == this) continue;
+            if (dynamic_cast<CrateTile*>(tile)) continue;
+
+            Collider* oCol = tile->collider;
+            if (BoxToBoxCollision(
+                collider->GetPos2D(), oCol->GetPos2D(),
+                collider->GetScale(), oCol->GetScale()))
+            {
+                float dx = collider->GetPos2D().x - oCol->GetPos2D().x;
+                float dy = collider->GetPos2D().y - oCol->GetPos2D().y;
+                float pxOverlap = (collider->GetScale().x * 0.5f + oCol->GetScale().x * 0.5f) - fabs(dx);
+                float pyOverlap = (collider->GetScale().y * 0.5f + oCol->GetScale().y * 0.5f) - fabs(dy);
+
+                if (pxOverlap < pyOverlap) // horizontal wall
+                {
+                    // push crate out of wall
+                    pos.x += (dx > 0) ? pxOverlap : -pxOverlap;
+
+                    // stop player from moving further into wall
+                    if (RigidBody* playerRb = grabbedPlayer->GetComponent<RigidBody>())
+                        playerRb->velocity.x = 0;
+                }
+            }
         }
     }
-    // Check nearby tiles for new collisions
-    //for (Tile* tile : nearbyTiles)
-    //{
-    //    if (!tile->collider || !tile->collider->canCollide) continue;
-    //    if (tile == this) continue;  // don't collide with self
+    else
+    {
+        rb->onCollider = false;
+        PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
 
-    //    Collider* oCol = tile->collider;
-    //    if (BoxToBoxCollision(
-    //        pCol->GetPos2D(), oCol->GetPos2D(),
-    //        pCol->GetScale(), oCol->GetScale()))
-    //    {
-    //        int sidesForCrate = GetAllCollisionSides(
-    //            pCol->GetPos2D(), oCol->GetPos2D(),
-    //            pCol->GetScale(), oCol->GetScale()
-    //        );
-    //        int sidesForTile = FlipCollisionSides(sidesForCrate);
+        // friction when not grabbed
+        if (!playerTouching)
+        {
+            if (rb->velocity.x > 0) {
+                rb->velocity.x -= friction * dt;
+                if (rb->velocity.x < 0) rb->velocity.x = 0;
+            }
+            else if (rb->velocity.x < 0) {
+                rb->velocity.x += friction * dt;
+                if (rb->velocity.x > 0) rb->velocity.x = 0;
+            }
+        }
 
-    //        pCol->AddToOvelappingVector(oCol, sidesForCrate);
-    //        oCol->AddToOvelappingVector(pCol, sidesForTile);
+        for (Collider* pCol : colliders)
+        {
+            playerTouching = false;
+            playerOnLeft = false;
+            playerOnRight = false;
 
-    //        PhysicsManager::HandleCollision(pCol, oCol);
-    //    }
-    //    else
-    //    {
-    //        pCol->RemoveFromOverlappingVector(oCol);
-    //        oCol->RemoveFromOverlappingVector(pCol);
-    //    }
-    //}
+            for (const auto& info : pCol->collisionInfos)
+            {
+                Collider* other = info.other;
+                if (!other || !other->owner) continue;
 
-    // Then resolve already-overlapping colliders (player, enemies, etc.)
-    //for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
-    //{
-    //    Collider* oCol = it->other;
-    //    if (!oCol || !oCol->canCollide)
-    //    {
-    //        pCol->RemoveFromOverlappingVector(oCol);
-    //        it = pCol->collisionInfos.begin();
-    //        continue;
-    //    }
-    //    if (BoxToBoxCollision(
-    //        pCol->GetPos2D(), oCol->GetPos2D(),
-    //        pCol->GetScale(), oCol->GetScale()))
-    //    {
-    //        PhysicsManager::HandleCollision(pCol, oCol);
-    //        ++it;
-    //    }
-    //    else
-    //    {
-    //        pCol->RemoveFromOverlappingVector(oCol);
-    //        it = pCol->collisionInfos.begin();
-    //    }
-    //}
+                Player* player = dynamic_cast<Player*>(other->owner);
+                if (player && !playerTouching)
+                {
+                    playerTouching = true;
+                    if (info.sides & COLLISION_SIDE::LEFT)  playerOnLeft = true;
+                    if (info.sides & COLLISION_SIDE::RIGHT) playerOnRight = true;
+                }
+            }
 
+            for (Tile* tile : nearbyTiles)
+            {
+                if (!tile->collider || !tile->collider->canCollide) continue;
+                if (tile == this) continue;
 
-}
+                Collider* oCol = tile->collider;
+                if (BoxToBoxCollision(
+                    pCol->GetPos2D(), oCol->GetPos2D(),
+                    pCol->GetScale(), oCol->GetScale()))
+                {
+                    int sidesForCrate = GetAllCollisionSides(
+                        pCol->GetPos2D(), oCol->GetPos2D(),
+                        pCol->GetScale(), oCol->GetScale()
+                    );
+                    int sidesForTile = FlipCollisionSides(sidesForCrate);
 
+                    if (sidesForCrate & COLLISION_SIDE::BOTTOM)
+                        rb->onCollider = true;
 
+                    pCol->AddToOvelappingVector(oCol, sidesForCrate);
+                    oCol->AddToOvelappingVector(pCol, sidesForTile);
+                    PhysicsManager::HandleCollision(pCol, oCol);
+                }
+                else
+                {
+                    pCol->RemoveFromOverlappingVector(oCol);
+                    oCol->RemoveFromOverlappingVector(pCol);
+                }
+            }
+
+            for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
+            {
+                Collider* oCol = it->other;
+                if (!oCol || !oCol->canCollide)
+                {
+                    pCol->RemoveFromOverlappingVector(oCol);
+                    it = pCol->collisionInfos.begin();
+                    continue;
+                }
+                if (BoxToBoxCollision(
+                    pCol->GetPos2D(), oCol->GetPos2D(),
+                    pCol->GetScale(), oCol->GetScale()))
+                {
+                    PhysicsManager::HandleCollision(pCol, oCol);
+                    ++it;
+                }
+                else
+                {
+                    pCol->RemoveFromOverlappingVector(oCol);
+                    it = pCol->collisionInfos.begin();
+                }
+            }
+        }
+    }
 }

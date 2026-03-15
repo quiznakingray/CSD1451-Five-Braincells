@@ -9,27 +9,26 @@ void Player::PlayerInput()
 {
 	f32 dt = AEFrameRateControllerGetFrameTime();
 	AEVec2 moveDir{};
+
+	bool isGrabbing = currentAction == PlayerAction::CRATEINTERACT;
+	float accel = isGrabbing ? 150.0f : 300.0f;
+	float decel = isGrabbing ? 300.0f : 400.0f;
+	float maxSpeed = isGrabbing ? 150.0f : 300.0f;
+	float jumpHeight = 300.0f;  // lower jump when grabbing
+
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	//std::cout << "On ground: " << (onGround ? "--" : "___________________________ ") << std::endl;
-	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider)
+	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing)
 	{
 		//moveDir.y = 500.f;
 		//onGround = false;
-
-		float jumpHeight = 300.0f; // pixels
-
-		float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * jumpHeight);
-
+		float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 300.0f);
 		rb->velocity.y = jumpVelocity;
-
 	}
 	//if (AEInputCheckCurr(AEVK_S))
 	//{
 	//	moveDir.y -= 1.f;
 	//}
-	float accel = 300.0f;     // acceleration power
-	float decel = 400.0f;     // deceleration power
-	float maxSpeed = 300.0f;
 	if (AEInputCheckCurr(AEVK_A))
 	{
 		//moveDir.x -= 1.f;
@@ -83,11 +82,13 @@ void Player::PlayerInput()
 void Player::PlayerAction()
 {
 	//}
-	if (rb->velocity.x != 0)
+	if (rb->velocity.x != 0 && currentAction != PlayerAction::CRATEINTERACT)
 	{
+		prevAction = currentAction;
 		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
 	}
-	else {
+	else if (rb->velocity.x < 0.1f && currentAction != PlayerAction::CRATEINTERACT){
+		prevAction = currentAction;
 		currentAction = PlayerAction::IDLE;
 	}
 }
@@ -217,6 +218,7 @@ void Player::Init()
 void Player::Update(){
 	
 	PlayerInput();
+	PlayerAction();
 	//std::vector<Tile*> nearbyTiles = MapManager::GetTilesNearPos(pos, scale);
 	//std::vector<Collider*> colliders = GetComponents<Collider>();
 

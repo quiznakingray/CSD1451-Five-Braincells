@@ -8,7 +8,8 @@
 enum class PlayerAction {
 	IDLE,
 	RUNNING,
-	JUMPING
+	JUMPING,
+	CRATEINTERACT
 };
 
 struct Player : GameObject {
@@ -30,12 +31,14 @@ struct Player : GameObject {
 	Animation* idleAnim = nullptr;
 	Animation* runningAnim = nullptr;
 
+	PlayerAction currentAction = PlayerAction::IDLE;
+	PlayerAction prevAction = PlayerAction::IDLE;
+
 	void Init() override;
 	void Update() override;
 
 private:
 
-	PlayerAction currentAction = PlayerAction::IDLE;
 
 	void PlayerInput();
 	void PlayerAction();

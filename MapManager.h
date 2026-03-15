@@ -257,9 +257,13 @@ struct CrateTile : Tile {
 	bool playerTouching = false;
 	bool playerOnLeft = false;
 	bool playerOnRight = false;
+
+	Player* grabbedPlayer = nullptr;
+	bool pushState = false;
 	float pushForce = 50.0f;
 	float friction = 40.0f;
 	RigidBody* rb = nullptr;
+	int grabbedSide = 0;
 	CrateTile(
 		TILE_ID currID_,
 		TILE_ID bgID_,
@@ -275,12 +279,9 @@ struct CrateTile : Tile {
 		rb = AddComponent(
 			new RigidBody()
 		);
-
+		canInteract = true;
 		rb->type = RIGIDBODY_TYPE::DYNAMIC;
-		rb->mass = 10.f;
-		rb->invMass = 1.0f / rb->mass;
-		rb->maxImpulse = 50.f;
-		rb->maxSpeed = 75.f;
+		rb->mass = 5000.f;
 		rb->hasGravity = true;
 	}
 
@@ -304,14 +305,9 @@ struct CloudTile : Tile {
 		int col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
-
-
-
-
 		rb = AddComponent(
 			new RigidBody()
 		);
-
 		rb->type = RIGIDBODY_TYPE::STATIC;
 		rb->hasGravity = false;
 		currSprite->textureFileName = "Assets/Environment/images.png";
@@ -339,7 +335,7 @@ struct CloudTile : Tile {
 						cloudTimer.Start(2.0);
 				}
 			}
-			};
+		};
 
 		collider->OnCollisionOver = [this](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
@@ -356,9 +352,9 @@ struct CloudTile : Tile {
 						cloudTimer.Start(2.0);
 				}
 			}
-			};
-		collider->OnCollisionExit = [this](Collider* other, int sides) {
-			};
+		};
+			collider->OnCollisionExit = [this](Collider* other, int sides) {
+		};
 	}
 
 	void Update() override
@@ -679,7 +675,7 @@ struct LeverTile : Tile {
 			}
 			};
 
-		interactionTextBox->text = "[F]";
+		interactionTextBox->text = "[F] Pull";
 
 	}
 
@@ -764,30 +760,32 @@ struct ButtonTile : Tile {
 		collider->OnTriggerEnter = [this](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
-
 			bool wasPressed = isPressed;
 			if (player) playerOnButton = true;
 			if (crate)  crateOnButton = true;
 			isPressed = playerOnButton || crateOnButton;
-
 			if (isPressed != wasPressed) {
 				ToggleButton();
-				ActivateGates(!isPressed);
+				// derive from actual gate state
+				std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
+				bool currentlyActive = !gates.empty() && gates[0]->isActive;
+				ActivateGates(!currentlyActive);
 			}
 			};
 
 		collider->OnTriggerExit = [this](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
-
 			bool wasPressed = isPressed;
 			if (player) playerOnButton = false;
 			if (crate)  crateOnButton = false;
 			isPressed = playerOnButton || crateOnButton;
-
 			if (isPressed != wasPressed) {
 				ToggleButton();
-				ActivateGates(!isPressed);
+				// derive from actual gate state
+				std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
+				bool currentlyActive = !gates.empty() && gates[0]->isActive;
+				ActivateGates(!currentlyActive);
 			}
 			};
 	}
