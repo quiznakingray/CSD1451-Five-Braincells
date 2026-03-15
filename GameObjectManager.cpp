@@ -32,7 +32,7 @@ void GameObject::Render() {
 	if (!isOnCamera || !isActive) return;
 	for (ComponentBase* comp : components)
 	{
-		if (!comp->isActive) return;
+		if (!comp->isActive) continue;
 		comp->Render();
 	}
 }

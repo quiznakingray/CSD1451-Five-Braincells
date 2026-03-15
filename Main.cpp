@@ -10,6 +10,7 @@
 #include "GameObjectManager.h"
 //#include "TextComponent.h"
 #include "GameStateManager.h"
+#include "MainMenu.h"
 #include <filesystem>
 
 
@@ -21,9 +22,8 @@ MapManager mapManager;
 TextManager textManager;
 s8 TextManager::pFont = 0;
 
-Player* player = new Player();
 
-std::vector<GameObject*> gameObjects{};
+//std::vector<GameObject*> gameObjects{};
 
 GameStateManager gameStateManager;
 #pragma region tempFuncs
@@ -34,8 +34,6 @@ void RenderGraphics() {
 	// Set the background to black.
 	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
 	mapManager.DrawMapSprite();
-
-	player->Render();
 
 	// check if forcing the application to quit
 	if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
@@ -59,20 +57,18 @@ void GameInit()
 
 	mapManager.PrintMap();
 
-	mapManager.AddTilesToGameObjectVector(gameObjects);
+	//mapManager.AddTilesToGameObjectVector(gameObjects);
 
-	//player->Init();
-	AddGameObjectToVector(player, gameObjects);
+	//AddGameObjectToVector(player, gameObjects);
 	
 	
-	InitGameObjects(gameObjects);
+	//InitGameObjects(gameObjects);
 }
 void GameUpdate() {
 	double dt = AEFrameRateControllerGetFrameTime();
-	UpdateGameObjects(gameObjects);
+	//UpdateGameObjects(gameObjects);
 	RenderGraphics();
 
-	//player->Update();
 }
 #pragma endregion
 
@@ -90,7 +86,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 
-	int gGameRunning = 1;
+	//int gGameRunning = 1;
 
 	// Initialization of your own variables go here
 
@@ -106,7 +102,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	printf("Hello World\n");
 
 	//GameInit();
-	gameStateManager.Initialize(GAME_STATE_TYPE::WORLD);
+	gameStateManager.Initialize(GAME_STATE_TYPE::MENU);
 
 	// Game Loop
 	while (gGameRunning)
@@ -117,7 +113,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		//// Initialize the current game state
 		fpLoad();
 		fpInitialize();
-		while (next == current)
+		while (next == current && gGameRunning)
 		{
 			AESysFrameStart();
 			// Update game logic for the current frame
@@ -125,7 +121,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			// Render graphics for the current frame
 			fpRender();
 			// check if forcing the application to quit
-			if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
+			if (AEInputCheckCurr(AEVK_ESCAPE)) {
+				next = GAME_STATE_TYPE::MENU;
+			}
+			if (0 == AESysDoesWindowExist())
 				gGameRunning = 0;
 
 			if (AEInputCheckCurr(AEVK_1))

@@ -18,7 +18,7 @@ void PhysicsManager::UpdateRigidBody(RigidBody* rb, f32 dt)
     // Update position from velocity
     rb->owner->pos.x += rb->velocity.x * dt;
     rb->owner->pos.y += rb->velocity.y * dt;
-    std::cout << "onCollider: " << rb->onCollider << '\n';
+    //std::cout << "onCollider: " << rb->onCollider << '\n';
 }
 
 void PhysicsManager::HandleCollision(Collider* a, Collider* b)

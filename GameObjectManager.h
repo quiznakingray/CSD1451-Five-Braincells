@@ -73,6 +73,7 @@ struct GameObject {
 		AEVec2Set(&pos, pos_x, pos_y);
 		pos.z = pos_z;
 		AEVec2Set(&scale, scale_x, scale_y);
+		rotation = rot;
 	}
 
 	bool isGameObjectOnScreen();

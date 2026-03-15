@@ -16,3 +16,8 @@
 bin
 Debug
 Release
+*.exe
+*.exe
+*.exe
+*.exe
+bin/Debug-x64/Project1.exe
