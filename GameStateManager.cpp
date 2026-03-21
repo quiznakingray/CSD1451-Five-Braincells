@@ -7,7 +7,7 @@
 
 FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpRender = nullptr, fpFree = nullptr, fpUnload = nullptr;
 
-GAME_STATE_TYPE current = GAME_STATE_TYPE::WORLD, next = GAME_STATE_TYPE::OTHER;
+GAME_STATE_TYPE current = GAME_STATE_TYPE::LEVEL1, next = GAME_STATE_TYPE::LEVEL2;
 
 void GameStateManager::Initialize(GAME_STATE_TYPE type)
 {
@@ -17,6 +17,10 @@ void GameStateManager::Initialize(GAME_STATE_TYPE type)
 void GameStateManager::ChangeState(GAME_STATE_TYPE type)
 {
 	next = type;
+}
+
+GAME_STATE_TYPE GetCurrentState() {
+	return current;
 }
 
 void GameStateManager::Update()
@@ -31,21 +35,16 @@ void GameStateManager::Update()
 		fpFree = MainMenu_Free;
 		fpUnload = []() {};
 		break;
-	case GAME_STATE_TYPE::WORLD:  
+	case GAME_STATE_TYPE::LEVEL1:  
+	case GAME_STATE_TYPE::LEVEL1BOSS:
+	case GAME_STATE_TYPE::LEVEL2:
+	case GAME_STATE_TYPE::LEVEL2BOSS:
 		fpLoad = ParkourLevel::Load;  
 		fpInitialize = ParkourLevel::Init;  
 		fpUpdate = ParkourLevel::Update;  
 		fpRender = ParkourLevel::Render;  
 		fpFree = ParkourLevel::Free;  
 		fpUnload = ParkourLevel::Unload;  
-		break;
-	case GAME_STATE_TYPE::OTHER:
-		fpLoad = BossLevel::Load;
-		fpInitialize = BossLevel::Init;
-		fpUpdate = BossLevel::Update;
-		fpRender = BossLevel::Render;
-		fpFree = BossLevel::Free;
-		fpUnload = BossLevel::Unload;
 		break;
 	case GAME_STATE_TYPE::COMBAT:  
 		fpLoad = GameStateLoad;

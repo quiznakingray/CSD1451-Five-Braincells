@@ -1,6 +1,8 @@
 #include "MapManager.h"
 #include "SpriteManager.h"
 #include "PlayerGameObject.h"
+#include "PlayerManager.h"
+#include "SaveManager.h"
 #include <array>
 #include <algorithm>
 #include <iostream>
@@ -141,6 +143,70 @@ void MapManager::FreeMap()
                 delete tile;
             }
         }
+    }
+}
+
+void MapManager::SaveMapState(GAME_STATE_TYPE level)
+{
+    SaveManager::GetInstance().mapSaveData.tileStates.clear();
+    SaveManager::GetInstance().mapSaveData.savedLevel = level;
+
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        {
+            Tile* tile = arrMapInfo[uiRow][uiCol];
+            if (!tile) continue;
+
+            bool isInteractable =
+                dynamic_cast<LeverTile*>(tile) ||
+                dynamic_cast<ButtonTile*>(tile) ||
+                dynamic_cast<CrateTile*>(tile) ||
+                dynamic_cast<LaserTile*>(tile) ||
+                dynamic_cast<GateTile*>(tile) ||
+                dynamic_cast<CloudTile*>(tile) ||
+                dynamic_cast<HealthPickupTile*>(tile);
+
+            if (!isInteractable) continue;
+
+            TileStateData data;
+            data.row = uiRow;
+            data.col = uiCol;
+            data.currID = tile->currID;
+            data.isActive = tile->isActive;
+            data.isCurrActive = tile->isCurrActive;
+            data.colliderCanCollide = tile->collider ? tile->collider->canCollide : true;
+            data.pos = tile->pos;
+
+            SaveManager::GetInstance().mapSaveData.tileStates.push_back(data);
+        }
+    }
+
+    SaveManager::GetInstance().mapSaveData.hasSavedData = true;
+    SaveManager::GetInstance().SaveMapData();
+}
+
+void MapManager::LoadMapState()
+{
+    if (!SaveManager::GetInstance().mapSaveData.hasSavedData) return;
+
+    for (const TileStateData& data : SaveManager::GetInstance().mapSaveData.tileStates)
+    {
+        Tile* tile = arrMapInfo[data.row][data.col];
+        if (!tile) continue;
+
+        tile->currID = data.currID;
+        tile->isActive = data.isActive;
+        tile->isCurrActive = data.isCurrActive;
+        tile->pos = data.pos;
+
+        if (tile->collider)
+            tile->collider->canCollide = data.colliderCanCollide;
+
+        if (LeverTile* lever = dynamic_cast<LeverTile*>(tile))
+            lever->SetTexture();
+        else if (ButtonTile* button = dynamic_cast<ButtonTile*>(tile))
+            button->SetTexture();
     }
 }
 #pragma endregion
@@ -298,6 +364,9 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     case TILE_ID::CRATE:
         newTile = new CrateTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
+    case TILE_ID::BUTTONBLUETIMEDUNPRESSED:
+        newTile = new ButtonTile(currID, bgID, currTag, altTag, bgActive, currActive, row, col, tileSize, true);
+        break;
     case TILE_ID::BUTTONBLUEUNPRESSED:
         newTile = new ButtonTile(currID, bgID, currTag, altTag, bgActive, currActive, row, col, tileSize);
         break;
@@ -307,10 +376,15 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     case TILE_ID::GOAL:
         newTile = new GoalTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
+    case TILE_ID::CHECKPOINT:
+        newTile = new CheckpointTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::HealthPickupTile:
+        newTile = new HealthPickupTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
     default:
         newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
         newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
-
         break;
     }
 
@@ -386,6 +460,12 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
         break;
     case TILE_ID::GATE:
         tTex = AEGfxTextureLoad("Assets/Environment/gate.png");
+        break;
+    case TILE_ID::CHECKPOINT:
+        tTex = AEGfxTextureLoad("Assets/Environment/checkpoint.png");
+        break;
+    case TILE_ID::HealthPickupTile:
+        tTex = AEGfxTextureLoad("Assets/Environment/gemRed.png");
         break;
     default:
         tTex = AEGfxTextureLoad("Assets/PlanetTexture.png");
@@ -503,6 +583,7 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
     return taggedTiles;
 }
 
+
 #pragma endregion
 
 
@@ -587,6 +668,92 @@ void  MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
 void Tile::Update()
 {
     GameObject::Update();
+}
+
+void GoalTile::Init() {
+    Tile::Init();
+    collider->center.y = 0.5f;
+    collider->size.x = 2.f;
+    collider->size.y = 1.5f;
+    collider->isTrigger = true;
+
+    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+            this->interactionTextBox->isActive = true;
+    };
+
+    collider->OnTriggerOver = [this](Collider* other, int sides) {
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+        {
+            interactionTextBox->text = "[F] Enter";
+            if (AEInputCheckTriggered(AEVK_F))
+            {
+                // save current state before transitioning
+                SaveManager::GetInstance().SavePlayerData(
+                    PlayerManager::GetInstance().meleePlayer->pos,
+                    PlayerManager::GetInstance().rangedPlayer->pos
+                );
+                MapManager::GetInstance().SaveMapState(current);
+
+                // transition to next level based on current
+                switch (current)
+                {
+                case GAME_STATE_TYPE::LEVEL1:
+                    SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
+                    next = GAME_STATE_TYPE::LEVEL1BOSS;
+                    break;
+                case GAME_STATE_TYPE::LEVEL1BOSS:
+                    SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
+                    next = GAME_STATE_TYPE::LEVEL2;
+                    break;
+                case GAME_STATE_TYPE::LEVEL2:
+                    SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
+                    next = GAME_STATE_TYPE::LEVEL2BOSS;
+                    break;
+                case GAME_STATE_TYPE::LEVEL2BOSS:
+                    SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
+                    next = GAME_STATE_TYPE::LEVEL2;
+                    break;
+                default:
+                    next = GAME_STATE_TYPE::LEVEL1;
+                    break;
+                }
+            }
+        }
+        };
+
+    collider->OnTriggerExit = [this](Collider* other, int sides) {
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+            this->interactionTextBox->isActive = false;
+    };
+
+    interactionTextBox->text = "[F] Enter";
+
+}
+
+void CheckpointTile::Init() {
+    Tile::Init();
+    collider->isTrigger = true;
+    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+        Player* player = dynamic_cast<Player*>(other->owner);
+        if (player)
+        {
+            this->interactionTextBox->isActive = true;
+            interactionTextBox->text = "Saved!";
+
+            SaveManager::GetInstance().SavePlayerData(
+                PlayerManager::GetInstance().meleePlayer->pos,
+                PlayerManager::GetInstance().rangedPlayer->pos
+            );
+            MapManager::GetInstance().SaveMapState(current);
+        }
+        };
+    collider->OnTriggerExit = [this](Collider* other, int sides) {
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+        {
+            this->interactionTextBox->isActive = false;
+        }
+        };
 }
 
 void CrateTile::Init()

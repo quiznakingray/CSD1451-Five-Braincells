@@ -158,14 +158,14 @@ void GameStateUpdate() {
     s32 mouseX, mouseY;
     AEInputGetCursorPosition(&mouseX, &mouseY);
  
-    // convert screen coordinates to world coordinates
-    float worldX = (float)mouseX - WINDOW_WIDTH / 2.0f;
-    float worldY = WINDOW_HEIGHT / 2.0f - (float)mouseY;
+    // convert screen coordinates to LEVEL1 coordinates
+    float LEVEL1X = (float)mouseX - WINDOW_WIDTH / 2.0f;
+    float LEVEL1Y = WINDOW_HEIGHT / 2.0f - (float)mouseY;
 
     // check hover state for abilities
     for (int i = 0; i < 4; i++) {
         if (abilities[i].isEnabled) {
-            abilities[i].isHovered = isPointInRect(worldX, worldY,
+            abilities[i].isHovered = isPointInRect(LEVEL1X, LEVEL1Y,
                 abilities[i].x, abilities[i].y,
                 abilities[i].width, abilities[i].height);
 
@@ -181,7 +181,7 @@ void GameStateUpdate() {
 
     if (AEInputCheckTriggered(AEVK_M))
     {
-        next = GAME_STATE_TYPE::WORLD;
+        next = GAME_STATE_TYPE::LEVEL1;
     }
 }
 

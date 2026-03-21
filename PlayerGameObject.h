@@ -9,7 +9,7 @@ enum class PlayerAction {
 	IDLE,
 	RUNNING,
 	JUMPING,
-	CRATEINTERACT
+	CRATEINTERACT,
 	ATTACKING,
 	AIMING,
 };

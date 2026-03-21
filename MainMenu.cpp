@@ -76,7 +76,18 @@ void MainMenu_Update() {
             normY > btn.yPos - 0.05f && normY < btn.yPos + 0.05f);
 
         if (btn.isHovered && AEInputCheckTriggered(AEVK_LBUTTON)) {
-            if (strcmp(btn.text, "PLAY") == 0) next = GAME_STATE_TYPE::WORLD;
+            if (strcmp(btn.text, "PLAY") == 0) {
+                SaveManager::GetInstance().ResetSave();  // clears everything including preserveOnLoad
+                next = GAME_STATE_TYPE::LEVEL1;
+            }
+            if (strcmp(btn.text, "CONTINUE") == 0) {
+                if (SaveManager::GetInstance().HasSaveData()) {
+                    SaveManager::GetInstance().LoadPlayerData();
+                    SaveManager::GetInstance().LoadMapData();
+                    SaveManager::GetInstance().toContinue = true;  // set flag
+                    next = SaveManager::GetInstance().mapSaveData.savedLevel;
+                }
+            }
             if (strcmp(btn.text, "EXIT") == 0) gGameRunning = 0;
         }
     }

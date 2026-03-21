@@ -7,16 +7,21 @@
 #include <rapidcsv.h>
 #include <functional>
 #include <iostream>
+#include <algorithm>
 #include "SingletonTemplate.h"
 #include "PlayerGameObject.h"
 #include "GameObjectManager.h"
 #include "TextComponent.h"
 #include "InputManager.h"
+#include "GameStateManager.h"
+
 #include "Helper.h"
 
 #define MAX_XAXIS 100
 #define MAX_YAXIS 100
 #define MAX_LEVELS 5
+
+struct PlayerManager; // forward declaration
 
 enum class TILE_ID {
 	EMPTY = 0,
@@ -40,10 +45,14 @@ enum class TILE_ID {
 	CRATE = 140,
 	BUTTONBLUEUNPRESSED = 150,
 	BUTTONBLUEPRESSED = 151,
-	GATE = 153,
+	BUTTONBLUETIMEDUNPRESSED = 152,
+	BUTTONBLUETIMEDPRESSED = 153,
+	GATE = 160,
+	HealthPickupTile = 170,
 	PLAYER = 200,
 	ENEMY = 250,
-	GOAL = 300,
+	CHECKPOINT = 300,
+	GOAL = 500,
 };
 //using TILE_ID = enum TILE_ID;
 
@@ -273,13 +282,13 @@ struct CrateTile : Tile {
 		int row_,
 		int col_,
 		float tileSize)
-		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, false, true) {
 
 		currSprite->textureFileName = "Assets/Environment/crate.png";
 		rb = AddComponent(
 			new RigidBody()
 		);
-		canInteract = true;
+		
 		rb->type = RIGIDBODY_TYPE::DYNAMIC;
 		rb->mass = 5000.f;
 		rb->hasGravity = true;
@@ -287,6 +296,47 @@ struct CrateTile : Tile {
 
 	void Init() override;
 	void Update() override;
+};
+
+struct CheckpointTile : Tile {
+	CheckpointTile(TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
+		currSprite->textureFileName = "Assets/Environment/checkpoint.png";
+	}
+	void Init() override;
+};
+
+struct HealthPickupTile : Tile {
+	HealthPickupTile(TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		int row_,
+		int col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
+		currSprite->textureFileName = "Assets/Environment/gemRed.png";
+	}
+	void Init() override {
+		Tile::Init();
+		collider->isTrigger = true;
+		collider->OnTriggerEnter = [this](Collider* other, int sides) {
+			Player* player = dynamic_cast<Player*>(other->owner);
+			if (player)
+			{
+				isCurrActive = false;
+			}
+			};
+		
+	}
 };
 
 struct CloudTile : Tile {
@@ -408,43 +458,9 @@ struct GoalTile : Tile {
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
 		currSprite->textureFileName = "Assets/Environment/doorclose.png";
 	}
-	void Init() override {
-		Tile::Init();
-
-		//showColliders = true;
-
-		collider->center.y = 0.5f;
-		collider->size.x = 2.f;
-		collider->size.y = 1.5f;
-		collider->isTrigger = true;
-		collider->OnTriggerEnter = [this](Collider* other, int sides) {
-			if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				this->interactionTextBox->isActive = true;
-			}
-			};
-		collider->OnTriggerOver = [this](Collider* other, int sides) {
-			if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				if (AEInputCheckTriggered(AEVK_F))
-				{
-					interactionTextBox->text = "You Win!";
-				}
-			}
-			};
-		collider->OnTriggerExit = [this](Collider* other, int sides) {
-			if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				this->interactionTextBox->isActive = false;
-			}
-			};
-
-		interactionTextBox->text = "[F]";
-
-	}
+	void Init() override;
 };
 
-//template <typename S>
 struct MapManager : public Singleton<MapManager> {
 
 	static constexpr  float tileSize = 80.f;
@@ -472,6 +488,11 @@ struct MapManager : public Singleton<MapManager> {
 	void DrawMapSprite();
 
 	void FreeMap();
+
+	void SaveMapState(GAME_STATE_TYPE level);
+
+	void LoadMapState();
+	
 #pragma endregion
 
 #pragma region TileFuncs
@@ -685,6 +706,8 @@ struct ButtonTile : Tile {
 	bool isPressed = false;
 	bool playerOnButton = false;
 	bool crateOnButton = false;
+	bool isTimed = false;
+	CooldownTimer cloudTimer;
 	int altTag = 0;  // add this
 
 	ButtonTile(
@@ -696,18 +719,29 @@ struct ButtonTile : Tile {
 		bool currActive = true,
 		int row_ = 0,
 		int col_ = 0,
-		float tileSize = 0.f)
+		float tileSize = 0.f,
+		bool isTimed_ = false)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 		altTag = altTag_;
+		isTimed = isTimed_;
 		SetTexture();
+		bool CompareHeight(ButtonTile const& a, ButtonTile const& b);
+
 	}
+
+	bool CompareHeight(ButtonTile* const& a, ButtonTile* const& b) {
+		return a->row < b->row;
+	}
+
 	void SetTexture() {
 		switch (currID)
 		{
 		case TILE_ID::BUTTONBLUEUNPRESSED:
+		case TILE_ID::BUTTONBLUETIMEDUNPRESSED:
 			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
 			break;
 		case TILE_ID::BUTTONBLUEPRESSED:
+		case TILE_ID::BUTTONBLUETIMEDPRESSED:
 			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBluePressed.png");
 			break;
 		default:
@@ -721,9 +755,11 @@ struct ButtonTile : Tile {
 		switch (currID)
 		{
 		case TILE_ID::BUTTONBLUEPRESSED:
+		case TILE_ID::BUTTONBLUETIMEDPRESSED:
 			currID = TILE_ID::BUTTONBLUEUNPRESSED;
 			break;
 		case TILE_ID::BUTTONBLUEUNPRESSED:
+		case TILE_ID::BUTTONBLUETIMEDUNPRESSED:
 			currID = TILE_ID::BUTTONBLUEPRESSED;
 			break;
 		default:
@@ -735,18 +771,39 @@ struct ButtonTile : Tile {
 	}
 
 	void ActivateGates(bool activate) {
-		for (Tile* gate : MapManager::GetTaggedTiles(currTag, TILE_ID::GATE))
-		{
-			gate->isActive = activate;
-			gate->isCurrActive = activate;
-			if (gate->collider) gate->collider->canCollide = activate;
-		}
-		for (Tile* gate : MapManager::GetTaggedTiles(altTag, TILE_ID::GATE))
-		{
-			gate->isActive = !activate;
-			gate->isCurrActive = !activate;
-			if (gate->collider) gate->collider->canCollide = !activate;
-		}
+		//for (Tile* gate : MapManager::GetTaggedTiles(currTag, TILE_ID::GATE))
+		//{
+		//	gate->isActive = activate;
+		//	gate->isCurrActive = activate;
+		//	if (gate->collider) gate->collider->canCollide = activate;
+		//}
+		//if (!isTimed) {
+		//	for (Tile* gate : MapManager::GetTaggedTiles(altTag, TILE_ID::GATE))
+		//	{
+		//		gate->isActive = !activate;
+		//		gate->isCurrActive = !activate;
+		//		if (gate->collider) gate->collider->canCollide = !activate;
+		//	}
+		//}
+		//else {
+		//	std::vector<Tile*> gates;
+		//	for (Tile* gate : MapManager::GetTaggedTiles(currTag, TILE_ID::GATE))
+		//	{
+		//		gates.push_back(gate);
+		//	}
+		//	std::sort(gates.begin(), gates.end(),
+		//		[](auto const& a, auto const& b) {
+		//			return a->row < b->row;
+		//		});
+		//	//cloudTimer.Start(3.0f);
+
+		//	for (Tile* gate : gates) {
+		//		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		//		gate->isActive = !activate;
+		//		gate->isCurrActive = !activate;
+		//		if (gate->collider) gate->collider->canCollide = !activate;
+		//	}
+		//}
 	}
 	void Init() override {
 		Tile::Init();
@@ -770,6 +827,7 @@ struct ButtonTile : Tile {
 				std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
 				bool currentlyActive = !gates.empty() && gates[0]->isActive;
 				ActivateGates(!currentlyActive);
+
 			}
 			};
 
@@ -790,4 +848,4 @@ struct ButtonTile : Tile {
 			};
 	}
 };
-#endif // !MAP_MANAGER 
+#endif // !MAP_MANAGER

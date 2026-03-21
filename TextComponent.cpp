@@ -10,11 +10,11 @@ void Text::Render()
 	s32 windowWidth = AEGfxGetWindowWidth();
 	s32 windowHeight = AEGfxGetWindowHeight();
 
-    // 1. Get camera world position
+    // 1. Get camera LEVEL1 position
     f32 camX, camY;
     AEGfxGetCamPosition(&camX, &camY);
 
-    // 2. World => camera space
+    // 2. LEVEL1 => camera space
     f32 relX = owner->pos.x + center.x - camX;
     f32 relY = owner->pos.y + center.y - camY;
 

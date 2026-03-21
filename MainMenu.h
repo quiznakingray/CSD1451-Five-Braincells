@@ -5,6 +5,7 @@
 
 // This header contains the typedefs for s8, f32, etc.
 #include "AEEngine.h" 
+#include "SaveManager.h"
 
 void MainMenu_Init();
 void MainMenu_Update();

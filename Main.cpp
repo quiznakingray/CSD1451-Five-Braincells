@@ -99,7 +99,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// reset the system modules
 	AESysReset();
 
-	printf("Hello World\n");
+	printf("Hello LEVEL1\n");
 
 	//GameInit();
 	gameStateManager.Initialize(GAME_STATE_TYPE::MENU);
@@ -134,7 +134,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 			if (AEInputCheckCurr(AEVK_3)) {
 				if (mapManager.mapCurrLevel != 1) {
-					gameStateManager.ChangeState(GAME_STATE_TYPE::OTHER);
+					gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL2);
 					gameStateManager.Update();
 					mapManager.ChangeMap(1);
 				}
@@ -142,7 +142,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			}
 			if (AEInputCheckCurr(AEVK_4)) {
 				if (mapManager.mapCurrLevel != 0) {
-					gameStateManager.ChangeState(GAME_STATE_TYPE::WORLD);
+					gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL1);
 					gameStateManager.Update();
 					mapManager.ChangeMap(0);
 				}

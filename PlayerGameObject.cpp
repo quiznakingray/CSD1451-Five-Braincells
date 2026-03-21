@@ -83,7 +83,6 @@ void Player::PlayerInput()
 
 void Player::PlayerAction()
 {
-	//}
 	if (rb->velocity.x != 0 && currentAction != PlayerAction::CRATEINTERACT)
 	{
 		prevAction = currentAction;
@@ -221,11 +220,11 @@ void Player::Init()
 
 	//s32 screenX, screenY;
 	//f32 camPosX, camPosY;
-	//f32 worldPosX, worldPosY;
+	//f32 LEVEL1PosX, LEVEL1PosY;
 	//AEInputGetCursorPosition(&screenX, &screenY);
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
-	//worldPosX = camPosX - screenX / 2.f;
-	//worldPosY = camPosY - screenY / 2.f;
+	//LEVEL1PosX = camPosX - screenX / 2.f;
+	//LEVEL1PosY = camPosY - screenY / 2.f;
 
 	showColliders = true;
 	speed = static_cast<f32>(200.0);
@@ -316,25 +315,30 @@ void RangePlayer::Update()
 {
 	s32 screenX, screenY;
 	//f32 camPosX, camPosY;
-	f32 worldPosX, worldPosY;
+	f32 LEVEL1PosX, LEVEL1PosY;
 	AEInputGetCursorPosition(&screenX, &screenY);
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
-	worldPosX = screenX + AEGfxGetWinMinX();
-	worldPosY = -(screenY - AEGfxGetWinMaxY());
-	std::cout << worldPosX << "   " << worldPosY << std::endl;
-	playerLinePos->pos.x = pos.x + (worldPosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
+	LEVEL1PosX = screenX + AEGfxGetWinMinX();
+	LEVEL1PosY = -(screenY - AEGfxGetWinMaxY());
+	std::cout << LEVEL1PosX << "   " << LEVEL1PosY << std::endl;
+	playerLinePos->pos.x = pos.x + (LEVEL1PosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
-	aimLinePos->pos.x = worldPosX;
-	aimLinePos->pos.y = worldPosY;
+	aimLinePos->pos.x = LEVEL1PosX;
+	aimLinePos->pos.y = LEVEL1PosY;
 	Player::Update();
 }
 
 void RangePlayer::PlayerAction()
 {
-	if (rb->velocity.x != 0)
+	if (rb->velocity.x != 0 && currentAction != PlayerAction::CRATEINTERACT)
 	{
+		prevAction = currentAction;
 		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
 	}
+	//if (rb->velocity.x != 0)
+	//{
+	//	currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
+	//}
 	else if (AEInputCheckCurr(AEVK_LBUTTON))
 	{
 		currentAction = PlayerAction::AIMING;
@@ -350,7 +354,8 @@ void RangePlayer::PlayerAction()
 			PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir);
 		}
 	}
-	else {
+	else if (rb->velocity.x < 0.1f && currentAction != PlayerAction::CRATEINTERACT) {
+		prevAction = currentAction;
 		currentAction = PlayerAction::IDLE;
 	}
 }
