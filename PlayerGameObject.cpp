@@ -8,7 +8,7 @@
 
 void Player::PlayerInput()
 {
-	f32 dt = AEFrameRateControllerGetFrameTime();
+	f64 dt = AEFrameRateControllerGetFrameTime();
 	AEVec2 moveDir{};
 
 	bool isGrabbing = currentAction == PlayerAction::CRATEINTERACT;
@@ -33,24 +33,24 @@ void Player::PlayerInput()
 	if (AEInputCheckCurr(AEVK_A))
 	{
 		//moveDir.x -= 1.f;
-		rb->velocity.x -= accel * dt;
+		rb->velocity.x -= static_cast<f32>(accel * dt);
 	}
 	else if (AEInputCheckCurr(AEVK_D))
 	{
 		//moveDir.x += 1.f;
-		rb->velocity.x += accel * dt;
+		rb->velocity.x += static_cast<f32>(accel * dt);
 	}
 	else
 	{
 		if (rb->velocity.x > 0)
 		{
-			rb->velocity.x -= decel * dt;
+			rb->velocity.x -= static_cast<f32>(decel * dt);
 			if (rb->velocity.x < 0)
 				rb->velocity.x = 0;
 		}
 		else if (rb->velocity.x < 0)
 		{
-			rb->velocity.x += decel * dt;
+			rb->velocity.x += static_cast<f32>(decel * dt);
 			if (rb->velocity.x > 0)
 				rb->velocity.x = 0;
 		}
@@ -404,7 +404,7 @@ void Arrow::Update()
 	if (isActive)
 	{
 		double dt = AEFrameRateControllerGetFrameTime();
-		timer += dt;
+		timer += static_cast<f32>(dt);
 		if (timer >= lifetime)
 		{
 			isActive = false;

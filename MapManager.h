@@ -82,8 +82,8 @@ struct Tile : GameObject {
 		int currTag_ = 0,
 		bool bgActive = false,
 		bool currActive = true,
-		int row_ = 0, 
-		int col_ = 0,
+		size_t row_ = 0,
+		size_t col_ = 0,
 		float tileSize = 0.f,
 		bool is_Trigger = false,
 		bool can_Interact = false
@@ -152,8 +152,8 @@ struct SpikeTile : Tile {
 		int currTag_,
 		bool bgActive,
 		bool currActive,
-		int row_,
-		int col_,
+		size_t row_,
+		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true) {
 
@@ -180,8 +180,8 @@ struct GroundTile : Tile {
 		int currTag_,
 		bool bgActive,
 		bool currActive,
-		int row_,
-		int col_,
+		size_t row_,
+		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
@@ -217,8 +217,8 @@ struct WallTile : Tile {
 		int currTag_,
 		bool bgActive,
 		bool currActive,
-		int row_,
-		int col_,
+		size_t row_,
+		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
@@ -238,8 +238,8 @@ struct LaserTile : Tile {
 		int currTag_,
 		bool bgActive,
 		bool currActive,
-		int row_,
-		int col_,
+		size_t row_,
+		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
@@ -279,8 +279,8 @@ struct CrateTile : Tile {
 		int currTag_,
 		bool bgActive,
 		bool currActive,
-		int row_,
-		int col_,
+		size_t row_,
+		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, false, true) {
 
@@ -307,8 +307,8 @@ struct CheckpointTile : Tile {
 		int currTag_,
 		bool bgActive,
 		bool currActive,
-		int row_,
-		int col_,
+		size_t row_,
+		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
 		currSprite->textureFileName = "Assets/Environment/checkpoint.png";
@@ -322,8 +322,8 @@ struct HealthPickupTile : Tile {
 		int currTag_,
 		bool bgActive,
 		bool currActive,
-		int row_,
-		int col_,
+		size_t row_,
+		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
 		currSprite->textureFileName = "Assets/Environment/gemRed.png";
@@ -354,8 +354,8 @@ struct CloudTile : Tile {
 		int currTag_,
 		bool bgActive,
 		bool currActive,
-		int row_,
-		int col_,
+		size_t row_,
+		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 		rb = AddComponent(
@@ -414,9 +414,9 @@ struct CloudTile : Tile {
 	{
 		Tile::Update();
 
-		double dt = AEFrameRateControllerGetFrameTime();
+		f64 dt = AEFrameRateControllerGetFrameTime();
 
-		if (cloudTimer.Update(dt))
+		if (cloudTimer.Update(static_cast<f32>(dt)))
 		{
 			isActive = false;
 			collider->canCollide = false;
@@ -424,7 +424,7 @@ struct CloudTile : Tile {
 
 		if (cloudTimer.IsActive())
 		{
-			float progress = cloudTimer.GetProgress();
+			f32 progress = cloudTimer.GetProgress();
 			currSprite->opacity = (f32)(1.0f - progress);
 		}
 	}
@@ -436,8 +436,8 @@ struct GateTile : Tile {
 		int currTag_,
 		bool bgActive,
 		bool currActive,
-		int row_,
-		int col_,
+		size_t row_,
+		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 		currSprite->textureFileName = "Assets/Environment/gate.png";
@@ -455,8 +455,8 @@ struct GoalTile : Tile {
 		int currTag_,
 		bool bgActive,
 		bool currActive,
-		int row_,
-		int col_,
+		size_t row_,
+		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
 		currSprite->textureFileName = "Assets/Environment/doorclose.png";
@@ -469,8 +469,8 @@ struct MapManager : public Singleton<MapManager> {
 	static constexpr  float tileSize = 80.f;
 	const char delimiter = ',';
 	static unsigned int mapCurrLevel;
-	static unsigned int rowCount;
-	static unsigned int colCount;
+	static size_t rowCount;
+	static size_t colCount;
 
 	static MapManager* mapManager;
 	//S MapManager() {};
@@ -572,8 +572,8 @@ struct LeverTile : Tile {
 		int altTag_ = 0,
 		bool bgActive = false,
 		bool currActive = true,
-		int row_ = 0,
-		int col_ = 0,
+		size_t row_ = 0,
+		size_t col_ = 0,
 		float tileSize = 0.f)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
 		altTag = altTag_;
@@ -680,7 +680,6 @@ struct LeverTile : Tile {
 		Tile::Init();
 
 		//showColliders = true;
-
 		collider->center.y = 0.5f;
 		collider->size.x = 2.f;
 		collider->size.y = 1.5f;
@@ -731,7 +730,7 @@ struct ButtonTile : Tile {
 	int altTag = 0;
 
 	CooldownTimer gateTimer;
-	double gateInterval = 0.5;
+	f32 gateInterval = 0.5;
 	std::vector<Tile*> gateQueue;
 	bool activate = false;
 	bool queueRunning = false;
@@ -748,8 +747,8 @@ struct ButtonTile : Tile {
 		int altTag_ = 0,
 		bool bgActive = false,
 		bool currActive = true,
-		int row_ = 0,
-		int col_ = 0,
+		size_t row_ = 0,
+		size_t col_ = 0,
 		float tileSize = 0.f,
 		bool isTimed_ = false)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
@@ -857,7 +856,7 @@ struct ButtonTile : Tile {
 			return;
 		}
 
-		double dt = AEFrameRateControllerGetFrameTime();
+		f32 dt = static_cast<f32>(AEFrameRateControllerGetFrameTime());
 
 		if (gateTimer.Update(dt))
 		{

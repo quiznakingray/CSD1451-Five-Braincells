@@ -16,8 +16,8 @@ enum class PLAYER_TYPE {
 
 struct PlayerManager : public Singleton<PlayerManager>
 {
-	MeleePlayer* meleePlayer;
-	RangePlayer* rangedPlayer;
+	MeleePlayer* meleePlayer{};
+	RangePlayer* rangedPlayer{};
 
 	static Arrow* rangePlayerArrow;
 	Player* currentPlayer = meleePlayer;

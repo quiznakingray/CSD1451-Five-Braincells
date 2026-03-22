@@ -76,8 +76,8 @@ void HandleState(std::vector<GameObject*>& gos)
 bool GameObject::isGameObjectOnScreen()
 {
 	f32 camX, camY, camMinX, camMinY, camMaxX, camMaxY;
-	f32 windowWidth = AEGfxGetWindowWidth();
-	f32 windowHeight = AEGfxGetWindowHeight();
+	f32 windowWidth = static_cast<f32>(AEGfxGetWindowWidth());
+	f32 windowHeight = static_cast<f32>(AEGfxGetWindowHeight());
 	AEGfxGetCamPosition(&camX, &camY);
 	camMinX = camX - windowWidth / 2.f;
 	camMaxX = camX + windowWidth / 2.f;

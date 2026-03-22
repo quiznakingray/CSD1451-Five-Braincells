@@ -38,8 +38,8 @@ void PlayerManager::Update(){
 	AEVec2 target = currentPlayer->pos;
 
 	// Lerp camera
-	camPos.x += (target.x - camPos.x) * camLerpSpeed * AEFrameRateControllerGetFrameTime();
-	camPos.y += (target.y - camPos.y) * camLerpSpeed * AEFrameRateControllerGetFrameTime();
+	camPos.x += static_cast<f32>((target.x - camPos.x) * camLerpSpeed * AEFrameRateControllerGetFrameTime());
+	camPos.y += static_cast<f32>((target.y - camPos.y) * camLerpSpeed * AEFrameRateControllerGetFrameTime());
 
 	AEGfxSetCamPosition(camPos.x, camPos.y);
 

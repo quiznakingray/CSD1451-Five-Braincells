@@ -14,8 +14,8 @@ std::vector<std::vector<Tile*>> arrMapInfo{};
 AEGfxVertexList* mesh;
 
 unsigned int MapManager::mapCurrLevel = 0;
-unsigned int MapManager::rowCount = 0;
-unsigned int MapManager::colCount = 0;
+size_t MapManager::rowCount = 0;
+size_t MapManager::colCount = 0;
 
 void MapManager::InitMap(std::string fileName, unsigned int currLevel)
 {
@@ -603,8 +603,6 @@ void MapManager::SetLaserActive(Tile tile, bool active)
 #pragma region GetFuncs
 std::vector<Tile*> MapManager::GetTilesNearPos(AEVec2 pos, AEVec2 scale)
 {
-
-
     std::vector<Tile*> nearbyTiles;
 
     for (std::vector<Tile*> row : arrMapInfo)
@@ -870,11 +868,12 @@ void CrateTile::Update() {
         // wall clip check AFTER sync
         for (Tile* tile : nearbyTiles)
         {
+            if (!tile) continue;
             if (!tile->collider || !tile->collider->canCollide) continue;
-            if (tile == this) continue;
             if (dynamic_cast<LeverTile*>(tile)) continue;
 
             Collider* oCol = tile->collider;
+            if (!oCol) continue;
             if (BoxToBoxCollision(
                 collider->GetPos2D(), oCol->GetPos2D(),
                 collider->GetScale(), oCol->GetScale()))
@@ -914,11 +913,11 @@ void CrateTile::Update() {
         if (!playerTouching)
         {
             if (rb->velocity.x > 0) {
-                rb->velocity.x -= friction * dt;
+                rb->velocity.x -= static_cast<f32>(friction * dt);
                 if (rb->velocity.x < 0) rb->velocity.x = 0;
             }
             else if (rb->velocity.x < 0) {
-                rb->velocity.x += friction * dt;
+                rb->velocity.x += static_cast<f32>(friction * dt);
                 if (rb->velocity.x > 0) rb->velocity.x = 0;
             }
         }
@@ -945,11 +944,12 @@ void CrateTile::Update() {
 
             for (Tile* tile : nearbyTiles)
             {
+                if (!tile) continue;
                 if (!tile->collider || !tile->collider->canCollide) continue;
-                if (tile == this) continue;
                 if (dynamic_cast<LeverTile*>(tile)) continue;
 
                 Collider* oCol = tile->collider;
+                if (!oCol) continue;
                 if (BoxToBoxCollision(
                     pCol->GetPos2D(), oCol->GetPos2D(),
                     pCol->GetScale(), oCol->GetScale()))
