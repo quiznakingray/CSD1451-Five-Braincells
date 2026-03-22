@@ -379,7 +379,7 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
     case TILE_ID::CHECKPOINT:
         newTile = new CheckpointTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
-    case TILE_ID::HealthPickupTile:
+    case TILE_ID::HEALTHPICKUPTILE:
         newTile = new HealthPickupTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
     default:
@@ -464,7 +464,7 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     case TILE_ID::CHECKPOINT:
         tTex = AEGfxTextureLoad("Assets/Environment/checkpoint.png");
         break;
-    case TILE_ID::HealthPickupTile:
+    case TILE_ID::HEALTHPICKUPTILE:
         tTex = AEGfxTextureLoad("Assets/Environment/gemRed.png");
         break;
     default:
@@ -647,7 +647,7 @@ AEVec2 MapManager::GetPlayerSpawnPos()
     return pos;
 }
 
-void  MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
+void MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
 {
     size_t colCount = (map.GetRow<std::string>(0)).size();
     size_t rowCount = (map.GetColumn<std::string>(0)).size();
@@ -768,6 +768,18 @@ void CrateTile::Init()
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !pushState)
             interactionTextBox->isActive = true;
+
+        Arrow* arrow = dynamic_cast<Arrow*>(other->owner);
+        if (arrow && arrow->isActive)
+        {
+            int hitSides = collider->GetSidesForCollider(other);
+            if (hitSides & COLLISION_SIDE::LEFT || hitSides & COLLISION_SIDE::RIGHT)
+            {
+                rb->velocity.x = (hitSides & COLLISION_SIDE::LEFT) ? 200.0f : -200.0f;
+            }
+            arrow->isActive = false;
+            arrow->timer = 0.0f;
+        }
         };
 
     collider->OnCollisionOver = [this](Collider* other, int sides) {
@@ -779,7 +791,6 @@ void CrateTile::Init()
                 if (pushState) {
                     grabbedPlayer = player;
                     grabbedPlayer->currentAction = PlayerAction::CRATEINTERACT;
-                    // store which side the player is on when grab starts
                     grabbedSide = playerOnLeft ? COLLISION_SIDE::LEFT : COLLISION_SIDE::RIGHT;
                     interactionTextBox->isActive = false;
                 }
@@ -797,13 +808,13 @@ void CrateTile::Init()
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !pushState)
         {
-                playerTouching = false;
-                playerOnLeft = false;
-                playerOnRight = false;
-                grabbedPlayer = nullptr;
-                interactionTextBox->isActive = false;
+            playerTouching = false;
+            playerOnLeft = false;
+            playerOnRight = false;
+            grabbedPlayer = nullptr;
+            interactionTextBox->isActive = false;
         }
-    };
+        };
 }
 
 void CrateTile::Update() {
@@ -835,44 +846,33 @@ void CrateTile::Update() {
             grabbedPlayer->currentAction = PlayerAction::IDLE;
             grabbedPlayer = nullptr;
             grabbedSide = 0;
-            interactionTextBox->isActive = false;  // hide on release
+            interactionTextBox->isActive = false;
             return;
         }
-        // crate on right when moving right
-        if (grabbedPlayer->rb->velocity.x > 0)
-        {
-            grabbedSide = COLLISION_SIDE::RIGHT;
-        }
 
-        // crate on left when moving left
-        else if (grabbedPlayer->rb->velocity.x < 0)
-        {
+        // only update grabbed side if player is moving fast enough
+        if (grabbedPlayer->rb->velocity.x > 10.0f)
+            grabbedSide = COLLISION_SIDE::RIGHT;
+        else if (grabbedPlayer->rb->velocity.x < -10.0f)
             grabbedSide = COLLISION_SIDE::LEFT;
 
-        }
-
-
-        // crate moves with player
+        // sync crate to player
         if (grabbedSide == COLLISION_SIDE::RIGHT)
-        {
             pos.x = grabbedPlayer->pos.x + grabbedPlayer->scale.x * 0.5f + scale.x * 0.5f;
-        }
         else if (grabbedSide == COLLISION_SIDE::LEFT)
-        {
             pos.x = grabbedPlayer->pos.x - grabbedPlayer->scale.x * 0.5f - scale.x * 0.5f;
-        }
-        pos.y = grabbedPlayer->pos.y;
 
+        pos.y = grabbedPlayer->pos.y;
         rb->velocity.x = 0;
         rb->velocity.y = 0;
         rb->onCollider = grabbedPlayer->rb->onCollider;
 
-        // prevents crate from clipping into collidables
+        // wall clip check AFTER sync
         for (Tile* tile : nearbyTiles)
         {
             if (!tile->collider || !tile->collider->canCollide) continue;
             if (tile == this) continue;
-            if (dynamic_cast<CrateTile*>(tile)) continue;
+            if (dynamic_cast<LeverTile*>(tile)) continue;
 
             Collider* oCol = tile->collider;
             if (BoxToBoxCollision(
@@ -884,14 +884,23 @@ void CrateTile::Update() {
                 float pxOverlap = (collider->GetScale().x * 0.5f + oCol->GetScale().x * 0.5f) - fabs(dx);
                 float pyOverlap = (collider->GetScale().y * 0.5f + oCol->GetScale().y * 0.5f) - fabs(dy);
 
-                if (pxOverlap < pyOverlap) // horizontal wall
+                if (pxOverlap < pyOverlap)
                 {
                     // push crate out of wall
                     pos.x += (dx > 0) ? pxOverlap : -pxOverlap;
 
-                    // stop player from moving further into wall
+                    // sync player back to crate
+                    if (grabbedSide == COLLISION_SIDE::RIGHT)
+                        grabbedPlayer->pos.x = pos.x - scale.x * 0.5f - grabbedPlayer->scale.x * 0.5f;
+                    else if (grabbedSide == COLLISION_SIDE::LEFT)
+                        grabbedPlayer->pos.x = pos.x + scale.x * 0.5f + grabbedPlayer->scale.x * 0.5f;
+
                     if (RigidBody* playerRb = grabbedPlayer->GetComponent<RigidBody>())
                         playerRb->velocity.x = 0;
+                }
+                else
+                {
+                    pos.y += (dy > 0) ? pyOverlap : -pyOverlap;
                 }
             }
         }
@@ -938,6 +947,7 @@ void CrateTile::Update() {
             {
                 if (!tile->collider || !tile->collider->canCollide) continue;
                 if (tile == this) continue;
+                if (dynamic_cast<LeverTile*>(tile)) continue;
 
                 Collider* oCol = tile->collider;
                 if (BoxToBoxCollision(

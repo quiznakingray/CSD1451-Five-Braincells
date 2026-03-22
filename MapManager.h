@@ -48,7 +48,7 @@ enum class TILE_ID {
 	BUTTONBLUETIMEDUNPRESSED = 152,
 	BUTTONBLUETIMEDPRESSED = 153,
 	GATE = 160,
-	HealthPickupTile = 170,
+	HEALTHPICKUPTILE = 170,
 	PLAYER = 200,
 	ENEMY = 250,
 	CHECKPOINT = 300,
@@ -291,6 +291,9 @@ struct CrateTile : Tile {
 		
 		rb->type = RIGIDBODY_TYPE::DYNAMIC;
 		rb->mass = 5000.f;
+		rb->invMass = 1.0f / rb->mass;
+		rb->maxImpulse = 500000.f;
+		rb->maxSpeed = 300.f;
 		rb->hasGravity = true;
 	}
 
@@ -650,6 +653,29 @@ struct LeverTile : Tile {
 		}
 	}
 
+	void TriggerLever(Arrow* arrow = nullptr)
+	{
+		TILE_ID tileId;
+		if (currID == TILE_ID::LEVERREDON || currID == TILE_ID::LEVERREDOFF)
+			tileId = TILE_ID::LASERRED;
+		else if (currID == TILE_ID::LEVERGREENON || currID == TILE_ID::LEVERGREENOFF)
+			tileId = TILE_ID::LASERGREEN;
+		else
+			tileId = TILE_ID::LASERBLUE;
+
+		this->ToggleLever();
+
+		std::vector<Tile*> lasers = MapManager::GetTaggedTiles(currTag, tileId);
+		bool currentlyActive = !lasers.empty() && lasers[0]->isActive;
+		ActivateLasers(!currentlyActive, tileId);
+
+		if (arrow)
+		{
+			arrow->isActive = false;
+			arrow->timer = 0.0f;
+		}
+	}
+
 	void Init() override {
 		Tile::Init();
 
@@ -664,6 +690,11 @@ struct LeverTile : Tile {
 			{
 				this->interactionTextBox->isActive = true;
 			}
+			if (Arrow* arrow = dynamic_cast<Arrow*>(other->owner))
+			{
+				if (!arrow->isActive) return;
+				TriggerLever(arrow);
+			}
 			};
 		collider->OnTriggerOver = [this](Collider* other, int sides) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
@@ -671,22 +702,14 @@ struct LeverTile : Tile {
 				this->interactionTextBox->isActive = true;
 				if (AEInputCheckTriggered(AEVK_F))
 				{
-					TILE_ID tileId;
-					if (currID == TILE_ID::LEVERREDON || currID == TILE_ID::LEVERREDOFF)
-						tileId = TILE_ID::LASERRED;
-					else if (currID == TILE_ID::LEVERGREENON || currID == TILE_ID::LEVERGREENOFF)
-						tileId = TILE_ID::LASERGREEN;
-					else
-						tileId = TILE_ID::LASERBLUE;
-
-					this->ToggleLever();
-
-					std::vector<Tile*> lasers = MapManager::GetTaggedTiles(currTag, tileId);
-					bool currentlyActive = !lasers.empty() && lasers[0]->isActive;
-					bool activate = !currentlyActive;
-
-					ActivateLasers(activate, tileId);
+					TriggerLever();
 				}
+			}
+			// catch arrows that spawned inside the trigger
+			if (Arrow* arrow = dynamic_cast<Arrow*>(other->owner))
+			{
+				if (!arrow->isActive) return;
+				TriggerLever(arrow);
 			}
 			};
 		collider->OnTriggerExit = [this](Collider* other, int sides) {
@@ -697,19 +720,27 @@ struct LeverTile : Tile {
 			};
 
 		interactionTextBox->text = "[F] Pull";
-
 	}
-
 };
 
 struct ButtonTile : Tile {
 	bool isPressed = false;
-	bool playerOnButton = false;
-	bool crateOnButton = false;
+	int playerCount = 0;
+	int crateCount = 0;
 	bool isTimed = false;
-	CooldownTimer cloudTimer;
-	int altTag = 0;  // add this
+	int altTag = 0;
 
+	CooldownTimer gateTimer;
+	double gateInterval = 0.5;
+	std::vector<Tile*> gateQueue;
+	bool activate = false;
+	bool queueRunning = false;
+
+	bool hasPendingActivation = false;
+	bool pendingActivate = false;
+	bool pendingPressedDown = false;
+	bool gatesAreActive = true;
+	bool gatesOriginalState = false;
 	ButtonTile(
 		TILE_ID currID_ = TILE_ID::EMPTY,
 		TILE_ID bgID_ = TILE_ID::EMPTY,
@@ -725,12 +756,6 @@ struct ButtonTile : Tile {
 		altTag = altTag_;
 		isTimed = isTimed_;
 		SetTexture();
-		bool CompareHeight(ButtonTile const& a, ButtonTile const& b);
-
-	}
-
-	bool CompareHeight(ButtonTile* const& a, ButtonTile* const& b) {
-		return a->row < b->row;
 	}
 
 	void SetTexture() {
@@ -756,96 +781,161 @@ struct ButtonTile : Tile {
 		{
 		case TILE_ID::BUTTONBLUEPRESSED:
 		case TILE_ID::BUTTONBLUETIMEDPRESSED:
-			currID = TILE_ID::BUTTONBLUEUNPRESSED;
+			currID = isTimed ? TILE_ID::BUTTONBLUETIMEDUNPRESSED : TILE_ID::BUTTONBLUEUNPRESSED;
 			break;
 		case TILE_ID::BUTTONBLUEUNPRESSED:
 		case TILE_ID::BUTTONBLUETIMEDUNPRESSED:
-			currID = TILE_ID::BUTTONBLUEPRESSED;
+			currID = isTimed ? TILE_ID::BUTTONBLUETIMEDPRESSED : TILE_ID::BUTTONBLUEPRESSED;
 			break;
 		default:
 			currID = TILE_ID::BUTTONBLUEUNPRESSED;
 			break;
 		}
 		SetTexture();
-
 	}
 
-	void ActivateGates(bool activate) {
-		//for (Tile* gate : MapManager::GetTaggedTiles(currTag, TILE_ID::GATE))
-		//{
-		//	gate->isActive = activate;
-		//	gate->isCurrActive = activate;
-		//	if (gate->collider) gate->collider->canCollide = activate;
-		//}
-		//if (!isTimed) {
-		//	for (Tile* gate : MapManager::GetTaggedTiles(altTag, TILE_ID::GATE))
-		//	{
-		//		gate->isActive = !activate;
-		//		gate->isCurrActive = !activate;
-		//		if (gate->collider) gate->collider->canCollide = !activate;
-		//	}
-		//}
-		//else {
-		//	std::vector<Tile*> gates;
-		//	for (Tile* gate : MapManager::GetTaggedTiles(currTag, TILE_ID::GATE))
-		//	{
-		//		gates.push_back(gate);
-		//	}
-		//	std::sort(gates.begin(), gates.end(),
-		//		[](auto const& a, auto const& b) {
-		//			return a->row < b->row;
-		//		});
-		//	//cloudTimer.Start(3.0f);
+	void ActivateGates(bool _activate) {
+		if (!isTimed) {
+			for (Tile* gate : MapManager::GetTaggedTiles(currTag, TILE_ID::GATE))
+			{
+				gate->isActive = _activate;
+				gate->isCurrActive = _activate;
+				if (gate->collider) gate->collider->canCollide = _activate;
+			}
+			for (Tile* gate : MapManager::GetTaggedTiles(altTag, TILE_ID::GATE))
+			{
+				gate->isActive = !_activate;
+				gate->isCurrActive = !_activate;
+				if (gate->collider) gate->collider->canCollide = !_activate;
+			}
+		}
+		else {
+			gateTimer.Stop();
+			queueRunning = false;
+			gateQueue.clear();
 
-		//	for (Tile* gate : gates) {
-		//		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-		//		gate->isActive = !activate;
-		//		gate->isCurrActive = !activate;
-		//		if (gate->collider) gate->collider->canCollide = !activate;
-		//	}
-		//}
+			// get all gates
+			std::vector<Tile*> allGates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
+
+			// filter first - only keep gates that haven't reached target state
+			for (Tile* gate : allGates)
+			{
+				if (gate->isActive != _activate)
+					gateQueue.push_back(gate);
+			}
+
+			if (_activate) {
+				// activating: bottom to top
+				std::sort(gateQueue.begin(), gateQueue.end(),
+					[](Tile* a, Tile* b) { return a->row > b->row; });
+			}
+			else {
+				// deactivating: top to bottom
+				std::sort(gateQueue.begin(), gateQueue.end(),
+					[](Tile* a, Tile* b) { return a->row < b->row; });
+			}
+
+			activate = _activate;
+			queueRunning = !gateQueue.empty();
+			if (queueRunning)
+				gateTimer.Start(gateInterval);
+		}
 	}
+
+	void Update() override
+	{
+		Tile::Update();
+
+		if (!queueRunning || gateQueue.empty())
+		{
+			if (hasPendingActivation)
+			{
+				hasPendingActivation = false;
+				gatesAreActive = pendingActivate;
+				ActivateGates(pendingActivate);
+			}
+			return;
+		}
+
+		double dt = AEFrameRateControllerGetFrameTime();
+
+		if (gateTimer.Update(dt))
+		{
+			Tile* gate = gateQueue.front();
+			gateQueue.erase(gateQueue.begin());
+
+			if (gate)
+			{
+				gate->isActive = activate;
+				gate->isCurrActive = activate;
+				if (gate->collider) gate->collider->canCollide = activate;
+			}
+
+			if (!gateQueue.empty())
+				gateTimer.Start(gateInterval);
+			else
+				queueRunning = false;
+		}
+	}
+
 	void Init() override {
 		Tile::Init();
-
-		//showColliders = true;
-
 		collider->center.y = 0.f;
 		collider->size.x = 0.9f;
 		collider->size.y = 0.5f;
 		collider->isTrigger = true;
+
+		std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
+		gatesOriginalState = !gates.empty() && gates[0]->isActive;
+		gatesAreActive = gatesOriginalState;
+
 		collider->OnTriggerEnter = [this](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
 			bool wasPressed = isPressed;
-			if (player) playerOnButton = true;
-			if (crate)  crateOnButton = true;
-			isPressed = playerOnButton || crateOnButton;
-			if (isPressed != wasPressed) {
-				ToggleButton();
-				// derive from actual gate state
-				std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
-				bool currentlyActive = !gates.empty() && gates[0]->isActive;
-				ActivateGates(!currentlyActive);
 
+			if (player) playerCount++;
+			if (crate)  crateCount++;
+
+			isPressed = (playerCount + crateCount) > 0;
+
+			if (!wasPressed && isPressed) {
+				ToggleButton();
+				bool targetState = !gatesOriginalState;  // pressed = opposite of original
+				if (queueRunning) {
+					hasPendingActivation = true;
+					pendingActivate = targetState;
+				}
+				else {
+					gatesAreActive = targetState;
+					ActivateGates(targetState);
+				}
 			}
-			};
+		};
 
 		collider->OnTriggerExit = [this](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
 			bool wasPressed = isPressed;
-			if (player) playerOnButton = false;
-			if (crate)  crateOnButton = false;
-			isPressed = playerOnButton || crateOnButton;
-			if (isPressed != wasPressed) {
+
+			if (player) playerCount = max(0, playerCount - 1);
+			if (crate)  crateCount = max(0, crateCount - 1);
+
+			isPressed = (playerCount + crateCount) > 0;
+
+			if (wasPressed && !isPressed) {
 				ToggleButton();
-				// derive from actual gate state
-				std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
-				bool currentlyActive = !gates.empty() && gates[0]->isActive;
-				ActivateGates(!currentlyActive);
+				// released = return to original state
+				if (queueRunning) {
+					hasPendingActivation = true;
+					pendingActivate = gatesOriginalState;
+				}
+				else {
+					gatesAreActive = gatesOriginalState;
+					ActivateGates(gatesOriginalState);
+				}
 			}
-			};
+		};
 	}
 };
 #endif // !MAP_MANAGER

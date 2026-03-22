@@ -374,6 +374,8 @@ void Arrow::Init()
 		{
 			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 			{
+				// crate will deactivate arrow on its own ontrigger
+				if (dynamic_cast<CrateTile*>(other->owner)) return;
 				if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) || 
 					((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
 				{
