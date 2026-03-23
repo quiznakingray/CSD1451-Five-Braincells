@@ -234,7 +234,7 @@ void GameStateDraw() {
 
     AEMtx33 scale, trans, transform;
 
-    // Draw ground
+    // Draw GRASSCENTER
     AEGfxVertexList* groundMesh = CreateColoredSquareMesh(WINDOW_WIDTH, 300, 0.56f, 0.93f, 0.56f, 1.0f);
     AEMtx33Trans(&trans, 0, -200);
     AEGfxSetTransform(trans.m);

@@ -18,7 +18,7 @@ void Player::PlayerInput()
 	float jumpHeight = 300.0f;  // lower jump when grabbing
 
 	//AEVec2Set(&velocity, 0.f, 0.f);
-	//std::cout << "On ground: " << (onGround ? "--" : "___________________________ ") << std::endl;
+	//std::cout << "On GRASSCENTER: " << (onGround ? "--" : "___________________________ ") << std::endl;
 	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing)
 	{
 		//moveDir.y = 500.f;
@@ -320,7 +320,7 @@ void RangePlayer::Update()
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
 	LEVEL1PosX = screenX + AEGfxGetWinMinX();
 	LEVEL1PosY = -(screenY - AEGfxGetWinMaxY());
-	std::cout << LEVEL1PosX << "   " << LEVEL1PosY << std::endl;
+	//std::cout << LEVEL1PosX << "   " << LEVEL1PosY << std::endl;
 	playerLinePos->pos.x = pos.x + (LEVEL1PosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
 	aimLinePos->pos.x = LEVEL1PosX;

@@ -25,7 +25,7 @@ struct PlayerManager; // forward declaration
 
 enum class TILE_ID {
 	EMPTY = 0,
-	GROUND = 100,
+	GRASSCENTER = 100,
 	SPIKEDOWN = 101,
 	SPIKEUP = 102,
 	SPIKELEFT = 103,
@@ -33,6 +33,15 @@ enum class TILE_ID {
 	CLOUD = 105,
 	NOCOLLISIONGROUND = 106,
 	WALL = 110,
+	GRASSLEFT = 111,
+	GRASSRIGHT = 112,
+	GRASSTOP = 113,
+	GRASSMID = 114,
+	DIRTLEFT = 115,
+	DIRTRIGHT = 116,
+	DIRTTOP = 117,
+	DIRTMID = 118,
+	DIRTCENTER = 119,
 	LEVERREDOFF = 120,
 	LEVERREDON = 121,
 	LEVERGREENOFF = 122,
@@ -155,21 +164,44 @@ struct SpikeTile : Tile {
 		size_t row_,
 		size_t col_,
 		float tileSize)
-		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true) {
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
 		currSprite->textureFileName = "Assets/Environment/spike.png";
 	}
 
 	void Init() override {
 		Tile::Init();
-		collider->size.x = 0.7f;
+		collider->size.x = 0.7f; 
 		collider->size.y = 0.7f;
-		collider->OnTriggerOver = [](Collider* other, int sides) {
+		collider->OnCollisionEnter = [this](Collider* other, int sides) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
-				std::cout << "In spike" << std::endl;
+				player->health--;
+				std::cout << player->health << '\n';
+				// knockback based on collision side
+				RigidBody* playerRb = player->GetComponent<RigidBody>();
+				float knockbackX = 1000.0f;
+				float knockbackY = 500.0f;
+
+				switch (static_cast<int>(currID))
+				{
+					case static_cast<int>(TILE_ID::SPIKEUP):
+						playerRb->velocity.y = -knockbackY;
+						break;
+					case static_cast<int>(TILE_ID::SPIKEDOWN):
+						playerRb->velocity.y = knockbackY;
+						break;
+					case static_cast<int>(TILE_ID::SPIKELEFT):
+						playerRb->velocity.x = knockbackX;
+						break;
+					case static_cast<int>(TILE_ID::SPIKERIGHT):
+						playerRb->velocity.x = -knockbackX;
+						break;
+					default:
+						break;
+				}
 			}
-			};
+		};
 	}
 };
 
@@ -185,8 +217,40 @@ struct GroundTile : Tile {
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
 
+		switch (currID_) {
+		case TILE_ID::NOCOLLISIONGROUND:
+		case TILE_ID::GRASSCENTER:
+			currSprite->textureFileName = "Assets/Environment/GRASSCENTER.png";
+			break;
+		case TILE_ID::GRASSLEFT:
+			currSprite->textureFileName = "Assets/Environment/grassLeft.png";
+			break;
+		case TILE_ID::GRASSRIGHT:
+			currSprite->textureFileName = "Assets/Environment/grassRight.png";
+			break;
+		case TILE_ID::GRASSTOP:
+			currSprite->textureFileName = "Assets/Environment/grassTop.png";
+			break;
+		case TILE_ID::GRASSMID:
+			currSprite->textureFileName = "Assets/Environment/grassMid.png";
+			break;
+		case TILE_ID::DIRTCENTER:
+			currSprite->textureFileName = "Assets/Environment/dirtCenter.png";
+			break;
+		case TILE_ID::DIRTLEFT:
+			currSprite->textureFileName = "Assets/Environment/dirtLeft.png";
+			break;
+		case TILE_ID::DIRTRIGHT:
+			currSprite->textureFileName = "Assets/Environment/dirtRight.png";
+			break;
+		case TILE_ID::DIRTTOP:
+			currSprite->textureFileName = "Assets/Environment/dirtTop.png";
+			break;
+		case TILE_ID::DIRTMID:
+			currSprite->textureFileName = "Assets/Environment/dirtMid.png";
+			break;
+		}
 		
-		currSprite->textureFileName = "Assets/Environment/ground.png";
 
 	}
 
@@ -347,6 +411,8 @@ struct CloudTile : Tile {
 	double currTimer = 0.0;
 	bool hasPlayerStepped = false;
 	CooldownTimer cloudTimer;
+	CooldownTimer respawnTimer;
+	bool isDisappeared = false;
 	RigidBody* rb = nullptr;
 
 	CloudTile(TILE_ID currID_,
@@ -363,7 +429,7 @@ struct CloudTile : Tile {
 		);
 		rb->type = RIGIDBODY_TYPE::STATIC;
 		rb->hasGravity = false;
-		currSprite->textureFileName = "Assets/Environment/images.png";
+		currSprite->textureFileName = "Assets/Environment/cloud.png";
 	}
 	void StartCloudCountdown()
 	{
@@ -375,20 +441,19 @@ struct CloudTile : Tile {
 		Tile::Init();
 		collider->OnCollisionEnter = [this](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
-			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner); 
+			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
 			if (player || crate)
 			{
 				float cloudTop = pos.y + scale.y * 0.5f;
 				float objectBottom = other->owner->pos.y - other->owner->scale.y * 0.5f;
-
 				if (!hasPlayerStepped && objectBottom >= cloudTop - 5.f)
 				{
 					hasPlayerStepped = true;
 					if (!cloudTimer.IsActive())
-						cloudTimer.Start(2.0);
+						cloudTimer.Start(2.0f);
 				}
 			}
-		};
+			};
 
 		collider->OnCollisionOver = [this](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
@@ -406,26 +471,39 @@ struct CloudTile : Tile {
 				}
 			}
 		};
-			collider->OnCollisionExit = [this](Collider* other, int sides) {
-		};
 	}
 
 	void Update() override
 	{
 		Tile::Update();
+		f32 dt = static_cast<f32>(AEFrameRateControllerGetFrameTime());
 
-		f64 dt = AEFrameRateControllerGetFrameTime();
-
-		if (cloudTimer.Update(static_cast<f32>(dt)))
+		if (!isDisappeared)
 		{
-			isActive = false;
-			collider->canCollide = false;
+			if (cloudTimer.Update(dt)){
+				isCurrActive = false;
+				collider->canCollide = false;
+				isDisappeared = true;
+				hasPlayerStepped = false;
+				currSprite->opacity = 0.0f;
+				respawnTimer.Start(5.0f);
+			}
+
+			if (cloudTimer.IsActive())
+			{
+				f32 progress = cloudTimer.GetProgress();
+				currSprite->opacity = 1.0f - progress;
+			}
 		}
-
-		if (cloudTimer.IsActive())
+		else
 		{
-			f32 progress = cloudTimer.GetProgress();
-			currSprite->opacity = (f32)(1.0f - progress);
+			if (respawnTimer.Update(dt))
+			{
+				isCurrActive = true;
+				collider->canCollide = true;
+				isDisappeared = false;
+				currSprite->opacity = 1.0f;
+			}
 		}
 	}
 };

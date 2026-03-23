@@ -26,6 +26,9 @@ struct Player : GameObject {
 
 	RigidBody* rb = nullptr;
 
+
+	int health = 3;
+	
 	//AEVec2 velocity{};
 
 	// animation

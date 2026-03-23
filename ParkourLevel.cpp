@@ -74,7 +74,7 @@ void ParkourLevel::Update()
 void ParkourLevel::Render()
 {
 
-	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
+	AEGfxSetBackgroundColor(0.6f, 0.8f, 0.85f);
 	MapManager::GetInstance().DrawMapSprite();
 
 	//player1->Render();

@@ -346,7 +346,16 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         newTile = new LeverTile(currID, bgID, currTag, altTag, bgActive, currActive, row, col, tileSize);
         break;
     case TILE_ID::NOCOLLISIONGROUND:
-    case TILE_ID::GROUND:
+    case TILE_ID::GRASSCENTER:
+    case TILE_ID::GRASSLEFT:
+    case TILE_ID::GRASSRIGHT:
+    case TILE_ID::GRASSTOP:
+    case TILE_ID::GRASSMID:
+    case TILE_ID::DIRTCENTER:
+    case TILE_ID::DIRTLEFT:
+    case TILE_ID::DIRTRIGHT:
+    case TILE_ID::DIRTTOP:
+    case TILE_ID::DIRTMID:
         newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
     case TILE_ID::WALL:
@@ -417,13 +426,41 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     case TILE_ID::ENEMY:
         tTex = nullptr;
         break;
-    case TILE_ID::GROUND:
-        // grass image
-        tTex = AEGfxTextureLoad("Assets/Environment/ground.png");
+    case TILE_ID::GRASSCENTER:
+        tTex = AEGfxTextureLoad("Assets/Environment/grassCenter.png");
         break;
     case TILE_ID::WALL:
-        // gray stone image
         tTex = AEGfxTextureLoad("Assets/Environment/wall.png");
+        break;
+    case TILE_ID::GRASSLEFT:
+        tTex = AEGfxTextureLoad("Assets/Environment/grassLeft.png");
+        break;
+    case TILE_ID::GRASSRIGHT:
+        tTex = AEGfxTextureLoad("Assets/Environment/grassRight.png");
+        break;
+    case TILE_ID::GRASSTOP:
+        tTex = AEGfxTextureLoad("Assets/Environment/grassTop.png");
+        break;
+    case TILE_ID::GRASSMID:
+        tTex = AEGfxTextureLoad("Assets/Environment/grassMid.png");
+        break;
+    case TILE_ID::DIRTCENTER:
+        tTex = AEGfxTextureLoad("Assets/Environment/dirtCenter.png");
+        break;
+    case TILE_ID::DIRTLEFT:
+        tTex = AEGfxTextureLoad("Assets/Environment/dirtLeft.png");
+        break;
+    case TILE_ID::DIRTRIGHT:
+        tTex = AEGfxTextureLoad("Assets/Environment/dirtRight.png");
+        break;
+    case TILE_ID::DIRTTOP:
+        tTex = AEGfxTextureLoad("Assets/Environment/dirtTop.png");
+        break;
+    case TILE_ID::DIRTMID:
+        tTex = AEGfxTextureLoad("Assets/Environment/dirtMid.png");
+        break;
+    case TILE_ID::CLOUD:
+        tTex = AEGfxTextureLoad("Assets/Environment/cloud.png");
         break;
     case TILE_ID::GOAL:
         tTex = AEGfxTextureLoad("Assets/Environment/doorClose.png");

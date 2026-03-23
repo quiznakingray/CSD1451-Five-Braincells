@@ -40,7 +40,7 @@ void EnemyGameObject::Init()
 				std::cout << "[EnemyGameObj] Collided with TILE\n";
 
 				// Only flip direction if hitting a wall on the left or right
-				// instead of always flipping (which caused flipping on ground too)
+				// instead of always flipping (which caused flipping on GRASSCENTER too)
 				if (sides & COLLISION_SIDE::LEFT || sides & COLLISION_SIDE::RIGHT)
 					movement.movingRight = !movement.movingRight;
 			}
