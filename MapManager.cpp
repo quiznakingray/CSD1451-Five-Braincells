@@ -669,14 +669,14 @@ for (Collider* pCol : colliders)
             rb->velocity.x -= friction * dt;
             if (rb->velocity.x < 0)
                 rb->velocity.x = 0;
-            std::cout << rb->velocity.x << '\n';
+            //std::cout << rb->velocity.x << '\n';
         }
         else if (rb->velocity.x < 0)
         {
             rb->velocity.x += friction * dt;
             if (rb->velocity.x > 0)
                 rb->velocity.x = 0;
-            std::cout << rb->velocity.x << '\n';
+            //std::cout << rb->velocity.x << '\n';
         }
     }
     // Check nearby tiles for new collisions

@@ -321,7 +321,7 @@ void RangePlayer::Update()
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
 	worldPosX = screenX + AEGfxGetWinMinX();
 	worldPosY = -(screenY - AEGfxGetWinMaxY());
-	std::cout << worldPosX << "   " << worldPosY << std::endl;
+	//std::cout << worldPosX << "   " << worldPosY << std::endl;
 	playerLinePos->pos.x = pos.x + (worldPosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
 	aimLinePos->pos.x = worldPosX;

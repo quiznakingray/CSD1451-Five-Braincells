@@ -4,7 +4,6 @@
 #include "EnemyMovement.h"
 
 void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
-    GameObject::Init();
     InitEnemyBase(base, type);
     EnemyMovement::InitEnemyMovement(movement);
 
@@ -49,11 +48,12 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     //EnemyManager::RegisterEnemy(this);
 
     std::cout << "[EnemyGameObject] Initialized at (" << pos.x << ", " << pos.y << ")\n";
+    GameObject::Init();
 }
 
 void EnemyGameObject::Update() {
-    GameObject::Update();
     UpdateAnimation();
+    GameObject::Update();
 }
 
 void EnemyGameObject::Patrol(f32 dt) {

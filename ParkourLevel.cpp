@@ -8,9 +8,7 @@
 //Player* player1 = nullptr;
 PlayerManager playerManager;
 
-//EnemyGameObject* enemy1 = nullptr;
-
-std::vector<GameObject*> gameObjects1{};
+std::vector<GameObject*> levelGameObjectVector{};
 
 MapManager mapManager1;
 
@@ -28,20 +26,18 @@ void ParkourLevel::Init()
 	mapManager1.PrintMap();
 	
 
-	mapManager1.AddTilesToGameObjectVector(gameObjects1);
+	mapManager1.AddTilesToGameObjectVector(levelGameObjectVector);
 
 	//player->Init();
 	//player1 = new Player();
 	playerManager.Init();
-	AddGameObjectToVector(playerManager.meleePlayer, gameObjects1);
-	AddGameObjectToVector(playerManager.rangedPlayer, gameObjects1);
-	AddGameObjectToVector(playerManager.rangePlayerArrow, gameObjects1);
+	AddGameObjectToVector(playerManager.meleePlayer, levelGameObjectVector);
+	AddGameObjectToVector(playerManager.rangedPlayer, levelGameObjectVector);
+	AddGameObjectToVector(playerManager.rangePlayerArrow, levelGameObjectVector);
 	EnemyManager::Init(playerManager.currentPlayer);
-	EnemyManager::SpawnEnemies(5, 1, gameObjects1);
-	AddGameObjectToVector(player1, gameObjects1);
-	//AddGameObjectToVector(enemy1, gameObjects1);
+	EnemyManager::SpawnEnemies(5, 1, levelGameObjectVector);
 
-	InitGameObjects(gameObjects1);
+	InitGameObjects(levelGameObjectVector);
 	
 }
 
@@ -49,7 +45,8 @@ void ParkourLevel::Update()
 {
 	double dt = AEFrameRateControllerGetFrameTime();
 	playerManager.Update();
-	UpdateGameObjects(gameObjects1);
+	UpdateGameObjects(levelGameObjectVector);
+	EnemyManager::UpdateAllEnemies(dt);
 }
 
 void ParkourLevel::Render()
@@ -60,6 +57,7 @@ void ParkourLevel::Render()
 
 	//player1->Render();
 	playerManager.Render();
+	EnemyManager::RenderEnemies();
 	// enemy1->Render();
 	// player1->Render();
 	//enemy1->Render();
@@ -69,12 +67,12 @@ void ParkourLevel::Render()
 void ParkourLevel::Free()
 {
 	// Clean up game objects
-	for (auto* obj : gameObjects1)
+	for (auto* obj : levelGameObjectVector)
 	{
 		if (obj )
 			delete obj;
 	}
-	gameObjects1.clear();
+	levelGameObjectVector.clear();
 
 	//// Clean up player1
 	//if (player1)

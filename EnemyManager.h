@@ -20,6 +20,8 @@ public:
 
     static void UpdateAllEnemies(f32 dt);
 
+    static void RenderEnemies();
+
     static AEVec2 GetPlayerPos();
 
     // Getter for rendering
