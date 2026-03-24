@@ -4,6 +4,8 @@
 #include "PlayerGameObject.h"
 #include "PhysicsManager.h"
 #include "GameStateManager.h"
+#include "ParticleEffects.h"
+
 #include <iostream>
 
 void EnemyGameObject::Init()
@@ -30,7 +32,19 @@ void EnemyGameObject::Init()
 
 	c->OnCollisionEnter = [this](Collider* other, int sides)
 		{
-			if (Player* player = dynamic_cast<Player*>(other->owner))
+			// CHECK FOR ARROW COLLISION (Orange Blood)
+			if (Arrow* arrow = dynamic_cast<Arrow*>(other->owner))
+			{
+				// Trigger the effect at the enemy's current position
+				ParticleSystem::CreateBloodEffect(pos.x, pos.y);
+
+				base.stats.health -= 10;
+				std::cout << "Enemy hit! Health: " << base.stats.health << std::endl;
+
+				// Optional: Deactivate the arrow so it doesn't pass through
+				arrow->isActive = false;
+			}
+			else if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
 				std::cout << "[EnemyGameObj] Collided with PLAYER\n";
 				next = GAME_STATE_TYPE::COMBAT;

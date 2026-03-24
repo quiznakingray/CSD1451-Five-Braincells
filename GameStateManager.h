@@ -8,7 +8,9 @@ enum class GAME_STATE_TYPE {
 	MENU,
 	WORLD,
 	OTHER,
-	COMBAT
+	COMBAT,
+	INSTRUCTIONS,
+	SETTING
 };
 extern GAME_STATE_TYPE current, next;
 

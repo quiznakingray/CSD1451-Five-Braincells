@@ -7,8 +7,8 @@
 #include "PhysicsManager.h"
 struct EnemyGameObject : GameObject
 {
-	EnemyBase base;
-	EnemyMovement movement;
+	EnemyBase base{};
+	EnemyMovement movement{};
 
 	RigidBody* rb = nullptr;
 

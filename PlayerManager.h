@@ -15,7 +15,7 @@ struct PlayerManager : Singleton<PlayerManager>
 	static Arrow* rangePlayerArrow;
 	Player* currentPlayer = meleePlayer;
 
-	AEVec2 camPos{};
+	static AEVec2 camPos;
 	f32 camLerpSpeed = 5.f;
 
 	void Init();

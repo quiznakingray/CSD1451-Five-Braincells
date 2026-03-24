@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -103,6 +103,8 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="BossLevel.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="ComponentBase.cpp" />
+    <ClCompile Include="Credits.cpp" />
+    <ClCompile Include="EndMenu.cpp" />
     <ClCompile Include="EnemyBase.cpp" />
     <ClCompile Include="EnemyCombat.cpp" />
     <ClCompile Include="EnemyGameObject.cpp" />
@@ -111,10 +113,14 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="Instructions.cpp" />
+    <ClCompile Include="LoseMenu.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="MapManager.cpp" />
     <ClCompile Include="ParkourLevel.cpp" />
+    <ClCompile Include="ParticleEffects.cpp" />
+    <ClCompile Include="PauseMenu.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="PlayerCombat.cpp" />
     <ClCompile Include="PlayerGameObject.cpp" />
@@ -132,6 +138,8 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="BossLevel.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="ComponentBase.h" />
+    <ClInclude Include="Credits.h" />
+    <ClInclude Include="EndMenu.h" />
     <ClInclude Include="EnemyBase.h" />
     <ClInclude Include="EnemyCombat.h" />
     <ClInclude Include="EnemyGameObject.h" />
@@ -141,10 +149,14 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="Header.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="Instructions.h" />
     <ClInclude Include="Library\rapidcsv.h" />
+    <ClInclude Include="LoseMenu.h" />
     <ClInclude Include="MainMenu.h" />
     <ClInclude Include="MapManager.h" />
     <ClInclude Include="ParkourLevel.h" />
+    <ClInclude Include="ParticleEffects.h" />
+    <ClInclude Include="PauseMenu.h" />
     <ClInclude Include="PhysicsManager.h" />
     <ClInclude Include="PlayerCombat.h" />
     <ClInclude Include="PlayerGameObject.h" />

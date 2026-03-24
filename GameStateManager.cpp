@@ -5,6 +5,7 @@
 #include "MainMenu.h"
 
 
+
 FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpRender = nullptr, fpFree = nullptr, fpUnload = nullptr;
 
 GAME_STATE_TYPE current = GAME_STATE_TYPE::WORLD, next = GAME_STATE_TYPE::OTHER;
@@ -55,6 +56,23 @@ void GameStateManager::Update()
 		fpFree = GameStateFree;
 		fpUnload = GameStateUnload;
 		break;
+	//case GAME_STATE_TYPE::SETTING:
+	//	fpLoad = []() {};
+	//	fpInitialize = Setting_Init; 
+	//	fpUpdate = Setting_Update;
+	//	fpRender = Setting_Draw;
+	//	fpFree = Setting_Free;
+	//	fpUnload = []() {};
+	//	break;
+
+	//case GAME_STATE_TYPE::INSTRUCTIONS:
+	//	fpLoad = []() {};
+	//	fpInitialize = Instructions_Init; 
+	//	fpUpdate = Instructions_Update;
+	//	fpRender = Instructions_Draw;
+	//	fpFree = Instructions_Free;
+	//	fpUnload = []() {};
+	//	break;
 	default:
 		break;
 	}
