@@ -30,8 +30,7 @@ void EnemyManager::SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameO
 
         EnemyType type = (spawned < numBasic) ? EnemyType::BASIC : EnemyType::MINI_BOSS;
         EnemyGameObject* enemy = new EnemyGameObject();
-        //enemy->Init(type, tile);
-        enemy->base.type = type;
+        enemy->Init(type, tile);
         AddGameObjectToVector(enemy, gameObjects);
         RegisterEnemy(enemy);
         spawned++;
