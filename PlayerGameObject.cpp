@@ -4,6 +4,7 @@
 #include "PlayerManager.h"
 #include "SaveManager.h"
 #include "PlayerStats.h"
+#include "ParticleEffects.h"
 
 #include <iostream>
 #include <vector>
@@ -690,6 +691,9 @@ void Arrow::Update()
 	GameObject::Update();
 	if (isActive)
 	{
+		// Spawn arrow particles/trails at the current arrow position
+		ParticleSystem::CreateArrowTrail(pos.x, pos.y, rb->velocity);
+		
 		double dt = AEFrameRateControllerGetFrameTime();
 		timer += static_cast<f32>(dt);
 		if (timer >= lifetime)
