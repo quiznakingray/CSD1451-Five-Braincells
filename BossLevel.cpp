@@ -5,7 +5,7 @@
 #include "EnemyGameObject.h"
 
 Player* player2 = nullptr;
-//EnemyGameObject* enemy = nullptr;
+//EnemyGameObject* enemy2 = nullptr;
 
 std::vector<GameObject*> gameObjects2{};
 
@@ -28,7 +28,7 @@ void BossLevel::Init()
 
 	//player->Init();
 	player2 = new Player();
-	//enemy = new EnemyGameObject();
+	//enemy2 = new EnemyGameObject();
 	AddGameObjectToVector(player2, gameObjects2);
 	//AddGameObjectToVector(enemy, gameObjects2);
 

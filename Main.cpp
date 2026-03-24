@@ -10,9 +10,9 @@
 #include "GameObjectManager.h"
 //#include "TextComponent.h"
 #include "GameStateManager.h"
+#include "MainMenu.h"
 #include <filesystem>
-#include "EnemyGameObject.h"
-#include "EnemyManager.h"
+
 
 int gGameRunning = 1;
 //AEGfxVertexList* pMesh = 0;
@@ -22,9 +22,8 @@ MapManager mapManager;
 TextManager textManager;
 s8 TextManager::pFont = 0;
 
-Player* player = new Player();
 
-std::vector<GameObject*> gameObjects{};
+//std::vector<GameObject*> gameObjects{};
 
 GameStateManager gameStateManager;
 #pragma region tempFuncs
@@ -36,11 +35,6 @@ void RenderGraphics() {
 	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
 	mapManager.DrawMapSprite();
 
-	player->Render();
-	// Render enemies
-	for (auto enemy : EnemyManager::GetEnemies()) {
-		enemy->Render();
-	}
 	// check if forcing the application to quit
 	if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
 		gGameRunning = 0;
@@ -63,24 +57,18 @@ void GameInit()
 
 	mapManager.PrintMap();
 
-	mapManager.AddTilesToGameObjectVector(gameObjects);
+	//mapManager.AddTilesToGameObjectVector(gameObjects);
 
-	//player->Init();
-	AddGameObjectToVector(player, gameObjects);
-	EnemyManager::Init(player);
-	EnemyManager::SpawnEnemies(5, 1, gameObjects);
+	//AddGameObjectToVector(player, gameObjects);
 	
-	InitGameObjects(gameObjects);
-
-	/*EnemyManager::Init(player);
-	EnemyManager::SpawnEnemies(5, 1, gameObjects);*/
+	
+	//InitGameObjects(gameObjects);
 }
 void GameUpdate() {
 	double dt = AEFrameRateControllerGetFrameTime();
-	UpdateGameObjects(gameObjects);
+	//UpdateGameObjects(gameObjects);
 	RenderGraphics();
-	EnemyManager::UpdateAllEnemies((f32)dt);
-	//player->Update();
+
 }
 #pragma endregion
 
@@ -98,7 +86,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 
-	int gGameRunning = 1;
+	//int gGameRunning = 1;
 
 	// Initialization of your own variables go here
 
@@ -114,8 +102,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	printf("Hello World\n");
 
 	//GameInit();
-	gameStateManager.Initialize(GAME_STATE_TYPE::WORLD);
-	double dt = AEFrameRateControllerGetFrameTime();
+	gameStateManager.Initialize(GAME_STATE_TYPE::MENU);
+
 	// Game Loop
 	while (gGameRunning)
 	{
@@ -125,7 +113,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		//// Initialize the current game state
 		fpLoad();
 		fpInitialize();
-		while (next == current)
+		while (next == current && gGameRunning)
 		{
 			AESysFrameStart();
 			// Update game logic for the current frame
@@ -133,7 +121,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			// Render graphics for the current frame
 			fpRender();
 			// check if forcing the application to quit
-			if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
+			if (AEInputCheckCurr(AEVK_ESCAPE)) {
+				next = GAME_STATE_TYPE::MENU;
+			}
+			if (0 == AESysDoesWindowExist())
 				gGameRunning = 0;
 
 			if (AEInputCheckCurr(AEVK_1))
@@ -142,14 +133,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				AESysSetFullScreen(0);
 
 			if (AEInputCheckCurr(AEVK_3)) {
-				gameStateManager.ChangeState(GAME_STATE_TYPE::OTHER);
-				gameStateManager.Update();
-				mapManager.ChangeMap(1);
+				if (mapManager.mapCurrLevel != 1) {
+					gameStateManager.ChangeState(GAME_STATE_TYPE::OTHER);
+					gameStateManager.Update();
+					mapManager.ChangeMap(1);
+				}
+
 			}
 			if (AEInputCheckCurr(AEVK_4)) {
-				gameStateManager.ChangeState(GAME_STATE_TYPE::WORLD);
-				gameStateManager.Update();
-				mapManager.ChangeMap(0);
+				if (mapManager.mapCurrLevel != 0) {
+					gameStateManager.ChangeState(GAME_STATE_TYPE::WORLD);
+					gameStateManager.Update();
+					mapManager.ChangeMap(0);
+				}
 			}
 			// Informing the system about the loop's end
 

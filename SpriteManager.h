@@ -13,6 +13,7 @@
 enum class SPRITE_SHAPE {
 	SHAPE_RECT,
 	SHAPE_CIRCLE,
+	SHAPE_LINE
 };
 
 struct Color { // range form 0 to 1
@@ -30,9 +31,9 @@ struct Color { // range form 0 to 1
 using Color = struct Color;
 
 struct Sprite : ComponentBase{
-	//AEVec3 pos{};
-	//AEVec2 scale{};
-	//f32 rotation{};
+	AEVec2 offset{};
+	AEVec2 size{};
+	f32 rot{};
 	u32 meshColor{};
 	Color multiplyColor = Color(1.f, 1.f, 1.f, 1.f);
 	Color addColor = Color(0.f, 0.f, 0.f, 0.f);
@@ -58,24 +59,32 @@ struct Sprite : ComponentBase{
 
 	} spriteSheet;
 
+	// line render
+	struct LinePoint {
+		AEVec2 pos;
+	};
+	std::vector<LinePoint*> linePoints;
+	f32 thickness{};
+	bool dotted = false;
 
-	Sprite() : meshColor(0x00000000), texture(nullptr) , spriteSheet(1, 1){
 
-	}
 	Sprite(
-		f32 scale_x, f32 scale_y, 
-		f32 pos_x, f32 pos_y, f32 pos_z = 0.f, 
+		f32 scale_x = 1.f, f32 scale_y = 1.f, 
+		f32 pos_x =0.f, f32 pos_y = 0.f,
 		f32 rot = 0.f, 
-		u32 c = 0xFF000000,
+		u32 c = 0x00000000,
 		AEGfxTexture* t = nullptr,
 		SPRITE_SHAPE shape = SPRITE_SHAPE::SHAPE_RECT)
 		: meshColor(c),texture(t), spriteSheet(1, 1), spriteShape(shape)
 	{
-		//AEVec2Set(&pos, pos_x, pos_y);
-		//pos.z = pos_z;
-		//AEVec2Set(&scale, scale_x, scale_y);
-
+		AEVec2Set(&offset, pos_x, pos_y);
+		AEVec2Set(&size, scale_x, scale_y);
+		this->rot = rot;
 	}
+
+	void RenderRect(f32 u0, f32 v0, f32 u1, f32 v1);
+	void RenderCircle(f32 u0, f32 v0, f32 u1, f32 v1);
+	void RenderLine();
 
 	void UpdateFrame();
 	void Init() override;

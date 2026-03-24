@@ -2,6 +2,7 @@
 #include "ParkourLevel.h"
 #include "BossLevel.h"
 #include "PlayerCombat.h"
+#include "MainMenu.h"
 
 
 FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpRender = nullptr, fpFree = nullptr, fpUnload = nullptr;
@@ -22,6 +23,14 @@ void GameStateManager::Update()
 {
 	switch (current)
 	{
+	case GAME_STATE_TYPE::MENU:
+		fpLoad = []() {}; // Empty or load background textures
+		fpInitialize = MainMenu_Init;
+		fpUpdate = MainMenu_Update;
+		fpRender = MainMenu_Draw;
+		fpFree = MainMenu_Free;
+		fpUnload = []() {};
+		break;
 	case GAME_STATE_TYPE::WORLD:  
 		fpLoad = ParkourLevel::Load;  
 		fpInitialize = ParkourLevel::Init;  
