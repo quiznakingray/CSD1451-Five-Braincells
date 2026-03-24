@@ -12,7 +12,8 @@
 #include "GameStateManager.h"
 #include "MainMenu.h"
 #include <filesystem>
-
+#include "EnemyGameObject.h"
+#include "EnemyManager.h"
 
 int gGameRunning = 1;
 //AEGfxVertexList* pMesh = 0;
@@ -68,7 +69,6 @@ void GameUpdate() {
 	double dt = AEFrameRateControllerGetFrameTime();
 	//UpdateGameObjects(gameObjects);
 	RenderGraphics();
-
 }
 #pragma endregion
 
