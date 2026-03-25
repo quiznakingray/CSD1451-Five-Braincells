@@ -22,6 +22,7 @@
 #define MAX_LEVELS 5
 
 struct PlayerManager; // forward declaration
+class EnemyManager; // forward declaration
 
 enum class TILE_ID {
 	EMPTY = 0,
@@ -429,7 +430,7 @@ struct CloudTile : Tile {
 		);
 		rb->type = RIGIDBODY_TYPE::STATIC;
 		rb->hasGravity = false;
-		currSprite->textureFileName = "Assets/Environment/cloud.png";
+		currSprite->textureFileName = "Assets/Environment/cloudLeft.png";
 	}
 	void StartCloudCountdown()
 	{
@@ -546,7 +547,7 @@ struct MapManager : public Singleton<MapManager> {
 
 	static constexpr  float tileSize = 80.f;
 	const char delimiter = ',';
-	static unsigned int mapCurrLevel;
+	static GAME_STATE_TYPE mapCurrLevel;
 	static size_t rowCount;
 	static size_t colCount;
 
@@ -558,9 +559,9 @@ struct MapManager : public Singleton<MapManager> {
 
 #pragma region MapFuncs
 	// Loads a map
-	void InitMap(std::string fileName, unsigned int currLevel);
+	void InitMap(std::string fileName, GAME_STATE_TYPE currLevel);
 
-	void ChangeMap(unsigned int currLevel);
+	void ChangeMap(GAME_STATE_TYPE currLevel);
 
 	void PrintMap();
 
@@ -570,7 +571,7 @@ struct MapManager : public Singleton<MapManager> {
 
 	void FreeMap();
 
-	void SaveMapState(GAME_STATE_TYPE level);
+	void SaveMapState();
 
 	void LoadMapState();
 	
@@ -581,7 +582,7 @@ struct MapManager : public Singleton<MapManager> {
 	void DrawTile(Sprite currSprite, AEMtx33 transform);
 
 	// Inits tile variables
-	Tile* InitTile(int mapIndex, std::string cell, size_t col, size_t row);
+	Tile* InitTile(std::string cell, size_t col, size_t row);
 
 	// Sets tile variables
 	AEGfxTexture* SetTileTexture(TILE_ID currID);

@@ -22,6 +22,7 @@ void PlayerManager::Init()
 void PlayerManager::Update(){
 	if (!currentPlayer) return;
 	currentPlayer->PlayerInput();
+	currentPlayer->PlayerAction();
 	
 	if (AEInputCheckCurr(AEVK_COMMA) && currentPlayer != meleePlayer)
 	{
@@ -50,12 +51,19 @@ void PlayerManager::Render(){
 	rangePlayerArrow->Render();
 }
 
+void PlayerManager::SavePlayerData()
+{
+	SaveManager& save = SaveManager::GetInstance();
+
+	save.playerSaveData.meleePos = meleePlayer->pos;
+	save.playerSaveData.rangedPos = rangedPlayer->pos;
+	save.playerSaveData.hasSavedData = true;
+
+}
 void PlayerManager::Load()
 {
-	SaveManager::GetInstance().LoadPlayerData();
 	PlayerSaveData& data = SaveManager::GetInstance().playerSaveData;
-
-	if (!data.hasSavedData || !data.preserveOnLoad) return;
+	if (!data.hasSavedData) return;
 
 	AEVec2Set(&meleePlayer->pos, data.meleePos.x, data.meleePos.y);
 	AEVec2Set(&rangedPlayer->pos, data.rangedPos.x, data.rangedPos.y);

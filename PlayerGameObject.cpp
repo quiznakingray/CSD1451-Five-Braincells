@@ -235,7 +235,7 @@ void Player::Init()
 
 void Player::Update(){
 	//PlayerInput();
-	PlayerAction();
+
 	PlayerAnimation();
 
 	runningAnim->sprite->size.x =
@@ -320,7 +320,7 @@ void RangePlayer::Update()
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
 	LEVEL1PosX = screenX + AEGfxGetWinMinX();
 	LEVEL1PosY = -(screenY - AEGfxGetWinMaxY());
-	//std::cout << worldPosX << "   " << worldPosY << std::endl;
+	//std::cout << LEVEL1PosX << "   " << LEVEL1PosY << std::endl;
 	playerLinePos->pos.x = pos.x + (LEVEL1PosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
 	aimLinePos->pos.x = LEVEL1PosX;

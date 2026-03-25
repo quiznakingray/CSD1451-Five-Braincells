@@ -4,9 +4,10 @@
 #include "AEEngine.h"
 #include "EnemyGameObject.h"
 #include "MapManager.h"
+#include "SingletonTemplate.h"
 #include <vector>
 
-struct EnemyManager {
+struct EnemyManager : public Singleton<EnemyManager> {
 private:
     static std::vector<EnemyGameObject*> enemies;
     static Player* player;

@@ -10,6 +10,7 @@ enum class GAME_STATE_TYPE {
 	LEVEL1BOSS,
 	LEVEL2,
 	LEVEL2BOSS,
+	LEVEL3,
 	COMBAT
 };
 extern GAME_STATE_TYPE current, next;

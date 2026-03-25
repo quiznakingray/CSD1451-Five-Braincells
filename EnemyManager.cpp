@@ -25,13 +25,31 @@ AEVec2 EnemyManager::GetPlayerPos() {
 void EnemyManager::SaveEnemyStates()
 {
     SaveManager::GetInstance().enemySaveData.clear();
-    for (EnemyGameObject* enemy : enemies) {
-        SaveManager::GetInstance().enemySaveData.push_back(enemy->base);
+    for (EnemyGameObject* enemy : enemies)
+    {
+        EnemySaveData data;
+        data.pos = enemy->pos;
+        data.enemyBase = enemy->base;
+        SaveManager::GetInstance().enemySaveData.push_back(data);
     }
+    SaveManager::GetInstance().SaveEnemyData();
 }
 
 void EnemyManager::LoadEnemyStates()
 {
+    std::vector<EnemySaveData>& savedData = SaveManager::GetInstance().enemySaveData;
+    if (savedData.empty()) return;
+
+    for (size_t i = 0; i < enemies.size() && i < savedData.size(); i++)
+    {
+        enemies[i]->base = savedData[i].enemyBase;
+        enemies[i]->pos = savedData[i].pos;
+
+        if (!savedData[i].enemyBase.isAlive)
+        {
+            enemies[i]->isActive = false;
+        }
+    }
 }
 
 void EnemyManager::SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects) {

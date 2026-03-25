@@ -29,6 +29,7 @@ struct PlayerManager : public Singleton<PlayerManager>
 	void Update();
 	void Render();
 	void Load();
+	void SavePlayerData();
 	void ChangePlayer(PLAYER_TYPE type);
 };
 

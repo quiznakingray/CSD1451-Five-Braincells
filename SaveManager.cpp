@@ -1,15 +1,14 @@
 #include "SaveManager.h"
+#include "MapManager.h"
+#include "EnemyManager.h"
+#include "PlayerManager.h"
 #include <string>
 #include <fstream>
 #include <iostream>
 
-void SaveManager::SavePlayerData(AEVec2 meleePos, AEVec2 rangedPos)
+void SaveManager::SavePlayerData()
 {
-    playerSaveData.meleePos = meleePos;
-    playerSaveData.rangedPos = rangedPos;
-    playerSaveData.hasSavedData = true;
-
-    std::cout << "Saving to: " << "Assets/Saves/playerSave.dat" << '\n';
+    std::cout << "Saving to: Assets/Saves/playerSave.dat\n";
 
     std::ofstream file("Assets/Saves/playerSave.dat", std::ios::binary);
     if (file.is_open())
@@ -20,7 +19,7 @@ void SaveManager::SavePlayerData(AEVec2 meleePos, AEVec2 rangedPos)
     }
     else
     {
-        std::cout << "Failed to save to: " << "Assets/Saves/playerSave.dat" << '\n';
+        std::cout << "Failed to save player data\n";
     }
 }
 
@@ -79,18 +78,75 @@ void SaveManager::LoadMapData()
     else std::cout << "No map save found\n";
 }
 
+void SaveManager::SaveEnemyData()
+{
+    std::ofstream file("Assets/Saves/enemySave.dat", std::ios::binary);
+    if (file.is_open())
+    {
+        size_t count = enemySaveData.size();
+        file.write(reinterpret_cast<char*>(&count), sizeof(size_t));
+        file.write(reinterpret_cast<char*>(enemySaveData.data()),
+            count * sizeof(EnemySaveData));
+        file.close();
+        std::cout << "Enemies saved: " << count << "\n";
+    }
+    else std::cout << "Failed to save enemies\n";
+}
+
+void SaveManager::LoadEnemyData()
+{
+    std::ifstream file("Assets/Saves/enemySave.dat", std::ios::binary);
+    if (file.is_open())
+    {
+        size_t count = 0;
+        file.read(reinterpret_cast<char*>(&count), sizeof(size_t));
+        enemySaveData.resize(count);
+        file.read(reinterpret_cast<char*>(enemySaveData.data()),
+            count * sizeof(EnemySaveData));
+        file.close();
+        std::cout << "Enemies loaded: " << count << "\n";
+    }
+    else std::cout << "No enemy save found\n";
+}
+void SaveManager::SaveAll()
+{
+    // 1. Ask each system to populate save data
+    PlayerManager::GetInstance().SavePlayerData();
+    EnemyManager::GetInstance().SaveEnemyStates();
+    MapManager::GetInstance().SaveMapState();
+
+    // 2. Write everything to disk
+    SavePlayerData();
+    SaveEnemyData();
+    SaveMapData();
+}
 bool SaveManager::HasSaveData()
 {
     std::ifstream file("Assets/Saves/playerSave.dat");
     return file.is_open();
 }
+void SaveManager::LoadAll()
+{
+    // 1. Read everything from disk first
+    LoadPlayerData();
+    LoadEnemyData();
+    LoadMapData();
+
+    // 2. Apply loaded data to each system
+    PlayerManager::GetInstance().Load();
+    EnemyManager::GetInstance().LoadEnemyStates();
+    MapManager::GetInstance().LoadMapState();
+}
+
 
 void SaveManager::ResetSave()
 {
     playerSaveData = PlayerSaveData{};
     mapSaveData = MapSaveData{};
+    enemySaveData.clear();
     toContinue = false;
     remove("Assets/Saves/playerSave.dat");
     remove("Assets/Saves/mapSave.dat");
+    remove("Assets/Saves/enemySave.dat");
     std::cout << "Save data reset\n";
 }

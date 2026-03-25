@@ -84,7 +84,8 @@ void MainMenu_Update() {
                 if (SaveManager::GetInstance().HasSaveData()) {
                     SaveManager::GetInstance().LoadPlayerData();
                     SaveManager::GetInstance().LoadMapData();
-                    SaveManager::GetInstance().toContinue = true;  // set flag
+                    SaveManager::GetInstance().LoadEnemyData();
+                    SaveManager::GetInstance().toContinue = true;
                     next = SaveManager::GetInstance().mapSaveData.savedLevel;
                 }
             }

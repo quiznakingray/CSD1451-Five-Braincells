@@ -3,6 +3,7 @@
 #include "PlayerGameObject.h"
 #include "PlayerManager.h"
 #include "SaveManager.h"
+#include "EnemyManager.h"
 #include <array>
 #include <algorithm>
 #include <iostream>
@@ -13,14 +14,15 @@ rapidcsv::Document map;
 std::vector<std::vector<Tile*>> arrMapInfo{};
 AEGfxVertexList* mesh;
 
-unsigned int MapManager::mapCurrLevel = 0;
 size_t MapManager::rowCount = 0;
 size_t MapManager::colCount = 0;
 
-void MapManager::InitMap(std::string fileName, unsigned int currLevel)
+GAME_STATE_TYPE MapManager::mapCurrLevel = GAME_STATE_TYPE::LEVEL1;
+
+void MapManager::InitMap(std::string fileName, GAME_STATE_TYPE currLevel)
 {
     map = rapidcsv::Document(fileName);
-    //mapCurrLevel = currLevel;
+    mapCurrLevel = currLevel;
     // Read a row from the CSV file
     colCount = (map.GetRow<std::string>(0)).size();
     rowCount = (map.GetColumn<std::string>(0)).size();
@@ -41,7 +43,7 @@ void MapManager::InitMap(std::string fileName, unsigned int currLevel)
         for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
         {
 
-            arrMapInfo[uiRow][uiCol] = InitTile(mapCurrLevel, row[uiCol], uiCol, uiRow);
+            arrMapInfo[uiRow][uiCol] = InitTile(row[uiCol], uiCol, uiRow);
         }
     }
     AEGfxMeshStart();
@@ -59,7 +61,7 @@ void MapManager::InitMap(std::string fileName, unsigned int currLevel)
     mesh = AEGfxMeshEnd();
 }
 
-void MapManager::ChangeMap(unsigned int currLevel)
+void MapManager::ChangeMap(GAME_STATE_TYPE currLevel)
 {
     mapCurrLevel = currLevel;
 
@@ -146,10 +148,10 @@ void MapManager::FreeMap()
     }
 }
 
-void MapManager::SaveMapState(GAME_STATE_TYPE level)
+void MapManager::SaveMapState()
 {
     SaveManager::GetInstance().mapSaveData.tileStates.clear();
-    SaveManager::GetInstance().mapSaveData.savedLevel = level;
+    SaveManager::GetInstance().mapSaveData.savedLevel = mapCurrLevel;
 
     for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
@@ -183,26 +185,21 @@ void MapManager::SaveMapState(GAME_STATE_TYPE level)
     }
 
     SaveManager::GetInstance().mapSaveData.hasSavedData = true;
-    SaveManager::GetInstance().SaveMapData();
 }
 
 void MapManager::LoadMapState()
 {
     if (!SaveManager::GetInstance().mapSaveData.hasSavedData) return;
-
     for (const TileStateData& data : SaveManager::GetInstance().mapSaveData.tileStates)
     {
         Tile* tile = arrMapInfo[data.row][data.col];
         if (!tile) continue;
-
         tile->currID = data.currID;
         tile->isActive = data.isActive;
         tile->isCurrActive = data.isCurrActive;
         tile->pos = data.pos;
-
         if (tile->collider)
             tile->collider->canCollide = data.colliderCanCollide;
-
         if (LeverTile* lever = dynamic_cast<LeverTile*>(tile))
             lever->SetTexture();
         else if (ButtonTile* button = dynamic_cast<ButtonTile*>(tile))
@@ -240,7 +237,7 @@ void MapManager::DrawTile(Sprite sprite, AEMtx33 transform)
     AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 }
 
-Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t row)
+Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
 {
     // saves first int as current currID of tile
     if (cell == "") {
@@ -460,7 +457,7 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
         tTex = AEGfxTextureLoad("Assets/Environment/dirtMid.png");
         break;
     case TILE_ID::CLOUD:
-        tTex = AEGfxTextureLoad("Assets/Environment/cloud.png");
+        tTex = AEGfxTextureLoad("Assets/Environment/cloudLeft.png");
         break;
     case TILE_ID::GOAL:
         tTex = AEGfxTextureLoad("Assets/Environment/doorClose.png");
@@ -723,12 +720,14 @@ void GoalTile::Init() {
             interactionTextBox->text = "[F] Enter";
             if (AEInputCheckTriggered(AEVK_F))
             {
-                // save current state before transitioning
-                SaveManager::GetInstance().SavePlayerData(
-                    PlayerManager::GetInstance().meleePlayer->pos,
-                    PlayerManager::GetInstance().rangedPlayer->pos
-                );
-                MapManager::GetInstance().SaveMapState(current);
+                SaveManager::GetInstance().SaveAll();
+                //// save current state before transitioning
+                //SaveManager::GetInstance().SavePlayerData(
+                //    PlayerManager::GetInstance().meleePlayer->pos,
+                //    PlayerManager::GetInstance().rangedPlayer->pos
+                //);
+                //MapManager::GetInstance().SaveMapState(current);
+                
 
                 // transition to next level based on current
                 switch (current)
@@ -753,6 +752,7 @@ void GoalTile::Init() {
                     next = GAME_STATE_TYPE::LEVEL1;
                     break;
                 }
+                SaveManager::GetInstance().toContinue = false;
             }
         }
         };
@@ -775,12 +775,11 @@ void CheckpointTile::Init() {
         {
             this->interactionTextBox->isActive = true;
             interactionTextBox->text = "Saved!";
-
-            SaveManager::GetInstance().SavePlayerData(
-                PlayerManager::GetInstance().meleePlayer->pos,
-                PlayerManager::GetInstance().rangedPlayer->pos
+            SaveManager::GetInstance().SaveAll();
+           /* SaveManager::GetInstance().SavePlayerData(
             );
             MapManager::GetInstance().SaveMapState(current);
+            EnemyManager::GetInstance().SaveEnemyStates();*/
         }
         };
     collider->OnTriggerExit = [this](Collider* other, int sides) {
@@ -794,8 +793,8 @@ void CheckpointTile::Init() {
 void CrateTile::Init()
 {
     Tile::Init();
-    collider->size.x = 0.6f;
-    collider->size.y = 0.6f;
+    collider->size.x = 0.875f;
+    collider->size.y = 0.875f;
 
     interactionTextBox->text = "[F] Grab";
 
@@ -886,9 +885,9 @@ void CrateTile::Update() {
         }
 
         // only update grabbed side if player is moving fast enough
-        if (grabbedPlayer->rb->velocity.x > 10.0f)
+        if (grabbedPlayer->rb->velocity.x > 1.0f)
             grabbedSide = COLLISION_SIDE::RIGHT;
-        else if (grabbedPlayer->rb->velocity.x < -10.0f)
+        else if (grabbedPlayer->rb->velocity.x < -1.0f)
             grabbedSide = COLLISION_SIDE::LEFT;
 
         // sync crate to player
@@ -906,6 +905,7 @@ void CrateTile::Update() {
         for (Tile* tile : nearbyTiles)
         {
             if (!tile) continue;
+            if (tile == this) continue;
             if (!tile->collider || !tile->collider->canCollide) continue;
             if (dynamic_cast<LeverTile*>(tile)) continue;
 
@@ -982,6 +982,7 @@ void CrateTile::Update() {
             for (Tile* tile : nearbyTiles)
             {
                 if (!tile) continue;
+                if (tile == this) continue;
                 if (!tile->collider || !tile->collider->canCollide) continue;
                 if (dynamic_cast<LeverTile*>(tile)) continue;
 
