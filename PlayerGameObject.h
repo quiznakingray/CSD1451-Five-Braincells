@@ -27,7 +27,7 @@ struct Player : GameObject {
 	RigidBody* rb = nullptr;
 
 
-	int health = 3;
+	int health = 5;
 	
 	//AEVec2 velocity{};
 

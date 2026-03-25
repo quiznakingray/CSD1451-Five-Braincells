@@ -234,7 +234,7 @@ void Player::Init()
 }
 
 void Player::Update(){
-	PlayerInput();
+	//PlayerInput();
 	PlayerAction();
 	PlayerAnimation();
 
@@ -318,10 +318,10 @@ void RangePlayer::Update()
 	f32 LEVEL1PosX, LEVEL1PosY;
 	AEInputGetCursorPosition(&screenX, &screenY);
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
-	worldPosX = screenX + AEGfxGetWinMinX();
-	worldPosY = -(screenY - AEGfxGetWinMaxY());
+	LEVEL1PosX = screenX + AEGfxGetWinMinX();
+	LEVEL1PosY = -(screenY - AEGfxGetWinMaxY());
 	//std::cout << worldPosX << "   " << worldPosY << std::endl;
-	playerLinePos->pos.x = pos.x + (worldPosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
+	playerLinePos->pos.x = pos.x + (LEVEL1PosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
 	aimLinePos->pos.x = LEVEL1PosX;
 	aimLinePos->pos.y = LEVEL1PosY;

@@ -45,26 +45,6 @@ void RenderGraphics() {
 	if (AEInputCheckCurr(AEVK_2))
 		AESysSetFullScreen(0);
 }
-void GameInit()
-{
-	s32 windowWidth = AEGfxGetWindowWidth();
-	s32 windowHeight = AEGfxGetWindowHeight();
-	// Clears game background
-	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-	//mapManager.GetInstance();
-	TextManager::Init();
-
-	mapManager.InitMap("Assets/Maps/Map_Level_01.csv", 0);
-
-	mapManager.PrintMap();
-
-	//mapManager.AddTilesToGameObjectVector(gameObjects);
-
-	//AddGameObjectToVector(player, gameObjects);
-	
-	
-	//InitGameObjects(gameObjects);
-}
 void GameUpdate() {
 	double dt = AEFrameRateControllerGetFrameTime();
 	//UpdateGameObjects(gameObjects);
@@ -101,8 +81,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	printf("Hello LEVEL1\n");
 
-	//GameInit();
-	gameStateManager.Initialize(GAME_STATE_TYPE::LEVEL1);
+	gameStateManager.Initialize(GAME_STATE_TYPE::MENU);
 
 	// Game Loop
 	while (gGameRunning)

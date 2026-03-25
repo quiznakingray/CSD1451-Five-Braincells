@@ -39,20 +39,24 @@ void ParkourLevel::Init()
 		break;
 	}
 	
-	MapManager::GetInstance().PrintMap();
-	MapManager::GetInstance().AddTilesToGameObjectVector(gameObjects1);
+	//MapManager::GetInstance().PrintMap();
 	PlayerManager::GetInstance().Init();
-	if (SaveManager::GetInstance().toContinue &&
+	MapManager::GetInstance().AddTilesToGameObjectVector(levelGameObjectVector);
+	//player->Init();
+	//player1 = new Player();
+	playerManager.Init();
+if (SaveManager::GetInstance().toContinue &&
 		!SaveManager::GetInstance().playerSaveData.preserveOnLoad)
 	{
 		PlayerManager::GetInstance().Load();
 	}
 
-	mapManager1.AddTilesToGameObjectVector(levelGameObjectVector);
+	if (SaveManager::GetInstance().toContinue)
+	{
+		MapManager::GetInstance().LoadMapState();
+		SaveManager::GetInstance().toContinue = false;
+	}
 
-	//player->Init();
-	//player1 = new Player();
-	playerManager.Init();
 	AddGameObjectToVector(playerManager.meleePlayer, levelGameObjectVector);
 	AddGameObjectToVector(playerManager.rangedPlayer, levelGameObjectVector);
 	AddGameObjectToVector(playerManager.rangePlayerArrow, levelGameObjectVector);
@@ -95,6 +99,19 @@ void ParkourLevel::Free()
 	{
 		if (obj )
 			delete obj;
+	}
+	switch (next) {
+	case GAME_STATE_TYPE::LEVEL1:
+	case GAME_STATE_TYPE::LEVEL2:
+		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
+		break;
+	case GAME_STATE_TYPE::LEVEL1BOSS:
+	case GAME_STATE_TYPE::LEVEL2BOSS:
+		SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
+		break;
+	default:
+		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
+		break;
 	}
 	levelGameObjectVector.clear();
 
