@@ -1,4 +1,5 @@
 #include "EnemyManager.h"
+#include "SaveManager.h"
 #include <iostream>
 #include <cstdlib> // For rand
 
@@ -19,6 +20,18 @@ void EnemyManager::RegisterEnemy(EnemyGameObject* enemy) {
 
 AEVec2 EnemyManager::GetPlayerPos() {
     return player ? player->pos : AEVec2{ 0, 0 };
+}
+
+void EnemyManager::SaveEnemyStates()
+{
+    SaveManager::GetInstance().enemySaveData.clear();
+    for (EnemyGameObject* enemy : enemies) {
+        SaveManager::GetInstance().enemySaveData.push_back(enemy->base);
+    }
+}
+
+void EnemyManager::LoadEnemyStates()
+{
 }
 
 void EnemyManager::SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects) {

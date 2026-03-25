@@ -399,7 +399,6 @@ struct HealthPickupTile : Tile {
 			Player* player = dynamic_cast<Player*>(other->owner);
 			if (player)
 			{
-				player->health++;
 				isCurrActive = false;
 			}
 			};

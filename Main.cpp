@@ -81,7 +81,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	printf("Hello LEVEL1\n");
 
-	gameStateManager.Initialize(GAME_STATE_TYPE::MENU);
+	gameStateManager.Initialize(GAME_STATE_TYPE::LEVEL1);
 
 	// Game Loop
 	while (gGameRunning)

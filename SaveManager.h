@@ -8,6 +8,7 @@
 #include <filesystem>
 #include "MapManager.h"
 #include "GameStateManager.h"
+#include "EnemyBase.h"
 
 struct PlayerSaveData {
 	AEVec2 meleePos{};
@@ -36,6 +37,7 @@ struct SaveManager : public Singleton<SaveManager>
 {
     PlayerSaveData playerSaveData;
     MapSaveData mapSaveData;
+    std::vector<EnemyBase> enemySaveData;
     bool toContinue = false;
 
     void SavePlayerData(AEVec2 meleePos, AEVec2 rangedPos);
@@ -47,4 +49,3 @@ struct SaveManager : public Singleton<SaveManager>
     void ResetSave();
 };
 #endif
-
