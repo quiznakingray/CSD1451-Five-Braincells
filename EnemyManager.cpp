@@ -2,8 +2,6 @@
 #include <iostream>
 #include <cstdlib> // For rand
 
-std::vector<EnemyGameObject*> EnemyManager::enemies;
-Player* EnemyManager::player = nullptr;
 extern MapManager mapManager;
 
 void EnemyManager::Init(Player* p) {

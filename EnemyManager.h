@@ -4,28 +4,31 @@
 #include "AEEngine.h"
 #include "EnemyGameObject.h"
 #include "MapManager.h"
+#include "SingletonTemplate.h"
 #include <vector>
 
-struct EnemyManager {
+struct EnemyManager : public Singleton<EnemyManager> {
 private:
-    static std::vector<EnemyGameObject*> enemies;
-    static Player* player;
+    friend class Singleton<EnemyManager>;
+
+    std::vector<EnemyGameObject*> enemies;
+    Player* player;
 
 public:
-    static void Init(Player* p);
+    void Init(Player* p);
 
-    static void RegisterEnemy(EnemyGameObject* enemy);
+    void RegisterEnemy(EnemyGameObject* enemy);
 
-    static void SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects);
+    void SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects);
 
-    static void UpdateAllEnemies(f32 dt);
+    void UpdateAllEnemies(f32 dt);
 
-    static void RenderEnemies();
+    void RenderEnemies();
 
-    static AEVec2 GetPlayerPos();
+    AEVec2 GetPlayerPos();
 
     // Getter for rendering
-    static const std::vector<EnemyGameObject*>& GetEnemies() { return enemies; }
+    const std::vector<EnemyGameObject*>& GetEnemies() { return enemies; }
 };
 
 #endif
