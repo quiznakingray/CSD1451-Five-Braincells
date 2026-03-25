@@ -4,12 +4,12 @@
 #include "SaveManager.h"
 #include "EnemyGameObject.h"
 #include "PlayerManager.h"
-#include "GameStateManager.h"
+#include "EnemyManager.h"
 
 //Player* player1 = nullptr;
-EnemyGameObject* enemy1 = nullptr;
+PlayerManager playerManager;
 
-std::vector<GameObject*> gameObjects1{};
+std::vector<GameObject*> levelGameObjectVector{};
 
 void ParkourLevel::Load()
 {
@@ -48,27 +48,27 @@ void ParkourLevel::Init()
 		PlayerManager::GetInstance().Load();
 	}
 
-	if (SaveManager::GetInstance().toContinue)
-	{
-		MapManager::GetInstance().LoadMapState();
-		SaveManager::GetInstance().toContinue = false;
-	}
+	mapManager1.AddTilesToGameObjectVector(levelGameObjectVector);
+
 	//player->Init();
 	//player1 = new Player();
-	//playerManager.Load();
-	//enemy1 = new EnemyGameObject();
-	AddGameObjectToVector(PlayerManager::GetInstance().meleePlayer, gameObjects1);
-	AddGameObjectToVector(PlayerManager::GetInstance().rangedPlayer, gameObjects1);
-	AddGameObjectToVector(PlayerManager::GetInstance().rangePlayerArrow, gameObjects1);
-	//AddGameObjectToVector(enemy1, gameObjects1);
-	InitGameObjects(gameObjects1);
+	playerManager.Init();
+	AddGameObjectToVector(playerManager.meleePlayer, levelGameObjectVector);
+	AddGameObjectToVector(playerManager.rangedPlayer, levelGameObjectVector);
+	AddGameObjectToVector(playerManager.rangePlayerArrow, levelGameObjectVector);
+	EnemyManager::Init(playerManager.currentPlayer);
+	EnemyManager::SpawnEnemies(5, 1, levelGameObjectVector);
+
+	InitGameObjects(levelGameObjectVector);
+	
 }
 
 void ParkourLevel::Update()
 {
 	double dt = AEFrameRateControllerGetFrameTime();
-	PlayerManager::GetInstance().Update();
-	UpdateGameObjects(gameObjects1);
+	playerManager.Update();
+	UpdateGameObjects(levelGameObjectVector);
+	EnemyManager::UpdateAllEnemies(dt);
 }
 
 void ParkourLevel::Render()
@@ -78,7 +78,10 @@ void ParkourLevel::Render()
 	MapManager::GetInstance().DrawMapSprite();
 
 	//player1->Render();
-	PlayerManager::GetInstance().Render();
+	playerManager.Render();
+	EnemyManager::RenderEnemies();
+	// enemy1->Render();
+	// player1->Render();
 	//enemy1->Render();
 
 }
@@ -88,25 +91,12 @@ void ParkourLevel::Free()
 	//playerManager.Save();
 
 	// Clean up game objects
-	for (auto* obj : gameObjects1)
+	for (auto* obj : levelGameObjectVector)
 	{
 		if (obj )
 			delete obj;
 	}
-	gameObjects1.clear();
-	switch (next) {
-	case GAME_STATE_TYPE::LEVEL1:
-	case GAME_STATE_TYPE::LEVEL2:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-		break;
-	case GAME_STATE_TYPE::LEVEL1BOSS:
-	case GAME_STATE_TYPE::LEVEL2BOSS:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-		break;
-	default:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-		break;
-	}
+	levelGameObjectVector.clear();
 
 	//// Clean up player1
 	//if (player1)

@@ -106,10 +106,12 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="EnemyBase.cpp" />
     <ClCompile Include="EnemyCombat.cpp" />
     <ClCompile Include="EnemyGameObject.cpp" />
+    <ClCompile Include="EnemyManager.cpp" />
     <ClCompile Include="EnemyMovement.cpp" />
     <ClCompile Include="GameObjectManager.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="Helper.cpp" />
+    <ClCompile Include="HUD.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainMenu.cpp" />
@@ -136,10 +138,12 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="EnemyBase.h" />
     <ClInclude Include="EnemyCombat.h" />
     <ClInclude Include="EnemyGameObject.h" />
+    <ClInclude Include="EnemyManager.h" />
     <ClInclude Include="EnemyMovement.h" />
     <ClInclude Include="GameObjectManager.h" />
     <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="HUD.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Library\rapidcsv.h" />
     <ClInclude Include="MainMenu.h" />
