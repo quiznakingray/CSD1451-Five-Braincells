@@ -9,10 +9,9 @@ void SaveManager::SavePlayerData(AEVec2 meleePos, AEVec2 rangedPos)
     playerSaveData.rangedPos = rangedPos;
     playerSaveData.hasSavedData = true;
 
-    std::string path = GetSavePath("playerSave.dat");
-    std::cout << "Saving to: " << path << '\n';
+    std::cout << "Saving to: " << "Assets/Saves/playerSave.dat" << '\n';
 
-    std::ofstream file(path, std::ios::binary);
+    std::ofstream file("Assets/Saves/playerSave.dat", std::ios::binary);
     if (file.is_open())
     {
         file.write(reinterpret_cast<char*>(&playerSaveData), sizeof(PlayerSaveData));
@@ -21,16 +20,15 @@ void SaveManager::SavePlayerData(AEVec2 meleePos, AEVec2 rangedPos)
     }
     else
     {
-        std::cout << "Failed to save to: " << path << '\n';
+        std::cout << "Failed to save to: " << "Assets/Saves/playerSave.dat" << '\n';
     }
 }
 
 void SaveManager::LoadPlayerData()
 {
-    std::string path = GetSavePath("playerSave.dat");
-    std::cout << "Loading from: " << path << '\n';
+    std::cout << "Loading from: " << "Assets/Saves/playerSave.dat" << '\n';
 
-    std::ifstream file(path, std::ios::binary);
+    std::ifstream file("Assets/Saves/playerSave.dat", std::ios::binary);
     if (file.is_open())
     {
         file.read(reinterpret_cast<char*>(&playerSaveData), sizeof(PlayerSaveData));
@@ -39,7 +37,7 @@ void SaveManager::LoadPlayerData()
     }
     else
     {
-        std::cout << "No save file found at: " << path << '\n';
+        std::cout << "No save file found at: " <<  "Assets/Saves/playerSave.dat" << '\n';
     }
 }
 
@@ -50,8 +48,7 @@ void SaveManager::SetPreservePlayerOnLoad(bool preserve)
 
 void SaveManager::SaveMapData()
 {
-    std::string path = GetSavePath("mapSave.dat");
-    std::ofstream file(path, std::ios::binary);
+    std::ofstream file("Assets/Saves/mapSave.dat", std::ios::binary);
     if (file.is_open())
     {
         size_t count = mapSaveData.tileStates.size();
@@ -67,8 +64,7 @@ void SaveManager::SaveMapData()
 
 void SaveManager::LoadMapData()
 {
-    std::string path = GetSavePath("mapSave.dat");
-    std::ifstream file(path, std::ios::binary);
+    std::ifstream file("Assets/Saves/mapSave.dat", std::ios::binary);
     if (file.is_open())
     {
         size_t count = 0;
@@ -85,7 +81,8 @@ void SaveManager::LoadMapData()
 
 bool SaveManager::HasSaveData()
 {
-    return mapSaveData.hasSavedData;
+    std::ifstream file("Assets/Saves/playerSave.dat");
+    return file.is_open();
 }
 
 void SaveManager::ResetSave()
@@ -93,7 +90,7 @@ void SaveManager::ResetSave()
     playerSaveData = PlayerSaveData{};
     mapSaveData = MapSaveData{};
     toContinue = false;
-    remove(GetSavePath("playerSave.dat").c_str());
-    remove(GetSavePath("mapSave.dat").c_str());
+    remove("Assets/Saves/playerSave.dat");
+    remove("Assets/Saves/mapSave.dat");
     std::cout << "Save data reset\n";
 }

@@ -5,6 +5,7 @@
 #include "SingletonTemplate.h"
 #include <direct.h>
 #include <string>
+#include <filesystem>
 #include "MapManager.h"
 #include "GameStateManager.h"
 
@@ -44,14 +45,6 @@ struct SaveManager : public Singleton<SaveManager>
     void LoadMapData();
     bool HasSaveData();
     void ResetSave();
-
-private:
-    std::string GetSavePath(const std::string& fileName)
-    {
-        char cwd[256];
-        _getcwd(cwd, sizeof(cwd));
-        return std::string(cwd) + "/Assets/Saves/" + fileName;
-    }
 };
 #endif
 
