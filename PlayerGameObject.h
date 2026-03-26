@@ -4,6 +4,7 @@
 #include "GameObjectManager.h"
 #include "PhysicsManager.h"
 #include "AnimatorComponent.h"
+#include "ParticleEffects.h"
 
 enum class PLAYER_ACTION {
 	IDLE,
@@ -92,10 +93,13 @@ struct RangePlayer : Player {
 
 	float arrowTimer = 0.0f; // no. of seconds since last shot
 	bool aiming = false;
+
+	std::vector<Particle> particlePool;
 	void Init() override;
 	void Update() override;
 
 	void PlayerInput() override;
+	//void Render() override;
 	void PlayerAction() override;
 	Animation* PlayerAnimation() override;
 
@@ -109,8 +113,11 @@ struct Arrow : GameObject {
 	f32 lifetime = 5.f;
 	int damage = 10;
 	bool isEnemyProjectile = false;
+
+	std::vector<Particle> particlePool;
 	void Init() override;
 	void Update() override;
+	void Render() override;
 	void ShootArrow(AEVec2 startPos, AEVec2 dir);
 };
 

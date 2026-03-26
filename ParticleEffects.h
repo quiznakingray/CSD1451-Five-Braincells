@@ -16,16 +16,16 @@ struct Particle {
 
 class ParticleSystem {
 public:
-    static void Init(u32 maxParticles);
-    static void CreateBloodEffect(f32 x, f32 y); // Orange blood
-    static void CreateArrowTrail(f32 x, f32 y, AEVec2 direction);
+    static void Init(u32 maxParticles, std::vector<Particle>& particlePool);
+    static void CreateBloodEffect(f32 x, f32 y, std::vector<Particle>& particlePool); // Orange blood
+    static void CreateArrowTrail(f32 x, f32 y, AEVec2 direction, std::vector<Particle>& particlePool);
 
-    static void Update(f32 dt);
-    static void Draw();
+    static void Update(f32 dt, std::vector<Particle>& particlePool);
+    static void Draw(std::vector<Particle>& particlePool);
     static void Exit();
 
 private:
-    static std::vector<Particle> particlePool;
+    //static std::vector<Particle> particlePool;
     static AEGfxVertexList* pParticleMesh;
 };
 

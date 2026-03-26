@@ -554,6 +554,9 @@ void RangePlayer::Init()
 	line->linePoints.push_back(playerLinePos);
 	line->linePoints.push_back(aimLinePos);
 
+	// init particle pool
+	//ParticleSystem::Init(5, particlePool);
+
 	Player::Init();
 }
 
@@ -577,8 +580,17 @@ void RangePlayer::Update()
 	aimLinePos->pos.y = worldPosY;
 	aimingAnim->sprite->size.x =
 		fabs(runningAnim->sprite->size.x) * (worldPosX < pos.x ? -1 : 1);
+
+	//ParticleSystem::CreateBloodEffect(pos.x, pos.y + 100, particlePool);
+	//ParticleSystem::Update(dt, particlePool);
 	Player::Update();
 }
+
+//void RangePlayer::Render()
+//{
+//	ParticleSystem::Draw(particlePool); // paticles
+//	Player::Render(); // parent function
+//}
 
 void RangePlayer::PlayerInput()
 {
@@ -681,6 +693,9 @@ void Arrow::Init()
 	rb->type = RIGIDBODY_TYPE::KINEMATIC;
 	rb->hasGravity = false;
 	isActive = false;
+
+	ParticleSystem::Init(5, particlePool);
+
 	isEnemyProjectile = false;
 	damage = 1;
 	GameObject::Init();
@@ -691,8 +706,6 @@ void Arrow::Update()
 	GameObject::Update();
 	if (isActive)
 	{
-		// Spawn arrow particles/trails at the current arrow position
-		ParticleSystem::CreateArrowTrail(pos.x, pos.y, rb->velocity);
 		
 		double dt = AEFrameRateControllerGetFrameTime();
 		timer += static_cast<f32>(dt);
@@ -701,7 +714,27 @@ void Arrow::Update()
 			isActive = false;
 			timer = 0.0f;
 		}
+
+		AEVec2 dir;
+		AEVec2Normalize(&dir, &rb->velocity);
+
+		// Offset behind arrow (negative direction)
+		float tailOffsetX = -dir.x * scale.x / 2.f;
+		float tailOffsetY = -dir.y * scale.y / 2.f;
+
+		ParticleSystem::CreateArrowTrail(
+			pos.x + tailOffsetX,
+			pos.y + tailOffsetY,
+			rb->velocity, particlePool);
+
+		ParticleSystem::Update(dt, particlePool);
 	}
+}
+
+void Arrow::Render()
+{
+	if (isActive) ParticleSystem::Draw(particlePool);
+	GameObject::Render();
 }
 
 void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir)
