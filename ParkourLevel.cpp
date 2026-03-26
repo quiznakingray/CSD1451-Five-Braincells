@@ -45,8 +45,11 @@ void ParkourLevel::Init()
 	AddGameObjectToVector(PlayerManager::GetInstance().rangedPlayer, levelGameObjectVector);
 	AddGameObjectToVector(PlayerManager::GetInstance().rangePlayerArrow, levelGameObjectVector);
 
-	EnemyManager::Init(PlayerManager::GetInstance().currentPlayer);
-	EnemyManager::SpawnEnemies(5, 1, levelGameObjectVector);
+	AddGameObjectToVector(playerManager.meleePlayer, levelGameObjectVector);
+	AddGameObjectToVector(playerManager.rangedPlayer, levelGameObjectVector);
+	AddGameObjectToVector(playerManager.rangePlayerArrow, levelGameObjectVector);
+	EnemyManager::GetInstance().Init(playerManager.currentPlayer);
+	EnemyManager::GetInstance().SpawnEnemies(5, 1, levelGameObjectVector);
 
 	InitGameObjects(levelGameObjectVector);
 
@@ -66,7 +69,7 @@ void ParkourLevel::Update()
 	double dt = AEFrameRateControllerGetFrameTime();
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
-	EnemyManager::UpdateAllEnemies(dt);
+	EnemyManager::GetInstance().UpdateAllEnemies(dt);
 }
 
 void ParkourLevel::Render()
@@ -75,8 +78,8 @@ void ParkourLevel::Render()
 	MapManager::GetInstance().DrawMapSprite();
 
 	//player1->Render();
-	PlayerManager::GetInstance().Render();
-	EnemyManager::RenderEnemies();
+	playerManager.Render();
+	EnemyManager::GetInstance().RenderEnemies();
 	// enemy1->Render();
 	// player1->Render();
 	//enemy1->Render();

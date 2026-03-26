@@ -1,6 +1,6 @@
-#include "MainMenu.h" // Ensure this file exists in your project folder
+﻿#include "MainMenu.h" // Ensure this file exists in your project folder
 #include "GameStateManager.h"
-#include "AEEngine.h"
+#include "AudioMenu.h"
 #include <vector>
 #include <string> // For strcmp
 //#include <iostream>
@@ -12,6 +12,10 @@
 extern int gGameRunning; 
 static s8 menuFont;
 static AEGfxVertexList* pRectMesh;
+
+static bool isAudioMenuOpen = false;
+static AudioMenu audioMenu;
+
 struct Button {
     const char* text;
     f32 yPos;
@@ -57,11 +61,31 @@ void MainMenu_Init() {
     for (auto& btn : buttons) {
         AEGfxGetPrintSize(menuFont, btn.text, 1.0f, &btn.w, &btn.h);
     }
+
+    audioMenu.Init(); // initialize audio panel
+
+    // Initialize audio manager
+    AudioManager::Init();
+    AudioManager::PlayMusic("menu_bgm"); // play bgm
 }
 
 void MainMenu_Update() {
     s32 mX, mY;
     AEInputGetCursorPosition(&mX, &mY);
+
+    // Checks if audio panel is open
+    if (isAudioMenuOpen)
+    {
+        audioMenu.Update();
+
+        // Escape button closes audio panel
+        if (AEInputCheckTriggered(AEVK_ESCAPE))
+        {
+            isAudioMenuOpen = false;
+        }
+        return; // stop main menu interaction when audio panel is open
+    }
+
     // Get current dimensions dynamically
     f32 halfWidth = AEGfxGetWindowWidth() / 2.0f;
     f32 halfHeight = AEGfxGetWindowHeight() / 2.0f;
@@ -90,6 +114,12 @@ void MainMenu_Update() {
                 }
             }
             if (strcmp(btn.text, "EXIT") == 0) gGameRunning = 0;
+
+            // Checks if settings button is clicked
+            if (strcmp(btn.text, "SETTINGS") == 0)
+            {
+                isAudioMenuOpen = true; // open audio panel
+            }
         }
     }
 }
@@ -100,6 +130,13 @@ void MainMenu_Draw() {
     // Draw Title: Separated at the top
     // AEGfxPrint takes 9 arguments: font, text, x, y, scale, r, g, b, a
     AEGfxPrint(menuFont, "DUNGEON AND PUZZLE", -0.55f, 0.6f, 1.5f, 1.0f, 0.8f, 0.0f, 1.0f);
+
+    // Checks if audio panel is open
+    if (isAudioMenuOpen)
+    {
+        audioMenu.Render(); // renders audio panel
+        return;
+    }
 
     // Draw Buttons: Centralized and equally separated
     for (const auto& btn : buttons) {
@@ -130,4 +167,6 @@ void MainMenu_Draw() {
 void MainMenu_Free() {
     AEGfxDestroyFont(menuFont);
     AEGfxMeshFree(pRectMesh);
+
+    audioMenu.Free(); // free audio panel
 }
