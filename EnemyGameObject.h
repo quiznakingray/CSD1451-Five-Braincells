@@ -5,12 +5,15 @@
 #include "EnemyBase.h"
 #include "EnemyMovement.h"
 #include "PhysicsManager.h"
+#include "ParticleEffects.h"
 struct EnemyGameObject : GameObject
 {
 	EnemyBase base{};
 	EnemyMovement movement{};
 
 	RigidBody* rb = nullptr;
+
+	std::vector<Particle> particlePool;
 
 	void Init() override;
 	void Update() override;

@@ -4,6 +4,7 @@
 #include "GameObjectManager.h"
 #include "PhysicsManager.h"
 #include "AnimatorComponent.h"
+#include "ParticleEffects.h"
 
 enum class PlayerAction {
 	IDLE,
@@ -56,9 +57,10 @@ struct RangePlayer : Player {
 	Sprite::LinePoint* playerLinePos = nullptr;
 	Sprite::LinePoint* aimLinePos = nullptr;
 
+	std::vector<Particle> particlePool;
 	void Init() override;
 	void Update() override;
-
+	//void Render() override;
 	void PlayerAction() override;
 };
 
@@ -68,6 +70,8 @@ struct Arrow : GameObject {
 	f32 speed = 500.f;
 	f32 timer = 0.0f;
 	f32 lifetime = 5.f;
+
+	std::vector<Particle> particlePool;
 	void Init() override;
 	void Update() override;
 	void Render() override;

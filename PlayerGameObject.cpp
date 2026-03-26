@@ -310,11 +310,15 @@ void RangePlayer::Init()
 	line->linePoints.push_back(playerLinePos);
 	line->linePoints.push_back(aimLinePos);
 
+	// init particle pool
+	//ParticleSystem::Init(5, particlePool);
+
 	Player::Init();
 }
 
 void RangePlayer::Update()
 {
+	double dt = AEFrameRateControllerGetFrameTime();
 	s32 screenX, screenY;
 	//f32 camPosX, camPosY;
 	f32 worldPosX, worldPosY;
@@ -327,8 +331,17 @@ void RangePlayer::Update()
 	playerLinePos->pos.y = pos.y;
 	aimLinePos->pos.x = worldPosX;
 	aimLinePos->pos.y = worldPosY;
+
+	//ParticleSystem::CreateBloodEffect(pos.x, pos.y + 100, particlePool);
+	//ParticleSystem::Update(dt, particlePool);
 	Player::Update();
 }
+
+//void RangePlayer::Render()
+//{
+//	ParticleSystem::Draw(particlePool); // paticles
+//	Player::Render(); // parent function
+//}
 
 void RangePlayer::PlayerAction()
 {
@@ -390,8 +403,7 @@ void Arrow::Init()
 	rb->hasGravity = false;
 	isActive = false;
 
-	ParticleSystem::Init(5);
-	ParticleSystem::CreateArrowTrail(pos.x, pos.y, rb->velocity);
+	ParticleSystem::Init(5, particlePool);
 
 	GameObject::Init();
 }
@@ -411,13 +423,14 @@ void Arrow::Update()
 			timer = 0.0f;
 		}
 
-		ParticleSystem::Update(dt);
+		ParticleSystem::CreateArrowTrail(pos.x, pos.y, rb->velocity, particlePool);
+		ParticleSystem::Update(dt, particlePool);
 	}
 }
 
 void Arrow::Render()
 {
-	ParticleSystem::Draw();
+	if (isActive) ParticleSystem::Draw(particlePool);
 	GameObject::Render();
 }
 

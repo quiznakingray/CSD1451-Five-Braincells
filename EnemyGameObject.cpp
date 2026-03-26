@@ -36,7 +36,7 @@ void EnemyGameObject::Init()
 			if (Arrow* arrow = dynamic_cast<Arrow*>(other->owner))
 			{
 				// Trigger the effect at the enemy's current position
-				ParticleSystem::CreateBloodEffect(pos.x, pos.y);
+				ParticleSystem::CreateBloodEffect(pos.x, pos.y, particlePool);
 
 				base.stats.health -= 10;
 				std::cout << "Enemy hit! Health: " << base.stats.health << std::endl;

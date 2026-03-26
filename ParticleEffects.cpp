@@ -1,10 +1,10 @@
 #include "ParticleEffects.h"
 #include "PlayerManager.h"
 
-std::vector<Particle> ParticleSystem::particlePool;
+//std::vector<Particle> ParticleSystem::particlePool;
 AEGfxVertexList* ParticleSystem::pParticleMesh = nullptr;
 
-void ParticleSystem::Init(u32 maxParticles) {
+void ParticleSystem::Init(u32 maxParticles, std::vector<Particle>&particlePool) {
     particlePool.resize(maxParticles);
 
     // Create a simple square mesh for particles
@@ -18,7 +18,7 @@ void ParticleSystem::Init(u32 maxParticles) {
     pParticleMesh = AEGfxMeshEnd();
 }
 
-void ParticleSystem::CreateBloodEffect(f32 x, f32 y) {
+void ParticleSystem::CreateBloodEffect(f32 x, f32 y, std::vector<Particle>& particlePool) {
     int count = 0;
     for (auto& p : particlePool) {
         if (!p.active) {
@@ -39,7 +39,7 @@ void ParticleSystem::CreateBloodEffect(f32 x, f32 y) {
     }
 }
 
-void ParticleSystem::CreateArrowTrail(f32 x, f32 y, AEVec2 direction) {
+void ParticleSystem::CreateArrowTrail(f32 x, f32 y, AEVec2 direction, std::vector<Particle>& particlePool) {
     for (auto& p : particlePool) {
         if (!p.active) {
             p.active = true;
@@ -56,7 +56,7 @@ void ParticleSystem::CreateArrowTrail(f32 x, f32 y, AEVec2 direction) {
     }
 }
 
-void ParticleSystem::Update(f32 dt) {
+void ParticleSystem::Update(f32 dt,std::vector<Particle>& particlePool) {
     for (auto& p : particlePool) {
         if (p.active) {
             p.pos.x += p.vel.x * dt;
@@ -68,7 +68,7 @@ void ParticleSystem::Update(f32 dt) {
     }
 }
 
-void ParticleSystem::Draw() {
+void ParticleSystem::Draw(std::vector<Particle>& particlePool) {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
     
@@ -76,7 +76,7 @@ void ParticleSystem::Draw() {
     for (auto& p : particlePool) {
         if (p.active) {
             AEMtx33 scale, trans, res;
-            f32 size = (p.lifespan / p.maxLifespan) * 8.0f;
+            f32 size = (p.lifespan / p.maxLifespan) * 100.0f;
 
             AEMtx33Scale(&scale, size, size);
 
