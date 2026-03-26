@@ -70,6 +70,7 @@ struct Arrow : GameObject {
 	f32 lifetime = 5.f;
 	void Init() override;
 	void Update() override;
+	void Render() override;
 	void ShootArrow(AEVec2 startPos , AEVec2 dir);
 };
 #endif // ! PLAYER_GAME_OBJECT_H

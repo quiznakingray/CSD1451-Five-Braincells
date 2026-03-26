@@ -381,7 +381,7 @@ void Arrow::Init()
 			}
 		};
 	c->isTrigger = true;
-	showColliders = true;
+	showColliders = false;
 
 	rb = AddComponent(
 		new RigidBody()
@@ -389,6 +389,10 @@ void Arrow::Init()
 	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 	rb->hasGravity = false;
 	isActive = false;
+
+	ParticleSystem::Init(5);
+	ParticleSystem::CreateArrowTrail(pos.x, pos.y, rb->velocity);
+
 	GameObject::Init();
 }
 
@@ -398,7 +402,6 @@ void Arrow::Update()
 	if (isActive)
 	{
 		// Spawn arrow particles/trails at the current arrow position
-		ParticleSystem::CreateArrowTrail(pos.x, pos.y, rb->velocity);
 		
 		double dt = AEFrameRateControllerGetFrameTime();
 		timer += dt;
@@ -407,7 +410,15 @@ void Arrow::Update()
 			isActive = false;
 			timer = 0.0f;
 		}
+
+		ParticleSystem::Update(dt);
 	}
+}
+
+void Arrow::Render()
+{
+	ParticleSystem::Draw();
+	GameObject::Render();
 }
 
 void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir)

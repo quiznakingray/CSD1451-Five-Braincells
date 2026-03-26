@@ -71,8 +71,7 @@ void ParticleSystem::Update(f32 dt) {
 void ParticleSystem::Draw() {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-    // Get the camera position so particles stay in the game world
-    AEVec2 camPos = PlayerManager::camPos;
+    
 
     for (auto& p : particlePool) {
         if (p.active) {
@@ -82,7 +81,7 @@ void ParticleSystem::Draw() {
             AEMtx33Scale(&scale, size, size);
 
             // SUBTRACT camPos here so particles move correctly with the level
-            AEMtx33Trans(&trans, p.pos.x - camPos.x, p.pos.y - camPos.y);
+            AEMtx33Trans(&trans, p.pos.x , p.pos.y );
 
             AEMtx33Concat(&res, &trans, &scale);
 
