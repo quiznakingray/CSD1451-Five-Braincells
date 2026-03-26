@@ -6,10 +6,10 @@
 // player structure
 struct PlayerStats {
     f32 speed;
-    s32 health;
-    s32 maxhealth;
-    s32 attack;
-    const char* playername;
+    f32 health;
+    f32 maxhealth;
+    s32 attack; // not in use yet, enemies taking flat 5 damage from attack for now. 
+    const char* name;
 };
 
 // abilities

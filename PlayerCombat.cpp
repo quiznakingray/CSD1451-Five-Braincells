@@ -1,6 +1,10 @@
 #include "AEEngine.h"
 #include "PlayerCombat.h"
 #include "GameStateManager.h"
+#include "EnemyCombat.h"
+
+//global enemy instance
+EnemyStats enemyStats;
 
 // consts
 const float WINDOW_WIDTH = 1600.0f;
@@ -84,11 +88,21 @@ void GameStateLoad() {
 
 void GameStateInit() {
 
-    // init playerStats
-    playerStats.health = 100.0f;
+    // init player stats
+    playerStats.health = 30.0f;
+    playerStats.maxhealth = 30.0f;
+	playerStats.name = "Player";
     playerStats.speed = 50.0f;
-    playerStats.attack = 100.0f;
+    //playerStats.attack = 100.0f;
 
+    // init enemy stats
+    enemyStats.health = 30.0f;
+    enemyStats.maxHealth = 30.0f;
+    enemyStats.name = "Enemy";
+    enemyStats.speed = 40.0f; // tweak this and player speed to test turn order
+    //enemyStats.attack = 8;
+
+    // init abilities (2x2 grid)
     // init abilities (2x2 grid)
     float buttonWidth = 350.0f;
     float buttonHeight = 100.0f;
@@ -172,12 +186,15 @@ void GameStateUpdate() {
             // check for click
             if (abilities[i].isHovered && AEInputCheckTriggered(AEVK_LBUTTON)) {
                 selectedAbility = i;
+                if (i == 0 && !IsEnemyDead(enemyStats)) {
+                    TurnOrder(enemyStats, playerStats, 5);
+                }
             }
-        }
-        else {
-            abilities[i].isHovered = false;
-        }
-    }
+
+            // [DEV] Spacebar = instant kill
+            if (AEInputCheckTriggered(AEVK_SPACE)) {
+                InstantKill(enemyStats);
+            }
 
     if (AEInputCheckTriggered(AEVK_M))
     {
@@ -234,38 +251,43 @@ void GameStateDraw() {
 
     AEMtx33 scale, trans, transform;
 
-    // Draw ground
+    // draww ground
     AEGfxVertexList* groundMesh = CreateColoredSquareMesh(WINDOW_WIDTH, 300, 0.56f, 0.93f, 0.56f, 1.0f);
     AEMtx33Trans(&trans, 0, -200);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(groundMesh, AE_GFX_MDM_TRIANGLES);
     AEGfxMeshFree(groundMesh);
 
-    // Draw playerStats (blue circle)
+    // draw playerStats (blue circle)
     AEGfxVertexList* playerStatssprite = CreateCircleMesh(50, 32, 0.3f, 0.69f, 1.0f, 1.0f);
     AEMtx33Trans(&trans, -400.0f, 50.0f);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(playerStatssprite, AE_GFX_MDM_TRIANGLES);
     AEGfxMeshFree(playerStatssprite);
 
-    // Draw enemy (red circle)
+    // draw enemy (red circle)
     AEGfxVertexList* enemySprite = CreateCircleMesh(60, 32, 1.0f, 0.42f, 0.44f, 1.0f);
     AEMtx33Trans(&trans, 400.0f, 200.0f);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(enemySprite, AE_GFX_MDM_TRIANGLES);
     AEGfxMeshFree(enemySprite);
 
-    // health bar
-    drawHealthBar(450, -100, playerStats.health, playerStats.maxhealth, playerStats.playername, false);
+    // enemy health bar 
+    drawHealthBar(450, 200, (float)enemyStats.health, (float)enemyStats.maxHealth,
+        enemyStats.name, true);
 
-    // Draw UI panel (dark gray background)
+    // player health bar
+    drawHealthBar(-450, -100, playerStats.health, playerStats.maxhealth,
+        playerStats.name, false);
+
+    // draw UI panel (dark gray)
     AEGfxVertexList* uiPanelMesh = CreateColoredSquareMesh(WINDOW_WIDTH, 360, 0.18f, 0.22f, 0.28f, 1.0f);
     AEMtx33Trans(&trans, 0, -270);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(uiPanelMesh, AE_GFX_MDM_TRIANGLES);
     AEGfxMeshFree(uiPanelMesh);
 
-    // Draw ability buttons
+    // draw ability buttons
     for (int i = 0; i < 4; i++) {
         float brightness = (abilities[i].isEnabled && abilities[i].isHovered) ? 1.2f : 1.0f;
         float opacity = abilities[i].isEnabled ? 1.0f : 0.5f;
@@ -274,7 +296,7 @@ void GameStateDraw() {
         float g = AEMin(abilities[i].g * brightness, 1.0f);
         float b = AEMin(abilities[i].b * brightness, 1.0f);
 
-        // Button border (darker)
+        // button border 
         AEGfxVertexList* borderMesh = CreateColoredSquareMesh(
             abilities[i].width + 4, abilities[i].height + 4,
             r * 0.7f, g * 0.7f, b * 0.7f, opacity);
@@ -283,7 +305,7 @@ void GameStateDraw() {
         AEGfxMeshDraw(borderMesh, AE_GFX_MDM_TRIANGLES);
         AEGfxMeshFree(borderMesh);
 
-        // Button background
+        // button background
         AEGfxVertexList* buttonMesh = CreateColoredSquareMesh(
             abilities[i].width, abilities[i].height, r, g, b, opacity);
         AEMtx33Trans(&trans, abilities[i].x, abilities[i].y);
