@@ -9,6 +9,7 @@ enum class PlayerAction {
 	IDLE,
 	RUNNING,
 	JUMPING,
+	CRATEINTERACT,
 	ATTACKING,
 	AIMING,
 };
@@ -25,6 +26,9 @@ struct Player : GameObject {
 
 	RigidBody* rb = nullptr;
 
+
+	int health = 5;
+	
 	//AEVec2 velocity{};
 
 	// animation
@@ -32,12 +36,13 @@ struct Player : GameObject {
 	Animation* idleAnim = nullptr;
 	Animation* runningAnim = nullptr;
 
+	PlayerAction currentAction = PlayerAction::IDLE;
+	PlayerAction prevAction = PlayerAction::IDLE;
+
 	void Init() override;
 	void Update() override;
 
 	void PlayerInput();
-	PlayerAction currentAction = PlayerAction::IDLE;
-
 	virtual void PlayerAction();
 private:
 

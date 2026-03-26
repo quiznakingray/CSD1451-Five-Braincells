@@ -1,4 +1,5 @@
 #include "PhysicsManager.h"
+#include "MapManager.h"
 #include "GameObjectManager.h"
 #include <iostream>
 
@@ -23,10 +24,19 @@ void PhysicsManager::UpdateRigidBody(RigidBody* rb, f32 dt)
 void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 {
     if (!a || !b) return;
-
     GameObject* A = a->owner;
     GameObject* B = b->owner;
     if (!A || !B) return;
+
+    // skip player-crate resolution when grabbing
+    CrateTile* crateA = dynamic_cast<CrateTile*>(A);
+    CrateTile* crateB = dynamic_cast<CrateTile*>(B);
+    Player* playerA = dynamic_cast<Player*>(A);
+    Player* playerB = dynamic_cast<Player*>(B);
+
+    if ((crateA && crateA->pushState && playerB) ||
+        (crateB && crateB->pushState && playerA))
+        return;
 
     RigidBody* ra = A->GetComponent<RigidBody>();
     RigidBody* rb = B->GetComponent<RigidBody>();

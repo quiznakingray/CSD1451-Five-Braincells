@@ -8,7 +8,7 @@ struct Text : ComponentBase {
 	AEVec2 center{};
 	AEVec2 size{};
 
-	bool inWorldSpace = false;
+	bool inLEVEL1Space = false;
 	const char * text{};
 
 	void Render() override;

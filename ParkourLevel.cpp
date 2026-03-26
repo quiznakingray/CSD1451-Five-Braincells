@@ -1,6 +1,7 @@
 #include "ParkourLevel.h"
 #include "GameObjectManager.h"
 #include "MapManager.h"
+#include "SaveManager.h"
 #include "EnemyGameObject.h"
 #include "PlayerManager.h"
 #include "EnemyManager.h"
@@ -9,8 +10,6 @@
 PlayerManager playerManager;
 
 std::vector<GameObject*> levelGameObjectVector{};
-
-MapManager mapManager1;
 
 void ParkourLevel::Load()
 {
@@ -22,15 +21,42 @@ void ParkourLevel::Init()
 	// Clears game background
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 
-	mapManager1.InitMap("Assets/Maps/Map_Level_01.csv", 0);
-	mapManager1.PrintMap();
+	switch (current) {
+	case GAME_STATE_TYPE::LEVEL1:
+		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", 0);
+		break;
+	case GAME_STATE_TYPE::LEVEL1BOSS:
+		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01b.csv", 0);
+		break;
+	case GAME_STATE_TYPE::LEVEL2:
+		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_02.csv", 1);
+		break;
+	case GAME_STATE_TYPE::LEVEL2BOSS:
+		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_02b.csv", 0);
+		break;
+	default:
+		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", 0);
+		break;
+	}
 	
-
-	mapManager1.AddTilesToGameObjectVector(levelGameObjectVector);
-
+	//MapManager::GetInstance().PrintMap();
+	PlayerManager::GetInstance().Init();
+	MapManager::GetInstance().AddTilesToGameObjectVector(levelGameObjectVector);
 	//player->Init();
 	//player1 = new Player();
 	playerManager.Init();
+if (SaveManager::GetInstance().toContinue &&
+		!SaveManager::GetInstance().playerSaveData.preserveOnLoad)
+	{
+		PlayerManager::GetInstance().Load();
+	}
+
+	if (SaveManager::GetInstance().toContinue)
+	{
+		MapManager::GetInstance().LoadMapState();
+		SaveManager::GetInstance().toContinue = false;
+	}
+
 	AddGameObjectToVector(playerManager.meleePlayer, levelGameObjectVector);
 	AddGameObjectToVector(playerManager.rangedPlayer, levelGameObjectVector);
 	AddGameObjectToVector(playerManager.rangePlayerArrow, levelGameObjectVector);
@@ -52,8 +78,8 @@ void ParkourLevel::Update()
 void ParkourLevel::Render()
 {
 
-	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
-	mapManager1.DrawMapSprite();
+	AEGfxSetBackgroundColor(0.6f, 0.8f, 0.85f);
+	MapManager::GetInstance().DrawMapSprite();
 
 	//player1->Render();
 	playerManager.Render();
@@ -66,11 +92,26 @@ void ParkourLevel::Render()
 
 void ParkourLevel::Free()
 {
+	//playerManager.Save();
+
 	// Clean up game objects
 	for (auto* obj : levelGameObjectVector)
 	{
 		if (obj )
 			delete obj;
+	}
+	switch (next) {
+	case GAME_STATE_TYPE::LEVEL1:
+	case GAME_STATE_TYPE::LEVEL2:
+		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
+		break;
+	case GAME_STATE_TYPE::LEVEL1BOSS:
+	case GAME_STATE_TYPE::LEVEL2BOSS:
+		SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
+		break;
+	default:
+		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
+		break;
 	}
 	levelGameObjectVector.clear();
 
@@ -81,7 +122,7 @@ void ParkourLevel::Free()
 	//	player1 = nullptr;
 	//}
 
-	mapManager1.FreeMap();
+	MapManager::GetInstance().FreeMap();
 	AEGfxSetCamPosition(0.f, 0.f);
 }
 

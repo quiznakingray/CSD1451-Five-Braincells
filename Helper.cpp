@@ -1,7 +1,7 @@
 #include "Helper.h"
 
 #pragma region Timer
-void CooldownTimer::Start(double d)
+void CooldownTimer::Start(f32 d)
 {
     duration = d;
     elapsed = 0.0;
@@ -13,7 +13,7 @@ void CooldownTimer::Stop()
     active = false;
 }
 
-bool CooldownTimer::Update(double dt)
+bool CooldownTimer::Update(f32 dt)
 {
     if (!active)
         return false;
@@ -29,7 +29,7 @@ bool CooldownTimer::Update(double dt)
     return false;
 }
 
-double CooldownTimer::GetProgress() const
+f32 CooldownTimer::GetProgress() const
 {
     if (duration <= 0.0)
         return 1.0;

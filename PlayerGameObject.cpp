@@ -8,50 +8,49 @@
 
 void Player::PlayerInput()
 {
-	f32 dt = AEFrameRateControllerGetFrameTime();
+	f64 dt = AEFrameRateControllerGetFrameTime();
 	AEVec2 moveDir{};
+
+	bool isGrabbing = currentAction == PlayerAction::CRATEINTERACT;
+	float accel = isGrabbing ? 150.0f : 300.0f;
+	float decel = isGrabbing ? 300.0f : 400.0f;
+	float maxSpeed = isGrabbing ? 150.0f : 300.0f;
+	float jumpHeight = 300.0f;  // lower jump when grabbing
+
 	//AEVec2Set(&velocity, 0.f, 0.f);
-	//std::cout << "On ground: " << (onGround ? "--" : "___________________________ ") << std::endl;
-	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider)
+	//std::cout << "On GRASSCENTER: " << (onGround ? "--" : "___________________________ ") << std::endl;
+	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing)
 	{
 		//moveDir.y = 500.f;
 		//onGround = false;
-
-		float jumpHeight = 300.0f; // pixels
-
-		float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * jumpHeight);
-
+		float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 300.0f);
 		rb->velocity.y = jumpVelocity;
-
 	}
 	//if (AEInputCheckCurr(AEVK_S))
 	//{
 	//	moveDir.y -= 1.f;
 	//}
-	float accel = 300.0f;     // acceleration power
-	float decel = 400.0f;     // deceleration power
-	float maxSpeed = 300.0f;
 	if (AEInputCheckCurr(AEVK_A))
 	{
 		//moveDir.x -= 1.f;
-		rb->velocity.x -= accel * dt;
+		rb->velocity.x -= static_cast<f32>(accel * dt);
 	}
 	else if (AEInputCheckCurr(AEVK_D))
 	{
 		//moveDir.x += 1.f;
-		rb->velocity.x += accel * dt;
+		rb->velocity.x += static_cast<f32>(accel * dt);
 	}
 	else
 	{
 		if (rb->velocity.x > 0)
 		{
-			rb->velocity.x -= decel * dt;
+			rb->velocity.x -= static_cast<f32>(decel * dt);
 			if (rb->velocity.x < 0)
 				rb->velocity.x = 0;
 		}
 		else if (rb->velocity.x < 0)
 		{
-			rb->velocity.x += decel * dt;
+			rb->velocity.x += static_cast<f32>(decel * dt);
 			if (rb->velocity.x > 0)
 				rb->velocity.x = 0;
 		}
@@ -84,12 +83,13 @@ void Player::PlayerInput()
 
 void Player::PlayerAction()
 {
-
-	if (rb->velocity.x != 0)
+	if (rb->velocity.x != 0 && currentAction != PlayerAction::CRATEINTERACT)
 	{
+		prevAction = currentAction;
 		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
 	}
-	else {
+	else if (rb->velocity.x < 0.1f && currentAction != PlayerAction::CRATEINTERACT){
+		prevAction = currentAction;
 		currentAction = PlayerAction::IDLE;
 	}
 }
@@ -220,11 +220,11 @@ void Player::Init()
 
 	//s32 screenX, screenY;
 	//f32 camPosX, camPosY;
-	//f32 worldPosX, worldPosY;
+	//f32 LEVEL1PosX, LEVEL1PosY;
 	//AEInputGetCursorPosition(&screenX, &screenY);
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
-	//worldPosX = camPosX - screenX / 2.f;
-	//worldPosY = camPosY - screenY / 2.f;
+	//LEVEL1PosX = camPosX - screenX / 2.f;
+	//LEVEL1PosY = camPosY - screenY / 2.f;
 
 	showColliders = true;
 	speed = static_cast<f32>(200.0);
@@ -234,7 +234,6 @@ void Player::Init()
 }
 
 void Player::Update(){
-	
 	//PlayerInput();
 	PlayerAction();
 	PlayerAnimation();
@@ -316,25 +315,30 @@ void RangePlayer::Update()
 {
 	s32 screenX, screenY;
 	//f32 camPosX, camPosY;
-	f32 worldPosX, worldPosY;
+	f32 LEVEL1PosX, LEVEL1PosY;
 	AEInputGetCursorPosition(&screenX, &screenY);
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
-	worldPosX = screenX + AEGfxGetWinMinX();
-	worldPosY = -(screenY - AEGfxGetWinMaxY());
+	LEVEL1PosX = screenX + AEGfxGetWinMinX();
+	LEVEL1PosY = -(screenY - AEGfxGetWinMaxY());
 	//std::cout << worldPosX << "   " << worldPosY << std::endl;
-	playerLinePos->pos.x = pos.x + (worldPosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
+	playerLinePos->pos.x = pos.x + (LEVEL1PosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
-	aimLinePos->pos.x = worldPosX;
-	aimLinePos->pos.y = worldPosY;
+	aimLinePos->pos.x = LEVEL1PosX;
+	aimLinePos->pos.y = LEVEL1PosY;
 	Player::Update();
 }
 
 void RangePlayer::PlayerAction()
 {
-	if (rb->velocity.x != 0)
+	if (rb->velocity.x != 0 && currentAction != PlayerAction::CRATEINTERACT)
 	{
+		prevAction = currentAction;
 		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
 	}
+	//if (rb->velocity.x != 0)
+	//{
+	//	currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
+	//}
 	else if (AEInputCheckCurr(AEVK_LBUTTON))
 	{
 		currentAction = PlayerAction::AIMING;
@@ -350,7 +354,8 @@ void RangePlayer::PlayerAction()
 			PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir);
 		}
 	}
-	else {
+	else if (rb->velocity.x < 0.1f && currentAction != PlayerAction::CRATEINTERACT) {
+		prevAction = currentAction;
 		currentAction = PlayerAction::IDLE;
 	}
 }
@@ -369,6 +374,8 @@ void Arrow::Init()
 		{
 			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 			{
+				// crate will deactivate arrow on its own ontrigger
+				if (dynamic_cast<CrateTile*>(other->owner)) return;
 				if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) || 
 					((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
 				{
@@ -397,7 +404,7 @@ void Arrow::Update()
 	if (isActive)
 	{
 		double dt = AEFrameRateControllerGetFrameTime();
-		timer += dt;
+		timer += static_cast<f32>(dt);
 		if (timer >= lifetime)
 		{
 			isActive = false;

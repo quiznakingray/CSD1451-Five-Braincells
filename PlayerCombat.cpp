@@ -1,10 +1,6 @@
 #include "AEEngine.h"
 #include "PlayerCombat.h"
 #include "GameStateManager.h"
-#include "EnemyCombat.h"
-
-//global enemy instance
-EnemyStats enemyStats;
 
 // consts
 const float WINDOW_WIDTH = 1600.0f;
@@ -88,21 +84,11 @@ void GameStateLoad() {
 
 void GameStateInit() {
 
-    // init player stats
-    playerStats.health = 30.0f;
-    playerStats.maxhealth = 30.0f;
-	playerStats.name = "Player";
+    // init playerStats
+    playerStats.health = 100.0f;
     playerStats.speed = 50.0f;
-    //playerStats.attack = 100.0f;
+    playerStats.attack = 100.0f;
 
-    // init enemy stats
-    enemyStats.health = 30.0f;
-    enemyStats.maxHealth = 30.0f;
-    enemyStats.name = "Enemy";
-    enemyStats.speed = 40.0f; // tweak this and player speed to test turn order
-    //enemyStats.attack = 8;
-
-    // init abilities (2x2 grid)
     // init abilities (2x2 grid)
     float buttonWidth = 350.0f;
     float buttonHeight = 100.0f;
@@ -172,33 +158,30 @@ void GameStateUpdate() {
     s32 mouseX, mouseY;
     AEInputGetCursorPosition(&mouseX, &mouseY);
  
-    // convert screen coordinates to world coordinates
-    float worldX = (float)mouseX - WINDOW_WIDTH / 2.0f;
-    float worldY = WINDOW_HEIGHT / 2.0f - (float)mouseY;
+    // convert screen coordinates to LEVEL1 coordinates
+    float LEVEL1X = (float)mouseX - WINDOW_WIDTH / 2.0f;
+    float LEVEL1Y = WINDOW_HEIGHT / 2.0f - (float)mouseY;
 
     // check hover state for abilities
     for (int i = 0; i < 4; i++) {
         if (abilities[i].isEnabled) {
-            abilities[i].isHovered = isPointInRect(worldX, worldY,
+            abilities[i].isHovered = isPointInRect(LEVEL1X, LEVEL1Y,
                 abilities[i].x, abilities[i].y,
                 abilities[i].width, abilities[i].height);
 
             // check for click
             if (abilities[i].isHovered && AEInputCheckTriggered(AEVK_LBUTTON)) {
                 selectedAbility = i;
-                if (i == 0 && !IsEnemyDead(enemyStats)) {
-                    TurnOrder(enemyStats, playerStats, 5);
-                }
             }
-
-            // [DEV] Spacebar = instant kill
-            if (AEInputCheckTriggered(AEVK_SPACE)) {
-                InstantKill(enemyStats);
-            }
+        }
+        else {
+            abilities[i].isHovered = false;
+        }
+    }
 
     if (AEInputCheckTriggered(AEVK_M))
     {
-        next = GAME_STATE_TYPE::WORLD;
+        next = GAME_STATE_TYPE::LEVEL1;
     }
 }
 
@@ -251,43 +234,38 @@ void GameStateDraw() {
 
     AEMtx33 scale, trans, transform;
 
-    // draww ground
+    // Draw GRASSCENTER
     AEGfxVertexList* groundMesh = CreateColoredSquareMesh(WINDOW_WIDTH, 300, 0.56f, 0.93f, 0.56f, 1.0f);
     AEMtx33Trans(&trans, 0, -200);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(groundMesh, AE_GFX_MDM_TRIANGLES);
     AEGfxMeshFree(groundMesh);
 
-    // draw playerStats (blue circle)
+    // Draw playerStats (blue circle)
     AEGfxVertexList* playerStatssprite = CreateCircleMesh(50, 32, 0.3f, 0.69f, 1.0f, 1.0f);
     AEMtx33Trans(&trans, -400.0f, 50.0f);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(playerStatssprite, AE_GFX_MDM_TRIANGLES);
     AEGfxMeshFree(playerStatssprite);
 
-    // draw enemy (red circle)
+    // Draw enemy (red circle)
     AEGfxVertexList* enemySprite = CreateCircleMesh(60, 32, 1.0f, 0.42f, 0.44f, 1.0f);
     AEMtx33Trans(&trans, 400.0f, 200.0f);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(enemySprite, AE_GFX_MDM_TRIANGLES);
     AEGfxMeshFree(enemySprite);
 
-    // enemy health bar 
-    drawHealthBar(450, 200, (float)enemyStats.health, (float)enemyStats.maxHealth,
-        enemyStats.name, true);
+    // health bar
+    drawHealthBar(450, -100, playerStats.health, playerStats.maxhealth, playerStats.playername, false);
 
-    // player health bar
-    drawHealthBar(-450, -100, playerStats.health, playerStats.maxhealth,
-        playerStats.name, false);
-
-    // draw UI panel (dark gray)
+    // Draw UI panel (dark gray background)
     AEGfxVertexList* uiPanelMesh = CreateColoredSquareMesh(WINDOW_WIDTH, 360, 0.18f, 0.22f, 0.28f, 1.0f);
     AEMtx33Trans(&trans, 0, -270);
     AEGfxSetTransform(trans.m);
     AEGfxMeshDraw(uiPanelMesh, AE_GFX_MDM_TRIANGLES);
     AEGfxMeshFree(uiPanelMesh);
 
-    // draw ability buttons
+    // Draw ability buttons
     for (int i = 0; i < 4; i++) {
         float brightness = (abilities[i].isEnabled && abilities[i].isHovered) ? 1.2f : 1.0f;
         float opacity = abilities[i].isEnabled ? 1.0f : 0.5f;
@@ -296,7 +274,7 @@ void GameStateDraw() {
         float g = AEMin(abilities[i].g * brightness, 1.0f);
         float b = AEMin(abilities[i].b * brightness, 1.0f);
 
-        // button border 
+        // Button border (darker)
         AEGfxVertexList* borderMesh = CreateColoredSquareMesh(
             abilities[i].width + 4, abilities[i].height + 4,
             r * 0.7f, g * 0.7f, b * 0.7f, opacity);
@@ -305,7 +283,7 @@ void GameStateDraw() {
         AEGfxMeshDraw(borderMesh, AE_GFX_MDM_TRIANGLES);
         AEGfxMeshFree(borderMesh);
 
-        // button background
+        // Button background
         AEGfxVertexList* buttonMesh = CreateColoredSquareMesh(
             abilities[i].width, abilities[i].height, r, g, b, opacity);
         AEMtx33Trans(&trans, abilities[i].x, abilities[i].y);
