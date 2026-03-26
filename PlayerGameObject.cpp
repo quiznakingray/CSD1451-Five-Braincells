@@ -2,6 +2,7 @@
 #include "PlayerGameObject.h"
 #include "MapManager.h"
 #include "PlayerManager.h"
+#include "SaveManager.h"
 
 #include <iostream>
 #include <vector>
@@ -79,6 +80,19 @@ void Player::PlayerInput()
 	//{
 	//	animator->PlayAnimation(idleAnim);
 	//}
+}
+
+void Player::ReducePlayerHealth()
+{
+	health--;
+	if (health <= 0)
+	{
+		health = defaultHealth;
+		SaveManager::GetInstance().toContinue = true;
+		GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
+		current = GAME_STATE_TYPE::MENU;  // force inner loop to exit
+		next = respawnLevel;           // reload the saved level
+	}
 }
 
 void Player::PlayerAction()
@@ -241,7 +255,6 @@ void Player::Update(){
 	runningAnim->sprite->size.x =
 		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
 
-
 	GameObject::Update();
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
 }
@@ -335,10 +348,6 @@ void RangePlayer::PlayerAction()
 		prevAction = currentAction;
 		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
 	}
-	//if (rb->velocity.x != 0)
-	//{
-	//	currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
-	//}
 	else if (AEInputCheckCurr(AEVK_LBUTTON))
 	{
 		currentAction = PlayerAction::AIMING;

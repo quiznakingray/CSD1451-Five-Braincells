@@ -26,8 +26,8 @@ struct Player : GameObject {
 
 	RigidBody* rb = nullptr;
 
-
-	int health = 5;
+	int defaultHealth = 5;
+	int health = defaultHealth;
 	
 	//AEVec2 velocity{};
 
@@ -43,6 +43,7 @@ struct Player : GameObject {
 	void Update() override;
 
 	void PlayerInput();
+	void ReducePlayerHealth();
 	virtual void PlayerAction();
 private:
 

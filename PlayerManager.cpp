@@ -57,6 +57,7 @@ void PlayerManager::SavePlayerData()
 
 	save.playerSaveData.meleePos = meleePlayer->pos;
 	save.playerSaveData.rangedPos = rangedPlayer->pos;
+	save.playerSaveData.health = meleePlayer->health;
 	save.playerSaveData.hasSavedData = true;
 
 }
@@ -65,6 +66,7 @@ void PlayerManager::Load()
 	PlayerSaveData& data = SaveManager::GetInstance().playerSaveData;
 	if (!data.hasSavedData) return;
 
+	meleePlayer->health = data.health;
 	AEVec2Set(&meleePlayer->pos, data.meleePos.x, data.meleePos.y);
 	AEVec2Set(&rangedPlayer->pos, data.rangedPos.x, data.rangedPos.y);
 }

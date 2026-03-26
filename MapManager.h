@@ -177,7 +177,7 @@ struct SpikeTile : Tile {
 		collider->OnCollisionEnter = [this](Collider* other, int sides) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
-				player->health--;
+				player->ReducePlayerHealth();
 				std::cout << player->health << '\n';
 				// knockback based on collision side
 				RigidBody* playerRb = player->GetComponent<RigidBody>();
@@ -892,23 +892,27 @@ struct ButtonTile : Tile {
 			queueRunning = false;
 			gateQueue.clear();
 
-			// get all gates
+			// get currTag gates that haven't reached target state
 			std::vector<Tile*> allGates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
-
-			// filter first - only keep gates that haven't reached target state
 			for (Tile* gate : allGates)
 			{
 				if (gate->isActive != _activate)
 					gateQueue.push_back(gate);
 			}
 
+			// get altTag gates that haven't reached inverted target state
+			std::vector<Tile*> altGates = MapManager::GetTaggedTiles(altTag, TILE_ID::GATE);
+			for (Tile* gate : altGates)
+			{
+				if (gate->isActive != !_activate)
+					gateQueue.push_back(gate);
+			}
+
 			if (_activate) {
-				// activating: bottom to top
 				std::sort(gateQueue.begin(), gateQueue.end(),
 					[](Tile* a, Tile* b) { return a->row > b->row; });
 			}
 			else {
-				// deactivating: top to bottom
 				std::sort(gateQueue.begin(), gateQueue.end(),
 					[](Tile* a, Tile* b) { return a->row < b->row; });
 			}
@@ -944,9 +948,14 @@ struct ButtonTile : Tile {
 
 			if (gate)
 			{
-				gate->isActive = activate;
-				gate->isCurrActive = activate;
-				if (gate->collider) gate->collider->canCollide = activate;
+				// check if this gate belongs to altTag
+				std::vector<Tile*> altGates = MapManager::GetTaggedTiles(altTag, TILE_ID::GATE);
+				bool isAltGate = std::find(altGates.begin(), altGates.end(), gate) != altGates.end();
+
+				bool gateActivate = isAltGate ? !activate : activate;
+				gate->isActive = gateActivate;
+				gate->isCurrActive = gateActivate;
+				if (gate->collider) gate->collider->canCollide = gateActivate;
 			}
 
 			if (!gateQueue.empty())
@@ -966,6 +975,19 @@ struct ButtonTile : Tile {
 		std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
 		gatesOriginalState = !gates.empty() && gates[0]->isActive;
 		gatesAreActive = gatesOriginalState;
+
+		// ensure colliders match starting active state
+		for (Tile* gate : gates)
+		{
+			gate->isActive = gate->isCurrActive;
+			//if (gate->collider) gate->collider->canCollide = gate->isActive;
+		}
+		// same for altTag gates
+		for (Tile* gate : MapManager::GetTaggedTiles(altTag, TILE_ID::GATE))
+		{
+			gate->isActive = gate->isCurrActive;
+			//if (gate->collider) gate->collider->canCollide = gate->isActive;
+		}
 
 		collider->OnTriggerEnter = [this](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);

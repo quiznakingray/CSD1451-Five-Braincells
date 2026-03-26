@@ -110,12 +110,12 @@ void SaveManager::LoadEnemyData()
 }
 void SaveManager::SaveAll()
 {
-    // 1. Ask each system to populate save data
+    // Ask each system to populate save data
     PlayerManager::GetInstance().SavePlayerData();
     EnemyManager::GetInstance().SaveEnemyStates();
     MapManager::GetInstance().SaveMapState();
 
-    // 2. Write everything to disk
+    // Write everything to disk
     SavePlayerData();
     SaveEnemyData();
     SaveMapData();
@@ -127,12 +127,12 @@ bool SaveManager::HasSaveData()
 }
 void SaveManager::LoadAll()
 {
-    // 1. Read everything from disk first
+    // Read everything from disk first
     LoadPlayerData();
     LoadEnemyData();
     LoadMapData();
 
-    // 2. Apply loaded data to each system
+    // Apply loaded data to each system
     PlayerManager::GetInstance().Load();
     EnemyManager::GetInstance().LoadEnemyStates();
     MapManager::GetInstance().LoadMapState();

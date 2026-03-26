@@ -720,7 +720,7 @@ void GoalTile::Init() {
             interactionTextBox->text = "[F] Enter";
             if (AEInputCheckTriggered(AEVK_F))
             {
-                SaveManager::GetInstance().SaveAll();
+                //SaveManager::GetInstance().SaveAll();
                 //// save current state before transitioning
                 //SaveManager::GetInstance().SavePlayerData(
                 //    PlayerManager::GetInstance().meleePlayer->pos,
