@@ -3,6 +3,7 @@
 #include "BossLevel.h"
 #include "PlayerCombat.h"
 #include "MainMenu.h"
+#include "PauseMenu.h"
 
 
 
@@ -55,6 +56,23 @@ void GameStateManager::Update()
 		fpRender = GameStateDraw;
 		fpFree = GameStateFree;
 		fpUnload = GameStateUnload;
+		break;
+	case GAME_STATE_TYPE::PAUSE:
+		fpLoad = []() {}; // Nothing to load/unload from disk
+		fpInitialize = PauseMenu::Init;
+		fpUpdate = PauseMenu::Update;
+		fpRender = PauseMenu::Render;
+		fpFree = PauseMenu::Free;
+		fpUnload = []() {};
+		break;
+
+	case GAME_STATE_TYPE::CONFIRMATION:
+		fpLoad = []() {};
+		fpInitialize = []() {}; // We reuse the mesh from PauseMenu::Init
+		fpUpdate = ConfirmationMenu::Update;
+		fpRender = ConfirmationMenu::Render;
+		fpFree = []() {};     // PauseMenu::Free handles the mesh cleanup
+		fpUnload = []() {};
 		break;
 	//case GAME_STATE_TYPE::SETTING:
 	//	fpLoad = []() {};

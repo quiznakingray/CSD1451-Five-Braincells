@@ -114,7 +114,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Instructions.cpp" />
-    <ClCompile Include="LoseMenu.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="MapManager.cpp" />
@@ -130,6 +129,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="TextComponent.cpp" />
+    <ClCompile Include="TextManager.cpp" />
     <ClCompile Include="TileData.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
@@ -151,7 +151,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Instructions.h" />
     <ClInclude Include="Library\rapidcsv.h" />
-    <ClInclude Include="LoseMenu.h" />
     <ClInclude Include="MainMenu.h" />
     <ClInclude Include="MapManager.h" />
     <ClInclude Include="ParkourLevel.h" />
@@ -167,6 +166,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="SingletonTemplate.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="TextComponent.h" />
+    <ClInclude Include="TextManager.h" />
     <ClInclude Include="TileData.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>

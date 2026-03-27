@@ -10,9 +10,13 @@ enum class GAME_STATE_TYPE {
 	OTHER,
 	COMBAT,
 	INSTRUCTIONS,
-	SETTING
+	SETTING,
+	PAUSE,
+	CONFIRMATION
 };
 extern GAME_STATE_TYPE current, next;
+extern GAME_STATE_TYPE previousState; // To remember where to "Resume" to
+extern GAME_STATE_TYPE pendingAction; // To remember if we are confirming "Restart" or "Main Menu"
 
 
 struct GameState {

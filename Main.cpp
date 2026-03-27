@@ -10,6 +10,8 @@
 #include "GameObjectManager.h"
 //#include "TextComponent.h"
 #include "GameStateManager.h"
+#include "TextManager.h"
+#include "PauseMenu.h"
 #include "MainMenu.h"
 #include <filesystem>
 
@@ -19,8 +21,7 @@ int gGameRunning = 1;
 //AEGfxTexture* pTex = 0;
 
 MapManager mapManager;
-TextManager textManager;
-s8 TextManager::pFont = 0;
+//TextManager textManager;
 
 
 //std::vector<GameObject*> gameObjects{};
@@ -110,9 +111,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		// Informing the system about the loop's start
 		gameStateManager.Update();
 
-		//// Initialize the current game state
-		fpLoad();
-		fpInitialize();
+		// Only Load and Init if we aren't resuming from Pause
+		if (current != GAME_STATE_TYPE::PAUSE && current != GAME_STATE_TYPE::CONFIRMATION) {
+		// Initialize the current game state
+			fpLoad();
+			fpInitialize();
+		}
+
 		while (next == current && gGameRunning)
 		{
 			AESysFrameStart();
@@ -121,8 +126,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			// Render graphics for the current frame
 			fpRender();
 			// check if forcing the application to quit
-			if (AEInputCheckCurr(AEVK_ESCAPE)) {
-				next = GAME_STATE_TYPE::MENU;
+			if (AEInputCheckTriggered(AEVK_ESCAPE)) {
+				if (current != GAME_STATE_TYPE::PAUSE && current != GAME_STATE_TYPE::MENU) {
+					previousState = current; // Defined in GameStateManager
+					next = GAME_STATE_TYPE::PAUSE;
+				}
 			}
 			if (0 == AESysDoesWindowExist())
 				gGameRunning = 0;
@@ -153,8 +161,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 		//GameUpdate();
 
-		fpFree();
-		fpUnload();
+		// Logic to prevent unloading when pausing
+	    // If moving to pause or confirmation, do NOT free the level
+		if (next == GAME_STATE_TYPE::PAUSE || next == GAME_STATE_TYPE::CONFIRMATION) {
+			// Do nothing, keep level data in memory
+		}
+		else if (current == GAME_STATE_TYPE::CONFIRMATION && next == previousState) {
+			// moving back to the level,
+			// but need to unload it first to reset it.
+			fpFree();
+			fpUnload();
+		}
+		else {
+			// Normal state change: Unload the old state.
+			fpFree();
+			fpUnload();
+		}
+
 		current = next;
 	}
 	//mapManager.FreeMap();
