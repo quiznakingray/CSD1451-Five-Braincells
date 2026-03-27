@@ -2,6 +2,7 @@
 #include "PlayerGameObject.h"
 #include "MapManager.h"
 #include "PlayerManager.h"
+#include "PlayerStats.h"
 
 #include <iostream>
 #include <vector>
@@ -269,6 +270,80 @@ void MeleePlayer::Init()
 	runningAnim->loopAnimation = true;
 	runningAnim->animationFPS = 30.f;
 	Player::Init();
+
+	// shield collider
+	shieldCollider = AddComponent(
+		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.6f, 0.0f, 0.3f, 0.8f)
+		);
+	shieldCollider->isTrigger = true;
+
+	shieldCollider->OnTriggerEnter = [this](Collider* other, int sides)
+		{
+			if (!shieldActive) return;   // shield is down = do nothing
+
+			if (Arrow* arrow = dynamic_cast<Arrow*>(other->owner))
+			{
+				if (arrow->isEnemyProjectile)
+				{
+					arrow->isActive = false;
+					arrow->timer = 0.f;
+					std::cout << "[Shield] blocked incoming projectile!\n";
+				}
+			}
+			// add enemy projectile types!!
+		};
+}
+void MeleePlayer::Update()
+{
+	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
+
+	// shield input
+	bool qHeld = AEInputCheckCurr(AEVK_Q);
+
+	if (qHeld && !shieldDepleted)
+	{
+		shieldTimer += dt;
+
+		float maxDuration = PlayerStats::Get().GetMaxShieldDuration();
+		if (shieldTimer >= maxDuration)
+		{
+			// stamina exhausted
+			shieldTimer = maxDuration;
+			shieldDepleted = true;
+			shieldActive = false;
+			std::cout << "[Shield] stamina ran out! release Q to recover stamina.\n";
+		}
+		else
+		{
+			shieldActive = true;
+		}
+	}
+		else
+		{
+			shieldActive = false;
+
+			// reset stamina when Q released
+			if (!qHeld)
+			{
+				shieldTimer = 0.0f;
+				shieldDepleted = false;
+			}
+	}
+
+	Player::Update();
+}
+
+void MeleePlayer::PlayerAction()
+{
+	// shield has prio
+	if (AEInputCheckCurr(AEVK_Q))
+	{
+		prevAction = currentAction; 
+		currentAction = PlayerAction::SHIELDING;
+		return;
+	}
+
+	Player::PlayerAction();
 }
 
 void RangePlayer::Init()
@@ -313,6 +388,10 @@ void RangePlayer::Init()
 
 void RangePlayer::Update()
 {
+	// cooldown timer
+	double dt = AEFrameRateControllerGetFrameTime();
+	arrowTimer += static_cast<float>(dt);
+
 	s32 screenX, screenY;
 	//f32 camPosX, camPosY;
 	f32 LEVEL1PosX, LEVEL1PosY;
@@ -344,14 +423,27 @@ void RangePlayer::PlayerAction()
 		currentAction = PlayerAction::AIMING;
 		if (AEInputCheckTriggered(AEVK_RBUTTON))
 		{
-			// fire arrow
-			AEVec2 dir;
-			AEVec2Sub(&dir, &aimLinePos->pos, &playerLinePos->pos);
+			// shoot if cooldown has passed
+			float cooldown = PlayerStats::Get().GetAttackCooldown();
 
-			// normalize so components are between -1 and 1
-			AEVec2Normalize(&dir, &dir);
+			if (arrowTimer >= cooldown)
+			{
+				// fire arrow
+				AEVec2 dir;
+				AEVec2Sub(&dir, &aimLinePos->pos, &playerLinePos->pos);
 
-			PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir);
+				// normalize so components are between -1 and 1
+				AEVec2Normalize(&dir, &dir);
+
+				PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir, PlayerStats::Get().damage);
+
+				// reset timer
+				arrowTimer = 0.0f;
+			}
+			else
+			{
+				std::cout << "[Bow] still on cooldown!" << (cooldown - arrowTimer) << "s remaining\n";
+			}
 		}
 	}
 	else if (rb->velocity.x < 0.1f && currentAction != PlayerAction::CRATEINTERACT) {
@@ -395,6 +487,8 @@ void Arrow::Init()
 	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 	rb->hasGravity = false;
 	isActive = false;
+	isEnemyProjectile = false;
+	damage = 1;
 	GameObject::Init();
 }
 
@@ -413,11 +507,12 @@ void Arrow::Update()
 	}
 }
 
-void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir)
+void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir, int dmg)
 {
 	if (isActive) return;
 	pos.x = startPos.x;
 	pos.y = startPos.y;
+	damage = dmg; // to store damage value
 	isActive = true;
 
 	// set velocity
