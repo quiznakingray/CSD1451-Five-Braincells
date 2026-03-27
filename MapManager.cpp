@@ -4,6 +4,7 @@
 #include "PlayerManager.h"
 #include "SaveManager.h"
 #include "EnemyManager.h"
+#include "PlayerStats.h"
 #include <array>
 #include <algorithm>
 #include <iostream>
@@ -703,6 +704,54 @@ void Tile::Update()
     GameObject::Update();
 }
 
+void SpikeTile::Init() {
+    Tile::Init();
+    collider->size.x = 0.7f;
+    collider->size.y = 0.7f;
+    collider->OnCollisionEnter = [this](Collider* other, int sides) {
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+        {
+            PlayerStats::Get().ReducePlayerHealth();
+            std::cout << PlayerStats::Get().GetPlayerHealth() << '\n';
+            // knockback based on collision side
+            RigidBody* playerRb = player->GetComponent<RigidBody>();
+            float knockbackX = 1000.0f;
+            float knockbackY = 500.0f;
+
+            switch (static_cast<int>(currID))
+            {
+            case static_cast<int>(TILE_ID::SPIKEUP):
+                playerRb->velocity.y = -knockbackY;
+                break;
+            case static_cast<int>(TILE_ID::SPIKEDOWN):
+                playerRb->velocity.y = knockbackY;
+                break;
+            case static_cast<int>(TILE_ID::SPIKELEFT):
+                playerRb->velocity.x = knockbackX;
+                break;
+            case static_cast<int>(TILE_ID::SPIKERIGHT):
+                playerRb->velocity.x = -knockbackX;
+                break;
+            default:
+                break;
+            }
+        }
+        };
+}
+
+void HealthPickupTile::Init() {
+    Tile::Init();
+    collider->isTrigger = true;
+    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+        Player* player = dynamic_cast<Player*>(other->owner);
+        if (player)
+        {
+            PlayerStats::Get().IncreasePlayerHealth();
+            isCurrActive = false;
+        }
+        };
+}
+
 void GoalTile::Init() {
     Tile::Init();
     collider->center.y = 0.5f;
@@ -718,7 +767,13 @@ void GoalTile::Init() {
     collider->OnTriggerOver = [this](Collider* other, int sides) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
-            interactionTextBox->text = "[F] Enter";
+            if (current == GAME_STATE_TYPE::LEVEL2)
+            {
+                interactionTextBox->text = "You Win!";
+            }
+            else {
+                interactionTextBox->text = "[F] Enter";
+            }
             if (AEInputCheckTriggered(AEVK_F))
             {
                 //SaveManager::GetInstance().SaveAll();
@@ -735,15 +790,15 @@ void GoalTile::Init() {
                 {
                 case GAME_STATE_TYPE::LEVEL1:
                     SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-                    next = GAME_STATE_TYPE::LEVEL1BOSS;
+                    next = GAME_STATE_TYPE::LEVEL2;
                     break;
                 case GAME_STATE_TYPE::LEVEL1BOSS:
                     SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
                     next = GAME_STATE_TYPE::LEVEL2;
                     break;
                 case GAME_STATE_TYPE::LEVEL2:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-                    next = GAME_STATE_TYPE::LEVEL2BOSS;
+                    //SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
+                    //next = GAME_STATE_TYPE::LEVEL2BOSS;
                     break;
                 case GAME_STATE_TYPE::LEVEL2BOSS:
                     SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
@@ -763,7 +818,7 @@ void GoalTile::Init() {
             this->interactionTextBox->isActive = false;
     };
 
-    interactionTextBox->text = "[F] Enter";
+    //interactionTextBox->text = "[F] Enter";
 
 }
 
@@ -795,8 +850,8 @@ void CrateTile::Init()
 {
     Tile::Init();
     
-    collider->size.x = 0.85f;
-    collider->size.y = 0.85f;
+    collider->size.x = 0.875f;
+    collider->size.y = 0.875f;
 
     interactionTextBox->text = "[F] Grab";
 

@@ -60,14 +60,12 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
         obj->pos.x += amountX;
         obj->pos.y += amountY;
         if (!r) return;
-
-        // Only zero vertical velocity when resolving Y overlap
         if (amountY != 0) {
-            r->velocity.y = 0;
-            if (amountY > 0) r->onCollider = true; // landed on floor
+            // only zero velocity if not jumping
+            if (r->velocity.y <= 0.f)
+                r->velocity.y = 0;
+            if (amountY > 0) r->onCollider = true;
         }
-
-        // Zero horizontal velocity only for static collisions
         if (zeroXForStatic && amountX != 0) {
             r->velocity.x = 0;
         }
@@ -92,6 +90,9 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
         }
         else
         {
+            // skip vertical resolution if either object is jumping upward
+            if (ra->velocity.y > 0.f || rb->velocity.y > 0.f) return;
+
             if (dy > 0) { move(A, 0, pyOverlap * aRatio, ra); move(B, 0, -pyOverlap * bRatio, rb); }
             else { move(A, 0, -pyOverlap * aRatio, ra); move(B, 0, pyOverlap * bRatio, rb); }
         }
@@ -103,7 +104,6 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
         GameObject* dynamicObj = dynamicRb->owner;
         if (!dynamicObj) return;
 
-        if (!dynamicObj) return;
 
         if (resolveX)
         {
@@ -116,17 +116,20 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
         }
         else
         {
-            // Only snap if dynamic is falling onto static
-            if (dynamicRb->velocity.y <= 0.f && dy > 0.f) // going down
+            if (dynamicRb->velocity.y <= 0.f && dy > 0.f)
             {
-                // landed on top
                 dynamicObj->pos.y += pyOverlap;
                 dynamicRb->velocity.y = 0.f;
                 dynamicRb->onCollider = true;
             }
+            else if (dynamicRb->velocity.y > 0.f && dy > 0.f)
+            {
+                // player is jumping - only resolve position, don't zero velocity
+                dynamicObj->pos.y += pyOverlap;
+                dynamicRb->onCollider = false;  // no longer on collider
+            }
             else
             {
-                // hit ceiling
                 dynamicObj->pos.y -= pyOverlap;
                 dynamicRb->velocity.y = 0.f;
             }

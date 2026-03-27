@@ -23,8 +23,6 @@ void Player::PlayerInput()
 	//std::cout << "On GRASSCENTER: " << (onGround ? "--" : "___________________________ ") << std::endl;
 	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing)
 	{
-		//moveDir.y = 500.f;
-		//onGround = false;
 		float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 300.0f);
 		rb->velocity.y = jumpVelocity;
 	}
@@ -267,7 +265,6 @@ void Player::Update(){
 
 	runningAnim->sprite->size.x =
 		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
-
 	GameObject::Update();
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
 }

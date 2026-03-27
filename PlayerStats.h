@@ -1,5 +1,8 @@
 #ifndef PLAYER_STATS_H
 #define PLAYER_STATS_H
+#include "SaveManager.h"
+#include "AudioManager.h"
+#include "GameStateManager.h"
 
 struct PlayerStats
 {
@@ -28,6 +31,32 @@ struct PlayerStats
     float GetMaxShieldDuration() const
     {
         return BASE_SHIELD_DURATION + proficiency * SHIELD_DURATION_SCALE;
+    }
+
+    void ReducePlayerHealth()
+    {
+        health--;
+        if (health > 0) {
+            AudioManager::PlaySFX("playerHurt");
+        }
+        else
+        {
+            AudioManager::PlaySFX("playerDie");
+            health = maxHealth;
+            SaveManager::GetInstance().toContinue = true;
+            GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
+            current = GAME_STATE_TYPE::MENU;  // force inner loop to exit
+            next = respawnLevel;           // reload the saved level
+        }
+    }
+
+    void IncreasePlayerHealth() {
+        health++;
+        std::cout << health << '\n';
+    }
+
+    int GetPlayerHealth() {
+        return health;
     }
 
     // singleton access 

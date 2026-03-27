@@ -23,7 +23,8 @@
 #define MAX_LEVELS 5
 
 struct PlayerManager; // forward declaration
-class EnemyManager; // forward declaration
+struct EnemyManager; // forward declaration
+struct PlayerStats; // forward declaration
 
 enum class TILE_ID {
 	EMPTY = 0,
@@ -171,40 +172,7 @@ struct SpikeTile : Tile {
 		currSprite->textureFileName = "Assets/Environment/spike.png";
 	}
 
-	void Init() override {
-		Tile::Init();
-		collider->size.x = 0.7f; 
-		collider->size.y = 0.7f;
-		collider->OnCollisionEnter = [this](Collider* other, int sides) {
-			if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				player->ReducePlayerHealth();
-				std::cout << player->health << '\n';
-				// knockback based on collision side
-				RigidBody* playerRb = player->GetComponent<RigidBody>();
-				float knockbackX = 1000.0f;
-				float knockbackY = 500.0f;
-
-				switch (static_cast<int>(currID))
-				{
-					case static_cast<int>(TILE_ID::SPIKEUP):
-						playerRb->velocity.y = -knockbackY;
-						break;
-					case static_cast<int>(TILE_ID::SPIKEDOWN):
-						playerRb->velocity.y = knockbackY;
-						break;
-					case static_cast<int>(TILE_ID::SPIKELEFT):
-						playerRb->velocity.x = knockbackX;
-						break;
-					case static_cast<int>(TILE_ID::SPIKERIGHT):
-						playerRb->velocity.x = -knockbackX;
-						break;
-					default:
-						break;
-				}
-			}
-		};
-	}
+	void Init() override;
 };
 
 struct GroundTile : Tile {
@@ -394,18 +362,7 @@ struct HealthPickupTile : Tile {
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
 		currSprite->textureFileName = "Assets/Environment/gemRed.png";
 	}
-	void Init() override {
-		Tile::Init();
-		collider->isTrigger = true;
-		collider->OnTriggerEnter = [this](Collider* other, int sides) {
-			Player* player = dynamic_cast<Player*>(other->owner);
-			if (player)
-			{
-				isCurrActive = false;
-			}
-			};
-		
-	}
+	void Init() override;
 };
 
 struct CloudTile : Tile {
@@ -779,9 +736,11 @@ struct LeverTile : Tile {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
 				this->interactionTextBox->isActive = true;
-				if (AEInputCheckTriggered(AEVK_F))
+				// prevent triggering from melee shield collider
+				if (AEInputCheckTriggered(AEVK_F) && other->size.x >= 0.99)
 				{
 					TriggerLever();
+					std::cout << "lever triggered\n";
 				}
 			}
 			// catch arrows that spawned inside the trigger
