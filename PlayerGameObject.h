@@ -45,6 +45,9 @@ struct Player : GameObject {
 
 	void PlayerInput();
 	virtual void PlayerAction();
+
+	void TakeDamage(int amount);
+	static void IncrementKills();
 private:
 
 
