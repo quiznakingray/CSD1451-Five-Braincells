@@ -10,7 +10,7 @@ struct EnemyManager {
 private:
     static std::vector<EnemyGameObject*> enemies;
     static Player* player;
-
+    ~EnemyManager();
 public:
     static void Init(Player* p);
 

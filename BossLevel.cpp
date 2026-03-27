@@ -71,7 +71,7 @@ void BossLevel::Free()
 	//}
 
 	mapManager2.FreeMap();
-	AEGfxSetCamPosition(0.f, 0.f);
+	//AEGfxSetCamPosition(0.f, 0.f);
 }
 
 void BossLevel::Unload()

@@ -139,11 +139,13 @@ void MapManager::FreeMap()
             // prevents double free 
             if (tile && static_cast<int>(tile->currID) > -1 && static_cast<int>(tile->currID) <= 300)
             {
-                tile->Free();   // frees all components (sprite, collider, text, etc.)
+                //tile->Free();   // frees all components (sprite, collider, text, etc.)
                 delete tile;
+                arrMapInfo[uiRow][uiCol] = nullptr;
             }
         }
     }
+    arrMapInfo.clear();
 }
 
 void MapManager::SaveMapState(GAME_STATE_TYPE level)
@@ -569,8 +571,10 @@ std::vector<Tile*> MapManager::GetTilesWithID(TILE_ID currID)
     return foundTiles;
 }
 
-Tile* MapManager::GetTile(unsigned int col, unsigned int row)
+Tile* MapManager::GetTile(size_t col, size_t row)
 {
+    if (arrMapInfo.size() <= 0) return nullptr;
+
     return arrMapInfo[col][row];
 }
 std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
@@ -682,6 +686,16 @@ AEVec2 MapManager::GetPlayerSpawnPos()
     return pos;
 }
 
+size_t MapManager::GetRow()
+{
+    return  map.GetRowCount();
+}
+
+size_t MapManager::GetCol()
+{
+    return map.GetColumnCount();
+}
+
 void MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
 {
     size_t colCount = (map.GetRow<std::string>(0)).size();
@@ -704,6 +718,8 @@ void Tile::Update()
 {
     GameObject::Update();
 }
+
+
 
 void GoalTile::Init() {
     Tile::Init();
@@ -825,12 +841,12 @@ void CrateTile::Init()
                 pushState = !pushState;
                 if (pushState) {
                     grabbedPlayer = player;
-                    grabbedPlayer->currentAction = PlayerAction::CRATEINTERACT;
+                    grabbedPlayer->currentAction = PLAYER_ACTION::CRATEINTERACT;
                     grabbedSide = playerOnLeft ? COLLISION_SIDE::LEFT : COLLISION_SIDE::RIGHT;
                     interactionTextBox->isActive = false;
                 }
                 else {
-                    grabbedPlayer->currentAction = PlayerAction::IDLE;
+                    grabbedPlayer->currentAction = PLAYER_ACTION::IDLE;
                     grabbedPlayer = nullptr;
                     grabbedSide = 0;
                     interactionTextBox->isActive = true;
@@ -866,19 +882,19 @@ void CrateTile::Update() {
         if (dist > scale.x * 2.0f)
         {
             pushState = false;
-            grabbedPlayer->currentAction = PlayerAction::IDLE;
+            grabbedPlayer->currentAction = PLAYER_ACTION::IDLE;
             grabbedPlayer = nullptr;
             grabbedSide = 0;
         }
     }
 
-    if (pushState && grabbedPlayer && grabbedPlayer->currentAction == PlayerAction::CRATEINTERACT)
+    if (pushState && grabbedPlayer && grabbedPlayer->currentAction == PLAYER_ACTION::CRATEINTERACT)
     {
         // release grab when F is pressed
         if (AEInputCheckTriggered(AEVK_F))
         {
             pushState = false;
-            grabbedPlayer->currentAction = PlayerAction::IDLE;
+            grabbedPlayer->currentAction = PLAYER_ACTION::IDLE;
             grabbedPlayer = nullptr;
             grabbedSide = 0;
             interactionTextBox->isActive = false;

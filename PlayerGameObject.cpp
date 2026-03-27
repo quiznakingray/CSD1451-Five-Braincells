@@ -11,18 +11,19 @@ void Player::PlayerInput()
 	f64 dt = AEFrameRateControllerGetFrameTime();
 	AEVec2 moveDir{};
 
-	bool isGrabbing = currentAction == PlayerAction::CRATEINTERACT;
-	float accel = isGrabbing ? 150.0f : 300.0f;
-	float decel = isGrabbing ? 300.0f : 400.0f;
-	float maxSpeed = isGrabbing ? 150.0f : 300.0f;
+	bool isGrabbing = currentAction == PLAYER_ACTION::CRATEINTERACT;
+	float accel = isGrabbing ? 200.0f : 300.0f;
+	float maxSpeed = isGrabbing ? 200.0f : 300.0f;
 	float jumpHeight = 300.0f;  // lower jump when grabbing
 
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	//std::cout << "On GRASSCENTER: " << (onGround ? "--" : "___________________________ ") << std::endl;
-	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing)
+	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing 
+		&& PlayerManager::GetInstance().currentStamina != 0)
 	{
 		//moveDir.y = 500.f;
 		//onGround = false;
+		PlayerManager::GetInstance().currentStamina--;
 		float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 300.0f);
 		rb->velocity.y = jumpVelocity;
 	}
@@ -42,18 +43,7 @@ void Player::PlayerInput()
 	}
 	else
 	{
-		if (rb->velocity.x > 0)
-		{
-			rb->velocity.x -= static_cast<f32>(decel * dt);
-			if (rb->velocity.x < 0)
-				rb->velocity.x = 0;
-		}
-		else if (rb->velocity.x < 0)
-		{
-			rb->velocity.x += static_cast<f32>(decel * dt);
-			if (rb->velocity.x > 0)
-				rb->velocity.x = 0;
-		}
+		ApplyDeceleration();
 
 	}
 
@@ -62,35 +52,19 @@ void Player::PlayerInput()
 
 	if (rb->velocity.x < -maxSpeed)
 		rb->velocity.x = -maxSpeed;
-	//float length = sqrt(moveDir.x * moveDir.x);
-	//if (length > 0) {
-	//	moveDir.x /= length;
-	//}
 
-	// Set velocity
-	//rb->velocity.x = moveDir.x * speed;
-	//rb->velocity.y += moveDir.y ;
-
-	//if (AEInputCheckCurr(AEVK_M))
-	//{
-	//	animator->PlayAnimation(runningAnim);
-	//}
-	//if (AEInputCheckCurr(AEVK_N))
-	//{
-	//	animator->PlayAnimation(idleAnim);
-	//}
 }
 
 void Player::PlayerAction()
 {
-	if (rb->velocity.x != 0 && currentAction != PlayerAction::CRATEINTERACT)
+	if (rb->velocity.x != 0 && currentAction != PLAYER_ACTION::CRATEINTERACT)
 	{
 		prevAction = currentAction;
-		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
+		currentAction = rb->velocity.y != 0 ? PLAYER_ACTION::JUMPING : PLAYER_ACTION::RUNNING;
 	}
-	else if (rb->velocity.x < 0.1f && currentAction != PlayerAction::CRATEINTERACT){
+	else if (rb->velocity.x < 0.1f && currentAction != PLAYER_ACTION::CRATEINTERACT){
 		prevAction = currentAction;
-		currentAction = PlayerAction::IDLE;
+		currentAction = PLAYER_ACTION::IDLE;
 	}
 }
 
@@ -100,10 +74,10 @@ void Player::PlayerAnimation()
 	Animation* anim = nullptr;
 	switch (currentAction)
 	{
-	case PlayerAction::IDLE:
+	case PLAYER_ACTION::IDLE:
 		anim = idleAnim;
 		break;
-	case PlayerAction::RUNNING:
+	case PLAYER_ACTION::RUNNING:
 		anim = runningAnim;
 		break;
 	default:
@@ -112,6 +86,46 @@ void Player::PlayerAnimation()
 	}
 
 	animator->PlayAnimation(anim);
+}
+
+void Player::ResetPlayer()
+{
+	currentAction = PLAYER_ACTION::IDLE;
+}
+
+void Player::ApplyDeceleration()
+{
+	if (!rb) return;
+	f64 dt = AEFrameRateControllerGetFrameTime();
+	bool isGrabbing = currentAction == PLAYER_ACTION::CRATEINTERACT;
+	float decel = isGrabbing ? 300.0f : 400.0f;
+	float maxSpeed = isGrabbing ? 200.0f : 300.0f;
+
+	if (rb->velocity.x > 0)
+	{
+		rb->velocity.x -= static_cast<f32>(decel * dt);
+		if (rb->velocity.x < 0) rb->velocity.x = 0;
+	}
+	else if (rb->velocity.x < 0)
+	{
+		rb->velocity.x += static_cast<f32>(decel * dt);
+		if (rb->velocity.x > 0) rb->velocity.x = 0;
+	}
+
+	//if (rb->velocity.x > maxSpeed)  rb->velocity.x = maxSpeed;
+	//if (rb->velocity.x < -maxSpeed) rb->velocity.x = -maxSpeed;
+}
+
+Player::~Player()
+{
+	if (idleAnim) {
+		delete idleAnim;
+		idleAnim = nullptr;
+	}
+	if (runningAnim) {
+		delete runningAnim;
+		runningAnim = nullptr;
+	}
 }
 
 void Player::Init()
@@ -174,9 +188,9 @@ void Player::Init()
 	//c->OnMouseEnter = [] {	
 	//	std::cout << "Mouse Enter" << std::endl;
 	//	};
-	//c->OnMouseOver = [] {
-	//	std::cout << "Mouse Over" << std::endl;
-	//	};	
+	c->OnMouseOver = [] {
+		std::cout << "Mouse Over" << std::endl;
+		};	
 	//c->OnMouseExit = [] {
 	//	std::cout << "Mouse Exit" << std::endl;
 	//	};
@@ -212,19 +226,9 @@ void Player::Init()
 	rb = AddComponent(
 		new RigidBody()
 	);
-	rb->type = RIGIDBODY_TYPE::DYNAMIC;
+	rb->type = RIGIDBODY_TYPE::KINEMATIC;
 	rb->mass = 10.f;
 
-	//AEGfxSetCamPosition(pos.x, pos.y);
-
-
-	//s32 screenX, screenY;
-	//f32 camPosX, camPosY;
-	//f32 LEVEL1PosX, LEVEL1PosY;
-	//AEInputGetCursorPosition(&screenX, &screenY);
-	//AEGfxGetCamPosition(&camPosX, &camPosY);
-	//LEVEL1PosX = camPosX - screenX / 2.f;
-	//LEVEL1PosY = camPosY - screenY / 2.f;
 
 	showColliders = true;
 	speed = static_cast<f32>(200.0);
@@ -235,6 +239,7 @@ void Player::Init()
 
 void Player::Update(){
 	//PlayerInput();
+	float dt = AEFrameRateControllerGetFrameTime();
 	PlayerAction();
 	PlayerAnimation();
 
@@ -269,6 +274,13 @@ void MeleePlayer::Init()
 	runningAnim->loopAnimation = true;
 	runningAnim->animationFPS = 30.f;
 	Player::Init();
+}
+
+RangePlayer::~RangePlayer()
+{
+	line = nullptr;
+	playerLinePos = nullptr;  // non-owning, Sprite::Free() handles delete
+	aimLinePos = nullptr;
 }
 
 void RangePlayer::Init()
@@ -330,10 +342,10 @@ void RangePlayer::Update()
 
 void RangePlayer::PlayerAction()
 {
-	if (rb->velocity.x != 0 && currentAction != PlayerAction::CRATEINTERACT)
+	if (rb->velocity.x != 0 && currentAction != PLAYER_ACTION::CRATEINTERACT)
 	{
 		prevAction = currentAction;
-		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
+		currentAction = rb->velocity.y != 0 ? PLAYER_ACTION::JUMPING : PLAYER_ACTION::RUNNING;
 	}
 	//if (rb->velocity.x != 0)
 	//{
@@ -341,7 +353,7 @@ void RangePlayer::PlayerAction()
 	//}
 	else if (AEInputCheckCurr(AEVK_LBUTTON))
 	{
-		currentAction = PlayerAction::AIMING;
+		currentAction = PLAYER_ACTION::AIMING;
 		if (AEInputCheckTriggered(AEVK_RBUTTON))
 		{
 			// fire arrow
@@ -354,9 +366,9 @@ void RangePlayer::PlayerAction()
 			PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir);
 		}
 	}
-	else if (rb->velocity.x < 0.1f && currentAction != PlayerAction::CRATEINTERACT) {
+	else if (rb->velocity.x < 0.1f && currentAction != PLAYER_ACTION::CRATEINTERACT) {
 		prevAction = currentAction;
-		currentAction = PlayerAction::IDLE;
+		currentAction = PLAYER_ACTION::IDLE;
 	}
 }
 
@@ -392,7 +404,7 @@ void Arrow::Init()
 	rb = AddComponent(
 		new RigidBody()
 	);
-	rb->type = RIGIDBODY_TYPE::DYNAMIC;
+	rb->type = RIGIDBODY_TYPE::KINEMATIC;
 	rb->hasGravity = false;
 	isActive = false;
 	GameObject::Init();

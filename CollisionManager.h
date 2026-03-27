@@ -36,7 +36,7 @@ struct Collider : ComponentBase {
 	AEVec2 size{};
 
 	bool canCollide = true;
-	bool canInteract = true;
+	bool canInteract = false;
 
 	bool isTrigger = false;
 	bool isHovering = false;

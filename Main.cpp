@@ -14,6 +14,7 @@
 #include <filesystem>
 #include "EnemyGameObject.h"
 #include "EnemyManager.h"
+#include "CameraSystem.h"
 
 int gGameRunning = 1;
 //AEGfxVertexList* pMesh = 0;
@@ -26,7 +27,6 @@ s8 TextManager::pFont = 0;
 
 //std::vector<GameObject*> gameObjects{};
 
-GameStateManager gameStateManager;
 #pragma region tempFuncs
 // temporary functions
 void RenderGraphics() {
@@ -65,7 +65,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-
+	//_CrtSetBreakAlloc(87012);
 	//int gGameRunning = 1;
 
 	// Initialization of your own variables go here
@@ -81,13 +81,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	printf("Hello LEVEL1\n");
 
-	gameStateManager.Initialize(GAME_STATE_TYPE::MENU);
+	GameStateManager::GetInstance().Initialize(GAME_STATE_TYPE::MENU);
+	CameraSystem::Init();
 
 	// Game Loop
 	while (gGameRunning)
 	{
 		// Informing the system about the loop's start
-		gameStateManager.Update();
+		GameStateManager::GetInstance().Update();
 
 		//// Initialize the current game state
 		fpLoad();
@@ -97,12 +98,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			AESysFrameStart();
 			// Update game logic for the current frame
 			fpUpdate();
+			double dt = AEFrameRateControllerGetFrameTime();
+			CameraSystem::Update(dt);
+
 			// Render graphics for the current frame
 			fpRender();
 			// check if forcing the application to quit
-			if (AEInputCheckCurr(AEVK_ESCAPE)) {
-				next = GAME_STATE_TYPE::MENU;
-			}
+			//if (AEInputCheckCurr(AEVK_ESCAPE)) {
+			//	next = GAME_STATE_TYPE::MENU;
+			//}
 			if (0 == AESysDoesWindowExist())
 				gGameRunning = 0;
 
@@ -113,16 +117,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 			if (AEInputCheckCurr(AEVK_3)) {
 				if (mapManager.mapCurrLevel != 1) {
-					gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL2);
-					gameStateManager.Update();
+					GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LEVEL2);
+					GameStateManager::GetInstance().Update();
 					mapManager.ChangeMap(1);
 				}
 
 			}
 			if (AEInputCheckCurr(AEVK_4)) {
 				if (mapManager.mapCurrLevel != 0) {
-					gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL1);
-					gameStateManager.Update();
+					GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LEVEL1);
+					GameStateManager::GetInstance().Update();
 					mapManager.ChangeMap(0);
 				}
 			}

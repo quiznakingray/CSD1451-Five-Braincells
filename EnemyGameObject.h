@@ -24,7 +24,7 @@ struct EnemyGameObject : GameObject {
     Animation* walkAnim = nullptr;
 
     EnemyState currentState = EnemyState::IDLE;
-
+    ~EnemyGameObject();
     void Init(EnemyType type, Tile* spawnTile);
     void Update() override;
     void Render() override;

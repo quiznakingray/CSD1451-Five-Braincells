@@ -6,6 +6,11 @@ std::vector<EnemyGameObject*> EnemyManager::enemies;
 Player* EnemyManager::player = nullptr;
 extern MapManager mapManager;
 
+EnemyManager::~EnemyManager()
+{
+    enemies.clear();
+}
+
 void EnemyManager::Init(Player* p) {
     player = p;
     enemies.clear();
@@ -13,6 +18,8 @@ void EnemyManager::Init(Player* p) {
 }
 
 void EnemyManager::RegisterEnemy(EnemyGameObject* enemy) {
+    if (!enemy) return;
+    if (std::find(enemies.begin(), enemies.end(), enemy) != enemies.end()) return;
     enemies.push_back(enemy);
     std::cout << "[EnemyManager] Enemy Registered. Total: " << enemies.size() << "\n";
 }

@@ -1,7 +1,9 @@
 #include "SpriteManager.h"
 #include "CollisionManager.h"
+#include "CameraSystem.h"
 
 #include <algorithm>
+#include <iostream>
 
 void Sprite::Init()
 {
@@ -68,6 +70,7 @@ void Sprite::Render()  {
 	// calculate row and columns 
 	f32 scaleX = spriteShape == SPRITE_SHAPE::SHAPE_CIRCLE ? owner->scale.x / 2  : owner->scale.x;
 	f32 scaleY = spriteShape == SPRITE_SHAPE::SHAPE_CIRCLE ? owner->scale.x / 2 : owner->scale.y;
+	
 	AEMtx33 scaleMtx = { 0 };
 	AEMtx33Scale(&scaleMtx, scaleX * size.x, scaleY * size.y);
 
@@ -76,8 +79,17 @@ void Sprite::Render()  {
 	AEMtx33Rot(&rotateMtx, owner->rotation + rot);
 
 
+	f32 posX = owner->pos.x + offset.x;
+	f32 posY = owner->pos.y + offset.y;
+	if (owner->isUI)
+	{
+		posX += CameraSystem::GetCameraPos().x;
+		posY += CameraSystem::GetCameraPos().y;
+
+		//std::cout << "Image: " << posX << " " << posY << std::endl;
+	}
 	AEMtx33 translateMtx = { 0 };
-	AEMtx33Trans(&translateMtx, owner->pos.x + offset.x, owner->pos.y + offset.y);
+	AEMtx33Trans(&translateMtx, posX, posY);
 
 
 	AEMtx33 transform = { 0 };
@@ -106,11 +118,20 @@ void Sprite::Render()  {
 
 void Sprite::Free()
 {
-	if (mesh != nullptr) AEGfxMeshFree(mesh);
+	if (mesh != nullptr) {
+		AEGfxMeshFree(mesh);
+		mesh = nullptr;
+	}
 	if (texture != nullptr) {
 		AEGfxTextureUnload(texture);
 		texture = nullptr;
 	}
+
+	for (LinePoint* line : linePoints)
+	{
+		 delete line ;
+	}
+	linePoints.clear();
 }
 
 

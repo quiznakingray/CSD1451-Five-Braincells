@@ -3,6 +3,12 @@
 #include <iostream>
 #include "EnemyMovement.h"
 
+EnemyGameObject::~EnemyGameObject()
+{
+    if (idleAnim) delete idleAnim;
+    if (walkAnim) delete walkAnim;
+}
+
 void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     InitEnemyBase(base, type);
     EnemyMovement::InitEnemyMovement(movement);
@@ -24,17 +30,24 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     base.patrolEnd = { spawnTile->pos.x + 150.f, spawnTile->pos.y - 100.f };
 
     // Sprite setup
-    Sprite* s = AddComponent(new Sprite());
+    Sprite* s = new Sprite();
     s->meshColor = (type == EnemyType::BASIC) ? 0xFF0000FF : 0xFFFF0000;
     s->textureFileName = "Assets/SpriteSheets/testRed4x6.png";
     s->spriteSheet = Sprite::SpriteSheet(6, 4);
     s->spriteSheet.isSpriteSheet = true;
 
+    Sprite* walk = new Sprite();
+    walk->meshColor = (type == EnemyType::BASIC) ? 0xFF0000FF : 0xFFFF0000;
+    walk->textureFileName = "Assets/SpriteSheets/test4x6.png";
+    walk->spriteSheet = Sprite::SpriteSheet(6, 4);
+    walk->spriteSheet.isSpriteSheet = true;
+
     idleAnim = new Animation(s);
-    walkAnim = new Animation(s);
+    walkAnim = new Animation(walk);
 
     // Add Rigidbody first
     rb = AddComponent(new RigidBody());
+    rb->type = RIGIDBODY_TYPE::KINEMATIC;
 
     // Add Animator after Rigidbody
     animator = AddComponent(new Animator(idleAnim));

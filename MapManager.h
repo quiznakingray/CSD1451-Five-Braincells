@@ -291,9 +291,6 @@ struct WallTile : Tile {
 
 	}
 
-	void Init() override {
-		Tile::Init();
-	}
 };
 struct LaserTile : Tile {
 	LaserTile(
@@ -556,6 +553,7 @@ struct MapManager : public Singleton<MapManager> {
 	//S get_instance();
 
 
+
 #pragma region MapFuncs
 	// Loads a map
 	void InitMap(std::string fileName, unsigned int currLevel);
@@ -601,8 +599,6 @@ struct MapManager : public Singleton<MapManager> {
 	// returns a vector of all tiles with given currID
 	std::vector<Tile*> GetTilesWithID(TILE_ID currID);
 
-	// Gets tile from col and row provided
-	Tile* GetTile(unsigned int col, unsigned int row);
 
 	// Sets map info
 	void SetTile(unsigned int col, unsigned int row, unsigned int currID, unsigned int currTag);
@@ -634,9 +630,12 @@ struct MapManager : public Singleton<MapManager> {
 #pragma endregion
 
 #pragma region GetFuncs
+	// Gets tile from col and row provided
+	Tile* GetTile(size_t col, size_t row);
 	static Tile* GetTile(TILE_ID id);
 	static AEVec2 GetPlayerSpawnPos();
-
+	size_t GetRow();
+	size_t GetCol();
 	void AddTilesToGameObjectVector(std::vector<GameObject*>& gos);
 };
 

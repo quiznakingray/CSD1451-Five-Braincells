@@ -7,13 +7,10 @@
 
 #include <functional>
 
-struct InputManager : public Singleton <InputManager> {
+struct InputManager : Singleton <InputManager> {
 
 	u8 interactKey = AEVK_F;
-
-	std::function<void()> OnInteractionTriggered = nullptr;
-	std::function<void()> OnInteractionHold;
-	std::function<void()> OnInteractionRelease;
+	u8 pauseKey = AEVK_ESCAPE;
 
 	void Update();
 

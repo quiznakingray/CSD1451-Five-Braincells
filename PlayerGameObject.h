@@ -5,7 +5,7 @@
 #include "PhysicsManager.h"
 #include "AnimatorComponent.h"
 
-enum class PlayerAction {
+enum class PLAYER_ACTION {
 	IDLE,
 	RUNNING,
 	JUMPING,
@@ -23,7 +23,6 @@ struct Player : GameObject {
 
 	//STATE playerState = STATE::IDLE;
 	f32 speed{};
-
 	RigidBody* rb = nullptr;
 
 
@@ -36,23 +35,29 @@ struct Player : GameObject {
 	Animation* idleAnim = nullptr;
 	Animation* runningAnim = nullptr;
 
-	PlayerAction currentAction = PlayerAction::IDLE;
-	PlayerAction prevAction = PlayerAction::IDLE;
+	PLAYER_ACTION currentAction = PLAYER_ACTION::IDLE;
+	PLAYER_ACTION prevAction = PLAYER_ACTION::IDLE;
 
+	~Player();
 	void Init() override;
 	void Update() override;
 
 	void PlayerInput();
 	virtual void PlayerAction();
+	void ApplyDeceleration();
 private:
 
 
 	void PlayerAnimation();
+
+
+	void ResetPlayer();
 };
 
 struct MeleePlayer : Player {
 
 	void Init() override;
+	~MeleePlayer() = default;
 };
 
 struct RangePlayer : Player {
@@ -60,7 +65,8 @@ struct RangePlayer : Player {
 	Sprite* line = nullptr;
 	Sprite::LinePoint* playerLinePos = nullptr;
 	Sprite::LinePoint* aimLinePos = nullptr;
-
+	
+	~RangePlayer();
 	void Init() override;
 	void Update() override;
 
