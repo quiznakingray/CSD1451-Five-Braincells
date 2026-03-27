@@ -21,6 +21,7 @@ GAME_STATE_TYPE MapManager::mapCurrLevel = GAME_STATE_TYPE::LEVEL1;
 
 void MapManager::InitMap(std::string fileName, GAME_STATE_TYPE currLevel)
 {
+   
     map = rapidcsv::Document(fileName);
     mapCurrLevel = currLevel;
     // Read a row from the CSV file
@@ -793,12 +794,17 @@ void CheckpointTile::Init() {
 void CrateTile::Init()
 {
     Tile::Init();
-    collider->size.x = 0.875f;
-    collider->size.y = 0.875f;
+    
+    collider->size.x = 0.85f;
+    collider->size.y = 0.85f;
 
     interactionTextBox->text = "[F] Grab";
 
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
+        int hitSides = collider->GetSidesForCollider(other);
+        if (hitSides & COLLISION_SIDE::BOTTOM) {
+            AudioManager::PlaySFX("crateLanding");
+        }
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !pushState)
             interactionTextBox->isActive = true;
@@ -806,7 +812,7 @@ void CrateTile::Init()
         Arrow* arrow = dynamic_cast<Arrow*>(other->owner);
         if (arrow && arrow->isActive)
         {
-            int hitSides = collider->GetSidesForCollider(other);
+            
             if (hitSides & COLLISION_SIDE::LEFT || hitSides & COLLISION_SIDE::RIGHT)
             {
                 rb->velocity.x = (hitSides & COLLISION_SIDE::LEFT) ? 200.0f : -200.0f;
@@ -907,6 +913,7 @@ void CrateTile::Update() {
             if (!tile) continue;
             if (tile == this) continue;
             if (!tile->collider || !tile->collider->canCollide) continue;
+            if (tile->collider->isTrigger) continue;
             if (dynamic_cast<LeverTile*>(tile)) continue;
 
             Collider* oCol = tile->collider;

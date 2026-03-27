@@ -14,8 +14,8 @@ void AudioManager::LoadAllAudio()
     struct MusicFile { const char* key; const char* path; };
     MusicFile musicFiles[] = {
         {"menu_bgm", "Assets/Sounds/Explosion CTE01_56.1.wav"},
-        {"anyFileName", "Assets/Sounds/ex1.wav"}, // EXAMPLE, REPLACE THIS, same format for sfx
-        {"callThisFileName", "Assets/Sounds/ex2.wav"} // EXAMPLE, REPLACE THIS
+        //{"leverSwitch.wav", "Assets/Sounds/ex1.wav"}, // EXAMPLE, REPLACE THIS, same format for sfx
+        //{"callThisFileName", "Assets/Sounds/ex2.wav"} // EXAMPLE, REPLACE THIS
     };
 
     // Load all music audio
@@ -27,7 +27,11 @@ void AudioManager::LoadAllAudio()
     // Store all sfx audio
     struct SFXFile { const char* key; const char* path; };
     SFXFile sfxFiles[] = {
-        {"button_click", "Assets/Sounds/WhooshCartoon CTE02_89.2.wav"}
+        {"leverSwitch", "Assets/Sounds/leverSwitch.wav"},
+        { "buttonSwitch", "Assets/Sounds/buttonSwitch.wav" },
+        { "crateLanding", "Assets/Sounds/crateLanding.wav" },
+        { "playerHurt", "Assets/Sounds/playerHurt.wav" },
+        { "playerDie", "Assets/Sounds/playerDie.wav" }
     };
 
     // Load all sfx audio

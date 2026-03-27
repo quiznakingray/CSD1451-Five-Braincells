@@ -27,9 +27,9 @@ public:
 
     AEVec2 GetPlayerPos();
 
-    static void SaveEnemyStates();
+    void SaveEnemyStates();
 
-    static void LoadEnemyStates();
+    void LoadEnemyStates();
 
     // Getter for rendering
     const std::vector<EnemyGameObject*>& GetEnemies() { return enemies; }

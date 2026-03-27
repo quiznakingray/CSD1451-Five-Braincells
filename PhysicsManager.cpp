@@ -33,10 +33,13 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     CrateTile* crateB = dynamic_cast<CrateTile*>(B);
     Player* playerA = dynamic_cast<Player*>(A);
     Player* playerB = dynamic_cast<Player*>(B);
-
-    if ((crateA && crateA->pushState && playerB) ||
-        (crateB && crateB->pushState && playerA))
-        return;
+   
+    if (playerA && playerB)
+    {
+        if (playerA->currentAction == PlayerAction::CRATEINTERACT ||
+            playerB->currentAction == PlayerAction::CRATEINTERACT)
+            return;
+    }
 
     RigidBody* ra = A->GetComponent<RigidBody>();
     RigidBody* rb = B->GetComponent<RigidBody>();

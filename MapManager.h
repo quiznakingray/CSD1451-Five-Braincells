@@ -14,6 +14,7 @@
 #include "TextComponent.h"
 #include "InputManager.h"
 #include "GameStateManager.h"
+#include "AudioManager.h"
 
 #include "Helper.h"
 
@@ -713,7 +714,7 @@ struct LeverTile : Tile {
 			currID = TILE_ID::LEVERREDON;
 			break;
 		}
-
+		AudioManager::PlaySFX("leverSwitch");
 		SetTexture();
 	}
 
@@ -757,7 +758,7 @@ struct LeverTile : Tile {
 
 	void Init() override {
 		Tile::Init();
-
+		
 		//showColliders = true;
 		collider->center.y = 0.5f;
 		collider->size.x = 2.f;
@@ -869,6 +870,7 @@ struct ButtonTile : Tile {
 			currID = TILE_ID::BUTTONBLUEUNPRESSED;
 			break;
 		}
+		AudioManager::PlaySFX("buttonSwitch");
 		SetTexture();
 	}
 
@@ -969,7 +971,6 @@ struct ButtonTile : Tile {
 		Tile::Init();
 		collider->center.y = 0.f;
 		collider->size.x = 0.9f;
-		collider->size.y = 0.5f;
 		collider->isTrigger = true;
 
 		std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);

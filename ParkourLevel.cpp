@@ -13,6 +13,7 @@ std::vector<GameObject*> levelGameObjectVector{};
 void ParkourLevel::Load()
 {
 	TextManager::Init();
+	AudioManager::Init();
 }
 
 void ParkourLevel::Init()
@@ -45,10 +46,7 @@ void ParkourLevel::Init()
 	AddGameObjectToVector(PlayerManager::GetInstance().rangedPlayer, levelGameObjectVector);
 	AddGameObjectToVector(PlayerManager::GetInstance().rangePlayerArrow, levelGameObjectVector);
 
-	AddGameObjectToVector(playerManager.meleePlayer, levelGameObjectVector);
-	AddGameObjectToVector(playerManager.rangedPlayer, levelGameObjectVector);
-	AddGameObjectToVector(playerManager.rangePlayerArrow, levelGameObjectVector);
-	EnemyManager::GetInstance().Init(playerManager.currentPlayer);
+	EnemyManager::GetInstance().Init(PlayerManager::GetInstance().currentPlayer);
 	EnemyManager::GetInstance().SpawnEnemies(5, 1, levelGameObjectVector);
 
 	InitGameObjects(levelGameObjectVector);
@@ -78,7 +76,8 @@ void ParkourLevel::Render()
 	MapManager::GetInstance().DrawMapSprite();
 
 	//player1->Render();
-	playerManager.Render();
+
+	PlayerManager::GetInstance().Render();
 	EnemyManager::GetInstance().RenderEnemies();
 	// enemy1->Render();
 	// player1->Render();

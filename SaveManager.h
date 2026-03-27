@@ -11,7 +11,7 @@
 struct PlayerSaveData {
     AEVec2 meleePos{};
     AEVec2 rangedPos{};
-    int health;
+    int health = 5;
     bool preserveOnLoad = false;
     bool hasSavedData = false;
 };

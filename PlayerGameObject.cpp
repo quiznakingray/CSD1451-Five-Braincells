@@ -85,8 +85,12 @@ void Player::PlayerInput()
 void Player::ReducePlayerHealth()
 {
 	health--;
-	if (health <= 0)
+	if (health > 0) {
+		AudioManager::PlaySFX("playerHurt");
+	}
+	else
 	{
+		AudioManager::PlaySFX("playerDie");
 		health = defaultHealth;
 		SaveManager::GetInstance().toContinue = true;
 		GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
@@ -201,7 +205,11 @@ void Player::Init()
 			{
 				if (sides & COLLISION_SIDE::BOTTOM)
 					this->rb->onCollider = true;
-
+			}
+			if (CrateTile* crate = dynamic_cast<CrateTile*>(other->owner))
+			{
+				if (sides & COLLISION_SIDE::BOTTOM)
+					this->rb->onCollider = true;
 			}
 		};
 
@@ -209,7 +217,11 @@ void Player::Init()
 		{
 			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 			{
-				// Keep onCollider true while still standing on something
+				if (sides & COLLISION_SIDE::BOTTOM)
+					this->rb->onCollider = true;
+			}
+			if (CrateTile* crate = dynamic_cast<CrateTile*>(other->owner))
+			{
 				if (sides & COLLISION_SIDE::BOTTOM)
 					this->rb->onCollider = true;
 			}
