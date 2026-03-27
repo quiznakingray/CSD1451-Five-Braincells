@@ -1,12 +1,13 @@
 #include "AudioManager.h"
 
-AEAudioGroup AudioManager::masterGroup;
-AEAudioGroup AudioManager::musicGroup;
-AEAudioGroup AudioManager::sfxGroup;
+AudioManager::AudioManager()
+{
+}
 
-float AudioManager::masterVolume = 1.0f;
-float AudioManager::musicVolume = 1.0f;
-float AudioManager::sfxVolume = 1.0f;
+AudioManager::~AudioManager()
+{
+    Exit();
+}
 
 void AudioManager::LoadAllAudio()
 {

@@ -3,46 +3,52 @@
 
 #include "AEEngine.h"
 #include "AEAudio.h"
+#include "SingletonTemplate.h"
 #include <map>
 #include <string>
 
-static std::map<std::string, AEAudio> sfx; // stores sfx audio
-static std::map<std::string, AEAudio> music; // stores music audio
-
-class AudioManager
+class AudioManager : public Singleton<AudioManager>
 {
 public:
-    static void Init();
-    static void Update();
-    static void Exit();
+    void Init();
+    void Update();
+    void Exit();
 
-    static void SetMasterVolume(float v);
-    static void SetMusicVolume(float v);
-    static void SetSFXVolume(float v);
+    void SetMasterVolume(float v);
+    void SetMusicVolume(float v);
+    void SetSFXVolume(float v);
 
     // Get volumes for save files
-    static float GetMasterVolume();
-    static float GetMusicVolume();
-    static float GetSFXVolume();
+    float GetMasterVolume();
+    float GetMusicVolume();
+    float GetSFXVolume();
 
-    static void PlaySFX(const std::string& name);
-    static void PlayMusic(const std::string& name, bool loop = true);
+    void PlaySFX(const std::string& name);
+    void PlayMusic(const std::string& name, bool loop = true);
 
 private:
-    static AEAudioGroup masterGroup;
-    static AEAudioGroup musicGroup;
-    static AEAudioGroup sfxGroup;
+    friend class Singleton<AudioManager>;
 
-    static float masterVolume;
-    static float musicVolume;
-    static float sfxVolume;
+    AudioManager();
+    ~AudioManager();
+
+    std::map<std::string, AEAudio> sfx; // stores sfx audio
+    std::map<std::string, AEAudio> music; // stores music audio
+
+    AEAudioGroup masterGroup;
+    AEAudioGroup musicGroup;
+    AEAudioGroup sfxGroup;
+
+    float masterVolume = 1.0f;
+    float musicVolume = 1.0f;
+    float sfxVolume = 1.0f;
 
     // Get audio groups
-    static AEAudioGroup GetMasterGroup();
-    static AEAudioGroup GetMusicGroup();
-    static AEAudioGroup GetSFXGroup();
+    AEAudioGroup GetMasterGroup();
+    AEAudioGroup GetMusicGroup();
+    AEAudioGroup GetSFXGroup();
 
-    static void LoadAllAudio(); // load all audio files here
+    void LoadAllAudio(); // load all audio files here
 };
 
 #endif
