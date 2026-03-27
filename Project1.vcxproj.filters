@@ -127,13 +127,13 @@
     <ClCompile Include="EndMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LoseMenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Credits.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ParticleEffects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -256,13 +256,13 @@
     <ClInclude Include="EndMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LoseMenu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Credits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ParticleEffects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

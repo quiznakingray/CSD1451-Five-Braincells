@@ -93,4 +93,5 @@ void InitGameObjects(std::vector<GameObject*>& gos);
 void UpdateGameObjects(std::vector<GameObject*>& gos);
 void RenderGameObjects(std::vector<GameObject*>& gos);
 void FreeGameObjects(std::vector<GameObject* >& gos);
+void SetActiveGameObjects(std::vector<GameObject*>& vec, bool active);
 #endif // !GAME_OBJECT_MANAGER_H

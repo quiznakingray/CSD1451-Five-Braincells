@@ -7,7 +7,9 @@
 #include "EnemyManager.h"
 #include "CameraSystem.h"
 #include "InputManager.h"
+#include "TextManager.h"
 #include "HUD.h"
+#include "PauseMenu.h"
 
 //Player* player1 = nullptr;
 
@@ -66,28 +68,36 @@ void ParkourLevel::Init()
 	
 	// HUD
 	HUD::GetInstance().Init();
+
+	// Pause
+	PauseMenu::GetInstance().Init();
 }
 
 void ParkourLevel::Update()
 {
 	InputManager::GetInstance().Update();
-	if (GameStateManager::GetInstance().isGamePause) return;
+	if (GameStateManager::GetInstance().isGamePause) {
+
+		PauseMenu::GetInstance().Update();
+		return;
+	}
 	double dt = AEFrameRateControllerGetFrameTime();
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
-	HUD::GetInstance().Update(dt);
 	EnemyManager::GetInstance().UpdateAllEnemies(dt);
+	HUD::GetInstance().Update(dt);
 }
 
 void ParkourLevel::Render()
 {
 	AEGfxSetBackgroundColor(0.6f, 0.8f, 0.85f);
 	MapManager::GetInstance().DrawMapSprite();
-
 	PlayerManager::GetInstance().Render();
 	EnemyManager::GetInstance().RenderEnemies();
 	HUD::GetInstance().Render();
-
+	if (GameStateManager::GetInstance().isGamePause) {
+		PauseMenu::GetInstance().Render();
+	}
 
 }
 
@@ -138,7 +148,7 @@ void ParkourLevel::Free()
 	//{
 	//	obj = nullptr;
 	//}
-
+	PauseMenu::GetInstance().Free();
 }
 
 void ParkourLevel::Unload()
