@@ -2,6 +2,7 @@
 #include "AEEngine.h"
 #include "GameStateManager.h"
 #include <iostream>
+#include <cstdio> // For sprintf_s
 
 
 
@@ -50,37 +51,22 @@ void EndMenu::Update() {
 void EndMenu::Render() {
     if (!isActive) return;
 
-    // 1. Draw a semi-transparent dark background overlay
-    // (Optional: Draw a large black mesh here)
-
-    // 2. Draw Text
     char scoreText[50], timeText[50], deathText[50];
     sprintf_s(scoreText, "Your Score: %d", score);
     sprintf_s(timeText, "Time Taken: %.2f", timeTaken);
     sprintf_s(deathText, "Death Counter: %d", deathCounter);
 
+    // Corrected: AEGfxPrint takes 7 arguments, removed the leading '1'
     if (isWin) {
-        AEGfxPrint(1, (char*)"Congrats, You Win!", -0.2f, 0.4f, 1.5f, 1.0f, 1.0f, 0.0f);
-        AEGfxPrint(1, deathText, -0.15f, 0.2f, 1.0f, 1.0f, 1.0f, 1.0f);
+        AEGfxPrint((char*)"Congrats, You Win!", -0.2f, 0.4f, 1.5f, 1.0f, 1.0f, 0.0f);
+        AEGfxPrint(deathText, -0.15f, 0.2f, 1.0f, 1.0f, 1.0f, 1.0f);
     }
     else {
-        AEGfxPrint(1, (char*)"You Are Dead, Yikes!", -0.2f, 0.4f, 1.5f, 1.0f, 0.0f, 0.0f);
+        AEGfxPrint((char*)"You Are Dead, Yikes!", -0.2f, 0.4f, 1.5f, 1.0f, 0.0f, 0.0f);
     }
 
-    AEGfxPrint(1, scoreText, -0.15f, 0.1f, 1.0f, 1.0f, 1.0f, 1.0f);
-    AEGfxPrint(1, timeText, -0.15f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f);
-
-    // 3. Draw Buttons
-    AEMtx33 trans;
-    AEMtx33Trans(&trans, 0, -50);
-    AEGfxSetTransform(trans.m);
-    AEGfxMeshDraw(pMesh, AE_GFX_MDM_TRIANGLES);
-    AEGfxPrint(1, isWin ? (char*)"Play Again" : (char*)"Try Again", -0.05f, -0.12f, 1.0f, 0.0f, 0.0f, 0.0f);
-
-    AEMtx33Trans(&trans, 0, -120);
-    AEGfxSetTransform(trans.m);
-    AEGfxMeshDraw(pMesh, AE_GFX_MDM_TRIANGLES);
-    AEGfxPrint(1, (char*)"Main Menu", -0.05f, -0.27f, 1.0f, 0.0f, 0.0f, 0.0f);
+    AEGfxPrint(scoreText, -0.15f, 0.1f, 1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxPrint(timeText, -0.15f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void EndMenu::Free() {

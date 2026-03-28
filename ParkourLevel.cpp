@@ -10,6 +10,7 @@
 #include "TextManager.h"
 #include "HUD.h"
 #include "PauseMenu.h"
+#include "EndMenu.h"
 
 //Player* player1 = nullptr;
 
@@ -96,6 +97,9 @@ void ParkourLevel::Update()
 		EndMenu::Update();
 		return;
 	}
+
+	CheckPlayerDeath(); // Check if player is dead
+
 	double dt = AEFrameRateControllerGetFrameTime();
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
