@@ -11,8 +11,7 @@ enum class GAME_STATE_TYPE {
 	COMBAT,
 	INSTRUCTIONS,
 	SETTING,
-	PAUSE,
-	CONFIRMATION
+	CREDITS
 };
 extern GAME_STATE_TYPE current, next;
 extern GAME_STATE_TYPE previousState; // To remember where to "Resume" to

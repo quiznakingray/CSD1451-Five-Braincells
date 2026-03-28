@@ -82,7 +82,7 @@ void MainMenu_Update() {
             if (strcmp(btn.text, "NEW GAME") == 0) next = GAME_STATE_TYPE::WORLD;
             if (strcmp(btn.text, "INSTRUCTIONS") == 0) next = GAME_STATE_TYPE::INSTRUCTIONS;
             if (strcmp(btn.text, "SETTING") == 0) next = GAME_STATE_TYPE::SETTING;
-            
+            if (strcmp(btn.text, "CREDITS") == 0) next = GAME_STATE_TYPE::CREDITS;
             if (strcmp(btn.text, "EXIT") == 0) gGameRunning = 0;
         }
     }
