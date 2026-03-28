@@ -8,11 +8,17 @@ struct Text : ComponentBase {
 	AEVec2 center{};
 	AEVec2 size{};
 
-	bool inWorldSpace = false;
-	const char * text{};
+	bool inWorldSpace = true;
+	std::string textStr{};
+	const char * text = "";
 
 	void Render() override;
+	void SetText(const std::string& str) {
+		textStr = str;
+		text = textStr.c_str();     // always valid as long as textStr lives
+	}
 
+	void Free() override;
 };
 #endif // !TEXT_COMPONENT
 struct TextManager {

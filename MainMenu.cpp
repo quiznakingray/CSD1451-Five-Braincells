@@ -1,6 +1,6 @@
-#include "MainMenu.h" // Ensure this file exists in your project folder
+﻿#include "MainMenu.h" // Ensure this file exists in your project folder
 #include "GameStateManager.h"
-#include "AEEngine.h"
+#include "AudioMenu.h"
 #include <vector>
 #include <string> // For strcmp
 #include <cstdio> // For sprintf
@@ -14,6 +14,9 @@ static s8 menuFont;
 static AEGfxVertexList* pRectMesh;
 static AEGfxTexture* pBackgroundTex; // Background variable
 static int highScore = 1500;         // Example high score
+
+static bool isAudioMenuOpen = false;
+static AudioMenu audioMenu;
 
 struct Button {
     const char* text;
@@ -60,11 +63,30 @@ void MainMenu_Init() {
     for (auto& btn : buttons) {
         AEGfxGetPrintSize(menuFont, btn.text, 1.0f, &btn.w, &btn.h);
     }
+
+    audioMenu.Init(); // initialize audio panel
+
+    // Play main menu bgm
+    //AudioManager::GetInstance().GetInstance().PlayMusic("menu_bgm");
 }
 
 void MainMenu_Update() {
     s32 mX, mY;
     AEInputGetCursorPosition(&mX, &mY);
+
+    // Checks if audio panel is open
+    if (isAudioMenuOpen)
+    {
+        audioMenu.Update();
+
+        // Escape button closes audio panel
+        if (AEInputCheckTriggered(AEVK_ESCAPE))
+        {
+            isAudioMenuOpen = false;
+        }
+        return; // stop main menu interaction when audio panel is open
+    }
+
     // Get current dimensions dynamically
     f32 halfWidth = AEGfxGetWindowWidth() / 2.0f;
     f32 halfHeight = AEGfxGetWindowHeight() / 2.0f;
@@ -83,7 +105,26 @@ void MainMenu_Update() {
             if (strcmp(btn.text, "INSTRUCTIONS") == 0) next = GAME_STATE_TYPE::INSTRUCTIONS;
             if (strcmp(btn.text, "SETTING") == 0) next = GAME_STATE_TYPE::SETTING;
             
+            if (strcmp(btn.text, "PLAY") == 0) {
+                SaveManager::GetInstance().ResetSave();  // clears everything including preserveOnLoad
+                next = GAME_STATE_TYPE::LEVEL1;
+            }
+            if (strcmp(btn.text, "CONTINUE") == 0) {
+                if (SaveManager::GetInstance().HasSaveData()) {
+                    SaveManager::GetInstance().LoadPlayerData();
+                    SaveManager::GetInstance().LoadMapData();
+                    SaveManager::GetInstance().LoadEnemyData();
+                    SaveManager::GetInstance().toContinue = true;
+                    next = SaveManager::GetInstance().mapSaveData.savedLevel;
+                }
+            }
             if (strcmp(btn.text, "EXIT") == 0) gGameRunning = 0;
+
+            // Checks if settings button is clicked
+            if (strcmp(btn.text, "SETTINGS") == 0)
+            {
+                isAudioMenuOpen = true; // open audio panel
+            }
         }
     }
 }
@@ -104,6 +145,14 @@ void MainMenu_Draw() {
     AEGfxPrint(menuFont, scoreBuffer, -0.35f, 0.2f, 0.8f, 0.5f, 1.0f, 1.0f, 1.0f);
 
     // 3. Draw Buttons
+    // Checks if audio panel is open
+    if (isAudioMenuOpen)
+    {
+        audioMenu.Render(); // renders audio panel
+        return;
+    }
+
+    // Draw Buttons: Centralized and equally separated
     for (const auto& btn : buttons) {
         f32 r = btn.isHovered ? 1.0f : 0.7f;
         f32 g = btn.isHovered ? 1.0f : 0.7f;
@@ -117,4 +166,6 @@ void MainMenu_Draw() {
 void MainMenu_Free() {
     AEGfxDestroyFont(menuFont);
     AEGfxMeshFree(pRectMesh);
+
+    audioMenu.Free(); // free audio panel
 }

@@ -11,6 +11,7 @@ struct Animation {
 
 	Animation(Sprite* s) : sprite(s){
 	}
+	~Animation();
 	void Init();
 	void Free();
 };
@@ -23,7 +24,7 @@ struct Animator : ComponentBase{
 
 	Animator(Animation* curr = nullptr) : currentAnimation(curr){
 	}
-
+	~Animator();
 	void PlayAnimation(Animation* a);
 	
 

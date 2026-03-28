@@ -57,9 +57,6 @@
     <ClCompile Include="InputManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerCombat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameStateManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -90,31 +87,34 @@
     <ClCompile Include="AnimatorComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BossLevel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PlayerManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PauseMenu.cpp">
+    <ClCompile Include="SaveManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Instructions.cpp">
+    <ClCompile Include="CameraSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EndMenu.cpp">
+    <ClCompile Include="EnemyManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Credits.cpp">
+    <ClCompile Include="HUD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleEffects.cpp">
+    <ClCompile Include="AudioManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextManager.cpp">
+    <ClCompile Include="AudioMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UiButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UiSlider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -135,9 +135,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameObjectManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Header.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
@@ -162,9 +159,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="InputManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerCombat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameStateManager.h">
@@ -197,31 +191,37 @@
     <ClInclude Include="AnimatorComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BossLevel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PlayerManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PauseMenu.h">
+    <ClInclude Include="SaveManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Instructions.h">
+    <ClInclude Include="CameraSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EndMenu.h">
+    <ClInclude Include="EnemyManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Credits.h">
+    <ClInclude Include="HUD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleEffects.h">
+    <ClInclude Include="AudioManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextManager.h">
+    <ClInclude Include="AudioMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UiButton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UiSlider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerStats.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
