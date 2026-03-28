@@ -85,12 +85,12 @@ void Player::ReducePlayerHealth()
 {
 	health--;
 	if (health > 0) {
-		AudioManager::PlaySFX("playerHurt");
+		AudioManager::GetInstance().PlaySFX("playerHurt");
 	}
 	else
 	{
-		AudioManager::PlaySFX("playerDie");
-		health = defaultHealth;
+		AudioManager::GetInstance().PlaySFX("playerDie");
+		PlayerStats::Get().ReducePlayerHealth();
 		SaveManager::GetInstance().toContinue = true;
 		GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
 		current = GAME_STATE_TYPE::MENU;  // force inner loop to exit
@@ -465,7 +465,7 @@ void RangePlayer::PlayerAction()
 				// normalize so components are between -1 and 1
 				AEVec2Normalize(&dir, &dir);
 
-				PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir, PlayerStats::Get().damage);
+				PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir);
 
 				// reset timer
 				arrowTimer = 0.0f;
@@ -537,12 +537,11 @@ void Arrow::Update()
 	}
 }
 
-void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir, int dmg)
+void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir)
 {
 	if (isActive) return;
 	pos.x = startPos.x;
 	pos.y = startPos.y;
-	damage = dmg; // to store damage value
 	isActive = true;
 
 	// set velocity

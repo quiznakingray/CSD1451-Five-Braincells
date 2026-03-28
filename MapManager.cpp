@@ -83,7 +83,7 @@ void MapManager::GenerateNodes()
     std::cout << "[MapManager] Nodes Generated: " << EnemyMovement::allNodes.size() << "\n";
 }
 
-void MapManager::InitMap(std::string fileName, unsigned int currLevel)
+void MapManager::InitMap(std::string fileName, GAME_STATE_TYPE currLevel)
 {
    
     map = rapidcsv::Document(fileName);
@@ -929,7 +929,7 @@ void CrateTile::Init()
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
         int hitSides = collider->GetSidesForCollider(other);
         if (hitSides & COLLISION_SIDE::BOTTOM) {
-            AudioManager::PlaySFX("crateLanding");
+            AudioManager::GetInstance().PlaySFX("crateLanding");
         }
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !pushState)

@@ -37,11 +37,11 @@ struct PlayerStats
     {
         health--;
         if (health > 0) {
-            AudioManager::PlaySFX("playerHurt");
+            AudioManager::GetInstance().PlaySFX("playerHurt");
         }
         else
         {
-            AudioManager::PlaySFX("playerDie");
+            AudioManager::GetInstance().PlaySFX("playerDie");
             health = maxHealth;
             SaveManager::GetInstance().toContinue = true;
             GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;

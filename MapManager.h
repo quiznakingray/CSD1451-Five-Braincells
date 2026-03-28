@@ -505,7 +505,7 @@ struct MapManager : public Singleton<MapManager> {
 
 	static constexpr  float tileSize = 80.f;
 	const char delimiter = ',';
-	static GAME_STATE_TYPE mapCurrLevel;
+	GAME_STATE_TYPE mapCurrLevel;
 	static size_t rowCount;
 	static size_t colCount;
 
@@ -531,7 +531,7 @@ struct MapManager : public Singleton<MapManager> {
 
 	void GenerateNodes();
 
-	void SaveMapState(GAME_STATE_TYPE level);
+	void SaveMapState();
 
 	void LoadMapState();
 	
@@ -673,7 +673,7 @@ struct LeverTile : Tile {
 			currID = TILE_ID::LEVERREDON;
 			break;
 		}
-		AudioManager::PlaySFX("leverSwitch");
+		AudioManager::GetInstance().PlaySFX("leverSwitch");
 		SetTexture();
 	}
 
@@ -831,7 +831,7 @@ struct ButtonTile : Tile {
 			currID = TILE_ID::BUTTONBLUEUNPRESSED;
 			break;
 		}
-		AudioManager::PlaySFX("buttonSwitch");
+		AudioManager::GetInstance().PlaySFX("buttonSwitch");
 		SetTexture();
 	}
 

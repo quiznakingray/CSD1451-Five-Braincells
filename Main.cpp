@@ -87,7 +87,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// Game Loop
 	while (gGameRunning)
 	{
-		AudioManager::GetInstance().Init();
+		AudioManager::GetInstance().GetInstance().Init();
 		// Informing the system about the loop's start
 		gameStateManager.Update();
 
@@ -113,21 +113,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			if (AEInputCheckCurr(AEVK_2))
 				AESysSetFullScreen(0);
 
-			if (AEInputCheckCurr(AEVK_3)) {
-				if (mapManager.mapCurrLevel != GAME_STATE_TYPE::LEVEL1) {
-					gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL2);
-					gameStateManager.Update();
-					mapManager.ChangeMap(GAME_STATE_TYPE::LEVEL2);
-				}
+			//if (AEInputCheckCurr(AEVK_3)) {
+			//	if (mapManager.mapCurrLevel != GAME_STATE_TYPE::LEVEL1) {
+			//		gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL2);
+			//		gameStateManager.Update();
+			//		mapManager.ChangeMap(GAME_STATE_TYPE::LEVEL2);
+			//	}
 
-			}
-			if (AEInputCheckCurr(AEVK_4)) {
-				if (mapManager.mapCurrLevel != GAME_STATE_TYPE::LEVEL2) {
-					gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL1);
-					gameStateManager.Update();
-					mapManager.ChangeMap(GAME_STATE_TYPE::LEVEL1);
-				}
-			}
+			//}
+			//if (AEInputCheckCurr(AEVK_4)) {
+			//	if (mapManager.mapCurrLevel != GAME_STATE_TYPE::LEVEL2) {
+			//		gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL1);
+			//		gameStateManager.Update();
+			//		mapManager.ChangeMap(GAME_STATE_TYPE::LEVEL1);
+			//	}
+			//}
 			// Informing the system about the loop's end
 
 			AESysFrameEnd();

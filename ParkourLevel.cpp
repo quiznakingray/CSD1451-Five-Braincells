@@ -13,7 +13,7 @@ std::vector<GameObject*> levelGameObjectVector{};
 void ParkourLevel::Load()
 {
 	TextManager::Init();
-	AudioManager::Init();
+	AudioManager::GetInstance().Init();
 }
 
 void ParkourLevel::Init()
