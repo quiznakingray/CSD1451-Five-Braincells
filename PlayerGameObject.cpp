@@ -238,7 +238,7 @@ void Player::Init()
 	rb = AddComponent(
 		new RigidBody()
 	);
-	rb->type = RIGIDBODY_TYPE::KINEMATIC;
+	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 	rb->mass = 10.f;
 
 
