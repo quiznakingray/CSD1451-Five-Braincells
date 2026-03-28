@@ -143,5 +143,5 @@ void ParkourLevel::Free()
 
 void ParkourLevel::Unload()
 {
-
+	GameStateManager::GetInstance().isGamePause = false;
 }

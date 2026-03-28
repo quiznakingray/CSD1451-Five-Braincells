@@ -242,7 +242,7 @@ void Player::Init()
 	rb->mass = 10.f;
 
 
-	showColliders = true;
+	//showColliders = true;
 	speed = static_cast<f32>(200.0);
 	//AEVec2Set(&velocity, 0.f, 0.f);
 
@@ -527,7 +527,7 @@ void Arrow::Init()
 			}
 		};
 	c->isTrigger = true;
-	showColliders = true;
+	//showColliders = true;
 
 	rb = AddComponent(
 		new RigidBody()
