@@ -20,10 +20,6 @@ void GameObject::Update()
 {
 	for (ComponentBase*  comp: components)
 	{
-		//if (Collider * collider = dynamic_cast<Collider*>(comp))
-		//{
-		//	std::cout << "This is a collider" << std::endl;
-		//}
 		if (!comp->isActive) continue;
 		comp->Update();
 	}

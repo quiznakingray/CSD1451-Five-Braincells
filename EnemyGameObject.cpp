@@ -17,8 +17,14 @@ void EnemyGameObject::Jump(float force) {
 
 EnemyGameObject::~EnemyGameObject()
 {
-    if (idleAnim) delete idleAnim;
-    if (walkAnim) delete walkAnim;
+    if (idleAnim) {
+        delete idleAnim;
+        idleAnim = nullptr;
+    }
+    if (walkAnim) {
+        delete walkAnim;
+        walkAnim = nullptr;
+    }
 }
 
 void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
@@ -26,7 +32,7 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     EnemyMovement::InitEnemyMovement(movement);
 
     if (!spawnTile) {
-        std::cout << "[EnemyGameObject] No spawn tile provided!\n";
+        //std::cout << "[EnemyGameObject] No spawn tile provided!\n";
         return;
     }
 
@@ -42,7 +48,7 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     base.patrolEnd = { spawnTile->pos.x + 150.f, spawnTile->pos.y - 100.f };
 
     // Sprite setup
-    Sprite* s = AddComponent(new Sprite());
+    Sprite* s = new Sprite();
     s->meshColor = (type == EnemyType::BASIC_MELEE) ? 0xFF0000FF : 0xFFFF0000;
     s->textureFileName = "Assets/SpriteSheets/testRed4x6.png";
     s->spriteSheet = Sprite::SpriteSheet(6, 4);
@@ -72,7 +78,7 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     // Register enemy last
     //EnemyManager::RegisterEnemy(this);
 
-    std::cout << "[EnemyGameObject] Initialized at (" << pos.x << ", " << pos.y << ")\n";
+    //std::cout << "[EnemyGameObject] Initialized at (" << pos.x << ", " << pos.y << ")\n";
     GameObject::Init();
 }
 
@@ -116,7 +122,7 @@ void EnemyGameObject::Patrol(f64 dt) {
 void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
     // Call A* pathfinding to update velocity
     std::vector<AEVec2> path = EnemyMovement::FindPath(pos, playerPos);
-    std::cout << "[Enemy] Following Player, Path size: " << path.size() << "\n";
+    //std::cout << "[Enemy] Following Player, Path size: " << path.size() << "\n";
 
     if (!path.empty()) {
         // Find the first node that is far enough to move towards
@@ -136,7 +142,7 @@ void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
         if (!found) {
             rb->velocity.x = 0.f;
             currentState = EnemyState::IDLE;
-            std::cout << "[Enemy] All path nodes too close\n";
+            //std::cout << "[Enemy] All path nodes too close\n";
             return;
         }
 
@@ -155,18 +161,18 @@ void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
             if (heightDiff > 20.f) Jump(300.f);
 
             currentState = EnemyState::WALK;
-            std::cout << "[Enemy] Moving towards: (" << next.x << ", " << next.y << ")\n";
+            //std::cout << "[Enemy] Moving towards: (" << next.x << ", " << next.y << ")\n";
         }
         else {
             rb->velocity.x = 0.f;
             currentState = EnemyState::IDLE;
-            std::cout << "[Enemy] Reached node, stopping\n";
+            //std::cout << "[Enemy] Reached node, stopping\n";
         }
     }
     else {
         rb->velocity.x = 0.f;
         currentState = EnemyState::IDLE;
-        std::cout << "[Enemy] Path empty, cannot follow player\n";
+        //std::cout << "[Enemy] Path empty, cannot follow player\n";
     }
 }
 

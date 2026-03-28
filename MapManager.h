@@ -501,7 +501,7 @@ struct GoalTile : Tile {
 
 struct MapManager : public Singleton<MapManager> {
 
-	static constexpr  float tileSize = 80.f;
+	static constexpr  float tileSize = 100.f;
 	const char delimiter = ',';
 	GAME_STATE_TYPE mapCurrLevel;
 	static size_t rowCount;

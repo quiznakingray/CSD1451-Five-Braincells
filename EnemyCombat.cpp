@@ -29,14 +29,14 @@ void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float
                     enemy.projectile->isEnemyProjectile = true;
                     enemy.projectile->ShootArrow(enemyPos, dir);
 
-                    std::cout << "[EnemyCombat] Ranged enemy shot projectile\n";
+                    //std::cout << "[EnemyCombat] Ranged enemy shot projectile\n";
                 }
             }
             else {
                 // Melee attack
                 player.TakeDamage(enemy.stats.attack);
-                std::cout << "[EnemyCombat] Enemy hit player for "
-                    << enemy.stats.attack << " dmg\n";
+                //std::cout << "[EnemyCombat] Enemy hit player for "
+                    //<< enemy.stats.attack << " dmg\n";
             }
 
             enemy.attackTimer = enemy.stats.attackCooldown;
@@ -47,7 +47,7 @@ void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float
         }
     }
     else {
-        std::cout << "[EnemyCombat] Player not in range. Distance: " << distance << "\n";
+        //std::cout << "[EnemyCombat] Player not in range. Distance: " << distance << "\n";
     }
 }
 

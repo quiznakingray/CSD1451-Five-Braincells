@@ -132,7 +132,13 @@ void ParkourLevel::Free()
 	MapManager::GetInstance().FreeMap();
 	HUD::GetInstance().Free();
 	PlayerManager::GetInstance().Free();
+	//EnemyManager::GetInstance().FreeEnemies();
 	CameraSystem::ResetCameraPosition();
+	//for (auto* obj : levelGameObjectVector)
+	//{
+	//	obj = nullptr;
+	//}
+
 }
 
 void ParkourLevel::Unload()
