@@ -36,7 +36,7 @@ void MapManager::GenerateNodes()
         {
             Tile* tile = arrMapInfo[r][c];
 
-            // 👉 Define walkable tiles here
+            // Define walkable tiles here
             if (tile->currID != TILE_ID::EMPTY)
             {
                 Node* node = new Node();
