@@ -37,3 +37,9 @@ void Text::Render()
 
     AEGfxPrint(TextManager::pFont, text, x, y , 1, 1, 1, 1, 1);
 }
+
+void Text::Free()
+{
+    textStr.clear();  // releases string heap memory
+    text = "";
+}

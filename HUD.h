@@ -24,17 +24,17 @@ struct PlayerUI {
 struct HUD : Singleton<HUD>{
 
 	void Init();
-	void Update(f32 dt);
+	void Update(f64 dt);
 	void Render();
 	void Free();
 private:
 	bool showHUD = true;
 	std::vector<GameObject* > HUDGameObjects;
 
-	PlayerUI* shieldPlayerUI;
+	PlayerUI* shieldPlayerUI = nullptr;
 
 	//range player
-	PlayerUI* rangePlayerUI;
+	PlayerUI* rangePlayerUI = nullptr;
 
 
 	// stamina bar

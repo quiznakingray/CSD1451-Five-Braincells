@@ -29,8 +29,8 @@ struct EnemyGameObject : GameObject {
     void Update() override;
     void Render() override;
 
-    void Patrol(f32 dt);
-    void FollowPlayer(AEVec2 playerPos, f32 dt);
+    void Patrol(f64 dt);
+    void FollowPlayer(AEVec2 playerPos, f64 dt);
     void UpdateAnimation();
 };
 

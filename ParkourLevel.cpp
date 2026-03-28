@@ -118,13 +118,13 @@ void ParkourLevel::Free()
 	//}
 
 	//AEGfxSetCamPosition(0.f, 0.f);
-	FreeGameObjects(levelGameObjectVector);
+	//FreeGameObjects(levelGameObjectVector);
 	for (auto* obj : levelGameObjectVector) {
 		// skip players — PlayerManager owns and deletes them
 		if (obj == PlayerManager::GetInstance().meleePlayer) continue;
 		if (obj == PlayerManager::GetInstance().rangedPlayer) continue;
 		if (obj == PlayerManager::GetInstance().rangePlayerArrow) continue;
-
+		if (dynamic_cast<Tile*>(obj)) continue;
 		obj->Free();
 		delete obj;
 	}

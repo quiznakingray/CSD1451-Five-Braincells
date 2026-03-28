@@ -252,4 +252,18 @@ void Collider::Free()
 
 	collisionInfos.clear();
 	sides = COLLISION_SIDE::NONE;
+
+	OnTriggerEnter = nullptr;
+	OnTriggerOver = nullptr;
+	OnTriggerExit = nullptr;
+	OnCollisionEnter = nullptr;
+	OnCollisionOver = nullptr;
+	OnCollisionExit = nullptr;
+	OnClick = nullptr;
+	OnMouseDown = nullptr;
+	OnMouseUp = nullptr;
+	OnMouseOver = nullptr;
+	OnMouseEnter = nullptr;
+	OnMouseExit = nullptr;
+
 }

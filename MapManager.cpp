@@ -137,9 +137,9 @@ void MapManager::FreeMap()
         {
             Tile* tile = arrMapInfo[uiRow][uiCol];
             // prevents double free 
-            if (tile && static_cast<int>(tile->currID) > -1 && static_cast<int>(tile->currID) <= 300)
+            if (tile && static_cast<int>(tile->currID) > -1 && static_cast<int>(tile->currID) <= 500)
             {
-                //tile->Free();   // frees all components (sprite, collider, text, etc.)
+                tile->Free();   // frees all components (sprite, collider, text, etc.)
                 delete tile;
                 arrMapInfo[uiRow][uiCol] = nullptr;
             }
@@ -395,7 +395,7 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         break;
     default:
         newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
-        newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
+        //newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
         break;
     }
 
@@ -411,7 +411,7 @@ Tile* MapManager::InitTile(int mapIndex, std::string cell, size_t col, size_t ro
         newTile->bgSprite = newTile->AddComponent(
             new Sprite()
         );
-        newTile->bgSprite->texture = SetTileTexture(bgID);
+        newTile->bgSprite->textureFileName = GetTileTexture(bgID);
 
     }
 
@@ -512,6 +512,103 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
 	}
     if (std::find(spikes.begin(), spikes.end(), currID) != spikes.end()) {
         tTex = AEGfxTextureLoad("Assets/Environment/spike.png");
+    }
+	return tTex;
+}
+std::string MapManager::GetTileTexture(TILE_ID currID)
+{
+    std::string tTex;
+	switch (currID) 
+    {
+    case TILE_ID::EMPTY:
+    case TILE_ID::PLAYER:
+    case TILE_ID::ENEMY:
+        tTex = "";
+        break;
+    case TILE_ID::GRASSCENTER:
+        tTex = "Assets/Environment/grassCenter.png";
+        break;
+    case TILE_ID::WALL:
+        tTex = "Assets/Environment/wall.png";
+        break;
+    case TILE_ID::GRASSLEFT:
+        tTex = "Assets/Environment/grassLeft.png";
+        break;
+    case TILE_ID::GRASSRIGHT:
+        tTex = "Assets/Environment/grassRight.png";
+        break;
+    case TILE_ID::GRASSTOP:
+        tTex = "Assets/Environment/grassTop.png";
+        break;
+    case TILE_ID::GRASSMID:
+        tTex = "Assets/Environment/grassMid.png";
+        break;
+    case TILE_ID::DIRTCENTER:
+        tTex = "Assets/Environment/dirtCenter.png";
+        break;
+    case TILE_ID::DIRTLEFT:
+        tTex = "Assets/Environment/dirtLeft.png";
+        break;
+    case TILE_ID::DIRTRIGHT:
+        tTex = "Assets/Environment/dirtRight.png";
+        break;
+    case TILE_ID::DIRTTOP:
+        tTex = "Assets/Environment/dirtTop.png";
+        break;
+    case TILE_ID::DIRTMID:
+        tTex = "Assets/Environment/dirtMid.png";
+        break;
+    case TILE_ID::CLOUD:
+        tTex = "Assets/Environment/cloud.png";
+        break;
+    case TILE_ID::GOAL:
+        tTex = "Assets/Environment/doorClose.png";
+        break;
+    case TILE_ID::LASERRED:
+        tTex = "Assets/Environment/laserRedVertical.png";
+        break;
+    case TILE_ID::LASERGREEN:
+        tTex = "Assets/Environment/laserGreenVertical.png";
+        break;
+    case TILE_ID::LASERBLUE:
+        tTex = "Assets/Environment/laserBlueVertical.png";
+        break;
+    case TILE_ID::LEVERREDON:
+        tTex = "Assets/Environment/laserRedSwitchOn.png";
+        break;
+    case TILE_ID::LEVERREDOFF:
+        tTex = "Assets/Environment/laserRedSwitchOff.png";
+        break;
+    case TILE_ID::LEVERGREENON:
+        tTex = "Assets/Environment/laserGreenSwitchOn.png";
+        break;
+    case TILE_ID::LEVERGREENOFF:
+        tTex = "Assets/Environment/laserGreenSwitchOff.png";
+        break;
+    case TILE_ID::LEVERBLUEON:
+        tTex = "Assets/Environment/laserBlueSwitchOn.png";
+        break;
+    case TILE_ID::LEVERBLUEOFF:
+        tTex = "Assets/Environment/laserBlueSwitchOff.png";
+        break;
+    case TILE_ID::BUTTONBLUEUNPRESSED:
+        tTex = "Assets/Environment/buttonBlueUnpressed.png";
+        break;
+    case TILE_ID::GATE:
+        tTex = "Assets/Environment/gate.png";
+        break;
+    case TILE_ID::CHECKPOINT:
+        tTex = "Assets/Environment/checkpoint.png";
+        break;
+    case TILE_ID::HEALTHPICKUPTILE:
+        tTex = "Assets/Environment/gemRed.png";
+        break;
+    default:
+        tTex = "Assets/PlanetTexture.png";
+        break;
+	}
+    if (std::find(spikes.begin(), spikes.end(), currID) != spikes.end()) {
+        tTex = "Assets/Environment/spike.png";
     }
 	return tTex;
 }
@@ -714,10 +811,29 @@ void MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
 }
 #pragma endregion
 
+Tile::~Tile()
+{
+    if (currSprite) {
+        currSprite = nullptr;
+    }
+    if (bgSprite) {
+        bgSprite = nullptr;
+    }
+    if (collider) {
+        collider = nullptr;
+    }
+    if (interactionTextBox) {
+        interactionTextBox = nullptr;
+    }
+
+}
+
 void Tile::Update()
 {
     GameObject::Update();
 }
+
+
 
 
 
@@ -736,7 +852,7 @@ void GoalTile::Init() {
     collider->OnTriggerOver = [this](Collider* other, int sides) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
-            interactionTextBox->text = "[F] Enter";
+            interactionTextBox->SetText("[F] Enter");
             if (AEInputCheckTriggered(AEVK_F))
             {
                 // save current state before transitioning
@@ -771,14 +887,14 @@ void GoalTile::Init() {
                 }
             }
         }
-        };
+                };
 
     collider->OnTriggerExit = [this](Collider* other, int sides) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
             this->interactionTextBox->isActive = false;
-    };
+        };
 
-    interactionTextBox->text = "[F] Enter";
+    interactionTextBox->SetText("[F] Enter");
 
 }
 
@@ -790,7 +906,7 @@ void CheckpointTile::Init() {
         if (player)
         {
             this->interactionTextBox->isActive = true;
-            interactionTextBox->text = "Saved!";
+            interactionTextBox->SetText("Saved!");
 
             SaveManager::GetInstance().SavePlayerData(
                 PlayerManager::GetInstance().meleePlayer->pos,
@@ -813,7 +929,7 @@ void CrateTile::Init()
     collider->size.x = 0.6f;
     collider->size.y = 0.6f;
 
-    interactionTextBox->text = "[F] Grab";
+    interactionTextBox->SetText("[F] Grab");
 
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);

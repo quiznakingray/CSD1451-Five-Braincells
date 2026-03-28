@@ -46,7 +46,7 @@ void EnemyManager::SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameO
     std::cout << "[EnemyManager] Spawned " << spawned << " enemies\n";
 }
 
-void EnemyManager::UpdateAllEnemies(f32 dt) {
+void EnemyManager::UpdateAllEnemies(f64 dt) {
     for (EnemyGameObject* enemy : enemies) {
         if (!enemy->base.isAlive) continue;
 

@@ -279,10 +279,10 @@ void HandleInteraction(std::vector<GameObject*>& gos)
 		Collider* col = candidates[i].col;
 		bool isHover = (col == topCollider);
 
-		if (!col->isHovering && isHover)
+		if (col->isHovering == false && isHover)
 			if (col->OnMouseEnter) col->OnMouseEnter();
 
-		if (col->isHovering && !isHover)
+		if (col->isHovering == true && !isHover)
 			if (col->OnMouseExit) col->OnMouseExit();
 
 		if (isHover)

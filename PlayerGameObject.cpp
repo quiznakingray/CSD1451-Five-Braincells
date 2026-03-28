@@ -20,7 +20,7 @@ void Player::PlayerInput()
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	//std::cout << "On GRASSCENTER: " << (onGround ? "--" : "___________________________ ") << std::endl;
 	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing 
-		&& PlayerManager::GetInstance().currentStamina != 0)
+		&& PlayerStats::Get().jumpStamina != 0)
 	{
 		if (PlayerStats::Get().ConsumeJumpStamina())
 		{
@@ -31,11 +31,9 @@ void Player::PlayerInput()
 		{
 			std::cout << "[Jump] no stamina!\n";
 		}
+		//std::cout << "onCollider: " << rb->onCollider << std::endl;
 	}
-	//if (AEInputCheckCurr(AEVK_S))
-	//{
-	//	moveDir.y -= 1.f;
-	//}
+
 	if (AEInputCheckCurr(AEVK_A))
 	{
 		//moveDir.x -= 1.f;
@@ -243,11 +241,10 @@ void Player::Init()
 }
 
 void Player::Update(){
-	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
-	PlayerStats::Get().RegenStamina(dt); // passive stamina regen
+	//float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
+	//PlayerStats::Get().RegenStamina(dt); // passive stamina regen
 
 	//PlayerInput();
-	float dt = AEFrameRateControllerGetFrameTime();
 	PlayerAction();
 	PlayerAnimation();
 
@@ -261,15 +258,15 @@ void Player::Update(){
 
 void Player::TakeDamage(int amount)
 {
-	health -= amount;
+	PlayerStats::Get().health -= amount;
 
-	if (health <= 0)
+	if (PlayerStats::Get().health <= 0)
 	{
 		// inc death counter
 		PlayerStats::Get().deathCount++;
 
 		// respawn: reset health and jump stamina
-		health = PlayerStats::Get().maxHealth;
+		PlayerStats::Get().health = PlayerStats::Get().maxHealth;
 		PlayerStats::Get().jumpStamina = static_cast<float>(PlayerStats::Get().maxJumpStamina);
 
 		std::cout << "[Player] Total deaths: " << PlayerStats::Get().deathCount << "\n";
@@ -327,6 +324,7 @@ void MeleePlayer::Init()
 			}
 			// add enemy projectile types!!
 		};
+	
 }
 void MeleePlayer::Update()
 {
@@ -353,8 +351,8 @@ void MeleePlayer::Update()
 			shieldActive = true;
 		}
 	}
-		else
-		{
+	else
+	{
 			shieldActive = false;
 
 			// reset stamina when Q released
@@ -365,6 +363,7 @@ void MeleePlayer::Update()
 			}
 	}
 
+	shieldCollider->isActive = shieldActive;
 	Player::Update();
 }
 
@@ -374,7 +373,7 @@ void MeleePlayer::PlayerAction()
 	if (AEInputCheckCurr(AEVK_Q))
 	{
 		prevAction = currentAction; 
-		currentAction = PlayerAction::SHIELDING;
+		currentAction = PLAYER_ACTION::SHIELDING;
 		return;
 	}
 
@@ -460,10 +459,10 @@ void RangePlayer::PlayerAction()
 	//{
 	//	currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
 	//}
-	else if (AEInputCheckCurr(AEVK_LBUTTON))
+	else if (AEInputCheckCurr(AEVK_Q))
 	{
 		currentAction = PLAYER_ACTION::AIMING;
-		if (AEInputCheckTriggered(AEVK_RBUTTON))
+		if (AEInputCheckTriggered(AEVK_LBUTTON))
 		{
 			// shoot if cooldown has passed
 			float cooldown = PlayerStats::Get().GetAttackCooldown();

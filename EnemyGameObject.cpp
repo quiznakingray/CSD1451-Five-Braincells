@@ -69,12 +69,12 @@ void EnemyGameObject::Update() {
     GameObject::Update();
 }
 
-void EnemyGameObject::Patrol(f32 dt) {
+void EnemyGameObject::Patrol(f64 dt) {
     EnemyMovement::UpdateEnemyPatrol(this, dt);
     currentState = EnemyState::WALK;
 }
 
-void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f32 dt) {
+void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
     // Call A* pathfinding to update velocity
     std::vector<AEVec2> path = EnemyMovement::FindPath(pos, playerPos);
     if (!path.empty()) {

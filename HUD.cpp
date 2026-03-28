@@ -3,6 +3,7 @@
 #include "GameObjectManager.h"  
 #include "CollisionManager.h"
 #include "PlayerManager.h"
+#include "PlayerStats.h"
 #include "TextComponent.h"
 #include <iostream>
 #include <string>
@@ -109,7 +110,7 @@ void HUD::Init()
 	AEVec2 staminaBarStartPos, staminaBarScale;
 	AEVec2Set(&staminaBarStartPos, -AEGfxGetWindowWidth() / 2.0f + 600, -AEGfxGetWindowHeight() / 2.0f + 80);
 	AEVec2Set(&staminaBarScale, 100, 50);
-	for (int i = 0; i < PlayerManager::GetInstance().maxStamina; i++)
+	for (int i = 0; i < PlayerStats::Get().maxJumpStamina; i++)
 	{
 		f32 posX = staminaBarStartPos.x + i * (staminaBarScale.x + 30);
 		//bar bg
@@ -131,7 +132,7 @@ void HUD::Init()
 	AEVec2 healthBarStartPos, healthBarScale;
 	AEVec2Set(&healthBarStartPos, -AEGfxGetWindowWidth() / 2.0f + 588, -AEGfxGetWindowHeight() / 2.0f + 160);
 	AEVec2Set(&healthBarScale, 75, 75);
-	for (int i = 0; i < PlayerManager::GetInstance().maxHealth; i++)
+	for (int i = 0; i < PlayerStats::Get().maxHealth; i++)
 	{
 		f32 posX = healthBarStartPos.x + i * 100;
 		//bar bg
@@ -151,7 +152,7 @@ void HUD::Init()
 	}
 	InitGameObjects(HUDGameObjects);
 }
-void HUD::Update(f32 dt)
+void HUD::Update(f64 dt)
 {
 	// update players
 	shieldPlayerUI->border->isActive = (PlayerManager::GetInstance().currentPlayerType == PLAYER_TYPE::MELEE);
@@ -164,14 +165,14 @@ void HUD::Update(f32 dt)
 	//update stamina
 	for (int i = 0; i < staminaBars.size(); i++)
 	{
-		staminaBars[i]->isActive = (PlayerManager::GetInstance().currentStamina >= i + 1);
-		staminaBarsBG[i]->isActive = (PlayerManager::GetInstance().stamina >= i + 1);
+		staminaBars[i]->isActive = (PlayerStats::Get().jumpStamina >= i + 1);
+		staminaBarsBG[i]->isActive = (PlayerStats::Get().maxJumpStamina >= i + 1);
 	}
 
 	//update health
 	for (int i = 0; i < healthBars.size(); i++)
 	{
-		healthBars[i]->isActive = (PlayerManager::GetInstance().currentHealth >= i + 1);
+		healthBars[i]->isActive = (PlayerStats::Get().health >= i + 1);
 	}
 	UpdateGameObjects(HUDGameObjects);
 

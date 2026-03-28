@@ -8,9 +8,9 @@ void EnemyMovement::InitEnemyMovement(EnemyMovement& move) {
     move.movingRight = true;
 }
 
-void EnemyMovement::UpdateEnemyPatrol(EnemyGameObject* enemy, f32 dt) {
+void EnemyMovement::UpdateEnemyPatrol(EnemyGameObject* enemy, f64 dt) {
     f32 dir = enemy->movement.movingRight ? 1.f : -1.f;
-    enemy->rb->velocity.x = dir * enemy->base.stats.speed * dt;
+    enemy->rb->velocity.x = dir * enemy->base.stats.speed * static_cast<f32>(dt);
 
     if (enemy->pos.x >= enemy->base.patrolEnd.x && enemy->movement.movingRight)
         enemy->movement.movingRight = false;

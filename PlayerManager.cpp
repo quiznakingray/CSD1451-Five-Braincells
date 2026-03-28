@@ -2,6 +2,7 @@
 #include "MapManager.h"
 #include "SaveManager.h"
 #include "CameraSystem.h"
+#include "PlayerStats.h"
 #include <fstream>
 #include <direct.h>
 
@@ -23,7 +24,7 @@ void PlayerManager::Init()
 
 void PlayerManager::Update(){
 	if (!currentPlayer) return;
-	float dt = AEFrameRateControllerGetFrameTime();
+	double dt = AEFrameRateControllerGetFrameTime();
 	currentPlayer->PlayerInput();
 	
 	if (currentPlayer != meleePlayer) meleePlayer->ApplyDeceleration();
@@ -38,29 +39,16 @@ void PlayerManager::Update(){
 		ChangePlayer(PLAYER_TYPE::RANGE);
 
 	}
-	if (AEInputCheckTriggered(AEVK_L) && currentHealth != 0)
+	if (AEInputCheckTriggered(AEVK_L) && PlayerStats::Get().health != 0)
 	{
-		--currentHealth;
+		--PlayerStats::Get().health;
 	}
 	rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PLAYER_ACTION::AIMING;
 
 	//regen stamina
-	if (currentStamina < stamina)
-	{
-		RegenStamina(dt);
-	}
-	else {
-		staminaRegenTimer = 0.0f;
-	}
 
-	// regen health
-	if (currentHealth < maxHealth)
-	{
-		RegenHealth(dt);
-	}
-	else {
-		healthRegenTimer = 0.0f;
-	}
+	PlayerStats::Get().RegenStamina(dt); 
+	
 
 	if (!canChangePlayer)
 	{
@@ -118,29 +106,11 @@ void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 	canChangePlayer = false;
 }
 
-void PlayerManager::RegenStamina(f32 dt)
-{
-	staminaRegenTimer += dt;
-	if (staminaRegenTimer >= staminaRegenDuration)
-	{
-		++currentStamina;
-		staminaRegenTimer = 0.0f;
-	}
-}
 
-void PlayerManager::RegenHealth(f32 dt)
-{
-	healthRegenTimer += dt;
-	if (healthRegenTimer >= healthRegenDuration)
-	{
-		++currentHealth;
-		healthRegenTimer = 0.0f;
-	}
-}
 
-void PlayerManager::StartPlayerCooldown(f32 dt)
+void PlayerManager::StartPlayerCooldown(f64 dt)
 {
-	playerSwitchingCooldown -= dt;
+	playerSwitchingCooldown -= static_cast<f32>(dt);
 	if (playerSwitchingCooldown <= 0)
 	{
 		canChangePlayer = true;

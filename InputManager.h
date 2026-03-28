@@ -6,6 +6,7 @@
 #include "GameObjectManager.h"
 
 #include <functional>
+#include <string>
 
 struct InputManager : Singleton <InputManager> {
 
@@ -13,6 +14,6 @@ struct InputManager : Singleton <InputManager> {
 	u8 pauseKey = AEVK_ESCAPE;
 
 	void Update();
-
+	std::string VkCodeToString(DWORD vkCode);
 };
 #endif // INPUT_MANAGER_H

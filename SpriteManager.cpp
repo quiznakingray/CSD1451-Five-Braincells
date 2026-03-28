@@ -30,7 +30,10 @@ void Sprite::Init()
 		v1 = v0 + spriteSheet.UVHeight;
 	}
 
-
+	if (mesh) {
+		AEGfxMeshFree(mesh); 
+		mesh = nullptr;
+	}
 	AEGfxMeshStart();
 	// add tri for rects
 	if (spriteShape == SPRITE_SHAPE::SHAPE_RECT)
@@ -132,6 +135,7 @@ void Sprite::Free()
 		 delete line ;
 	}
 	linePoints.clear();
+	textureFileName.clear();
 }
 
 

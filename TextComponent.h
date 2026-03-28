@@ -17,6 +17,8 @@ struct Text : ComponentBase {
 		textStr = str;
 		text = textStr.c_str();     // always valid as long as textStr lives
 	}
+
+	void Free() override;
 };
 #endif // !TEXT_COMPONENT
 struct TextManager {

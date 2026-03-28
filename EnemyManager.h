@@ -18,7 +18,7 @@ public:
 
     static void SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects);
 
-    static void UpdateAllEnemies(f32 dt);
+    static void UpdateAllEnemies(f64 dt);
 
     static void RenderEnemies();
 

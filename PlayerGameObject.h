@@ -26,8 +26,6 @@ struct Player : GameObject {
 	f32 speed{};
 	RigidBody* rb = nullptr;
 
-
-	int health = 5;
 	
 	//AEVec2 velocity{};
 
@@ -94,7 +92,7 @@ struct RangePlayer : Player {
 struct Arrow : GameObject {
 
 	RigidBody* rb = nullptr;
-	f32 speed = 500.f;
+	f32 speed = 600.f;
 	f32 timer = 0.0f;
 	f32 lifetime = 5.f;
 

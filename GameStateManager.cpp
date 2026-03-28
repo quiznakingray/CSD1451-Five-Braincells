@@ -1,7 +1,6 @@
 #include "GameStateManager.h"
 #include "ParkourLevel.h"
 #include "BossLevel.h"
-#include "PlayerCombat.h"
 #include "MainMenu.h"
 
 
@@ -19,7 +18,7 @@ void GameStateManager::ChangeState(GAME_STATE_TYPE type)
 	next = type;
 }
 
-GAME_STATE_TYPE GetCurrentState() {
+GAME_STATE_TYPE GameStateManager::GetCurrentState() {
 	return current;
 }
 
@@ -45,14 +44,6 @@ void GameStateManager::Update()
 		fpRender = ParkourLevel::Render;  
 		fpFree = ParkourLevel::Free;  
 		fpUnload = ParkourLevel::Unload;  
-		break;
-	case GAME_STATE_TYPE::COMBAT:  
-		fpLoad = GameStateLoad;
-		fpInitialize = GameStateInit;
-		fpUpdate = GameStateUpdate;
-		fpRender = GameStateDraw;
-		fpFree = GameStateFree;
-		fpUnload = GameStateUnload;
 		break;
 	default:
 		break;

@@ -11,7 +11,7 @@ void CameraSystem::Init() {
 	
 }
 
-void CameraSystem::Update(float dt) {
+void CameraSystem::Update(double dt) {
 
 	if (lerpToTarget)
 	{

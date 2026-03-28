@@ -67,7 +67,7 @@ void Animator::Update()
 	if (nextAnimation && currentAnimation != nextAnimation)
 	{
 		// free current animation
-		currentAnimation->Free();
+		//currentAnimation->Free();
 		currentAnimation = nextAnimation;
 
 		// initialize next animation

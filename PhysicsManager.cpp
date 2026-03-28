@@ -3,21 +3,21 @@
 #include "GameObjectManager.h"
 #include <iostream>
 
-void PhysicsManager::UpdateRigidBody(RigidBody* rb, f32 dt)
+void PhysicsManager::UpdateRigidBody(RigidBody* rb, f64 dt)
 {
     if (!rb) return;
 
     rb->onCollider = false;
     // Apply gravity
-    if (rb->hasGravity ) rb->velocity.y += rb->gravity * dt;
+    if (rb->hasGravity ) rb->velocity.y += rb->gravity * static_cast<f32>(dt);
 
     constexpr float MAX_FALL_SPEED = -600.0f; // tune this, keep fabs < 80 * fps
     if (rb->velocity.y < MAX_FALL_SPEED)
         rb->velocity.y = MAX_FALL_SPEED;
 
     // Update position from velocity
-    rb->owner->pos.x += rb->velocity.x * dt;
-    rb->owner->pos.y += rb->velocity.y * dt;
+    rb->owner->pos.x += rb->velocity.x * static_cast<f32>(dt);
+    rb->owner->pos.y += rb->velocity.y * static_cast<f32>(dt);
     //std::cout << "onCollider: " << rb->onCollider << '\n';
 }
 
@@ -171,7 +171,7 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 
             // If the platform is moving horizontally, carry the rider along
             if (passiveRb && passiveRb->type == RIGIDBODY_TYPE::KINEMATIC)
-                dynamicObj->pos.x += passiveRb->velocity.x * AEFrameRateControllerGetFrameTime();
+                dynamicObj->pos.x += passiveRb->velocity.x * static_cast<f32>(AEFrameRateControllerGetFrameTime());
         }
         else
         {

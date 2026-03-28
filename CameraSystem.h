@@ -5,7 +5,7 @@
 struct CameraSystem
 {
 	static void Init();
-	static void Update(float dt);
+	static void Update(double dt);
 
 	static void SetCameraPos(AEVec2 pos);
 	static AEVec2 GetCameraPos();
