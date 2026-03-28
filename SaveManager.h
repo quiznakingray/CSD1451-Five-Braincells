@@ -1,20 +1,39 @@
 #ifndef SAVE_MANAGER_H
 #define SAVE_MANAGER_H
+
 #include "AEEngine.h"
 #include "SingletonTemplate.h"
 #include <direct.h>
 #include <string>
-#include "MapManager.h"
+#include <vector>
+
+// Forward declarations to avoid circular include with MapManager.h
+enum class TILE_ID;          // MapManager defines TILE_ID
 #include "GameStateManager.h"
 #include "EnemyBase.h"
 
 struct PlayerSaveData {
     AEVec2 meleePos{};
     AEVec2 rangedPos{};
-    int health = 5;
+    // persisted stats
+    int health = 3;
+    int maxHealth = 3;
+    int damage = 1;
+    float proficiency = 0.0f;
+    float speedMult = 1.0f;
+
+    // stamina fields
+    int maxJumpStamina = 3;
+    int jumpStamina = 3;
+
+    // counters
+    int deathCount = 0;
+    int killCount = 0;
+
     bool preserveOnLoad = false;
     bool hasSavedData = false;
 };
+
 
 struct TileStateData {
     size_t row{};
@@ -32,7 +51,6 @@ struct MapSaveData {
     bool hasSavedData = false;
 };
 
-// one entry per enemy, trivially copyable for binary serialization
 struct EnemySaveData {
     AEVec3 pos{};
     EnemyBase enemyBase{};
@@ -42,7 +60,7 @@ struct SaveManager : public Singleton<SaveManager>
 {
     PlayerSaveData playerSaveData;
     MapSaveData    mapSaveData;
-    std::vector<EnemySaveData> enemySaveData;  // vector lives here
+    std::vector<EnemySaveData> enemySaveData;
     bool toContinue = false;
 
     void SavePlayerData();
@@ -58,4 +76,4 @@ struct SaveManager : public Singleton<SaveManager>
     void ResetSave();
 };
 
-#endif
+#endif // SAVE_MANAGER_H

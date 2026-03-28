@@ -59,23 +59,6 @@ void Player::PlayerInput()
 
 }
 
-void Player::ReducePlayerHealth()
-{
-	health--;
-	if (health > 0) {
-		AudioManager::GetInstance().PlaySFX("playerHurt");
-	}
-	else
-	{
-		AudioManager::GetInstance().PlaySFX("playerDie");
-		PlayerStats::Get().ReducePlayerHealth();
-		SaveManager::GetInstance().toContinue = true;
-		GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
-		current = GAME_STATE_TYPE::MENU;  // force inner loop to exit
-		next = respawnLevel;           // reload the saved level
-	}
-}
-
 void Player::PlayerAction()
 {
 	if (rb->velocity.x != 0 && currentAction != PLAYER_ACTION::CRATEINTERACT)

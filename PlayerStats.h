@@ -1,6 +1,7 @@
 #ifndef PLAYER_STATS_H
 #define PLAYER_STATS_H
 #include "SaveManager.h"
+#include <iostream>
 #include "AudioManager.h"
 #include "GameStateManager.h"
 

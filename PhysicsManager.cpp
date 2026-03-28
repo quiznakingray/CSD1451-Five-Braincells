@@ -35,8 +35,8 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
    
     if (playerA && playerB)
     {
-        if (playerA->currentAction == PlayerAction::CRATEINTERACT ||
-            playerB->currentAction == PlayerAction::CRATEINTERACT)
+        if (playerA->currentAction == PLAYER_ACTION::CRATEINTERACT ||
+            playerB->currentAction == PLAYER_ACTION::CRATEINTERACT)
             return;
     }
 

@@ -90,21 +90,55 @@ void PlayerManager::SavePlayerData()
 {
 	SaveManager& save = SaveManager::GetInstance();
 
-	save.playerSaveData.meleePos = meleePlayer->pos;
-	save.playerSaveData.rangedPos = rangedPlayer->pos;
-	save.playerSaveData.health = meleePlayer->health;
-	save.playerSaveData.hasSavedData = true;
+	// positions
+	if (meleePlayer) save.playerSaveData.meleePos = meleePlayer->pos;
+	if (rangedPlayer) save.playerSaveData.rangedPos = rangedPlayer->pos;
 
+	// copy persistent stats from PlayerStats singleton
+	PlayerStats& stats = PlayerStats::Get();
+	save.playerSaveData.health = stats.health;
+	save.playerSaveData.maxHealth = stats.maxHealth;
+	save.playerSaveData.damage = stats.damage;
+	save.playerSaveData.proficiency = stats.proficiency;
+	save.playerSaveData.speedMult = stats.speedMult;
+
+	save.playerSaveData.maxJumpStamina = stats.maxJumpStamina;
+	save.playerSaveData.jumpStamina = stats.jumpStamina;
+
+	save.playerSaveData.deathCount = stats.deathCount;
+	save.playerSaveData.killCount = stats.killCount;
+
+	save.playerSaveData.hasSavedData = true;
 }
+
 void PlayerManager::Load()
 {
 	PlayerSaveData& data = SaveManager::GetInstance().playerSaveData;
 	if (!data.hasSavedData) return;
 
-	meleePlayer->health = data.health;
-	AEVec2Set(&meleePlayer->pos, data.meleePos.x, data.meleePos.y);
-	AEVec2Set(&rangedPlayer->pos, data.rangedPos.x, data.rangedPos.y);
+	// restore positions to game objects
+	if (meleePlayer) {
+		AEVec2Set(&meleePlayer->pos, data.meleePos.x, data.meleePos.y);
+	}
+	if (rangedPlayer) {
+		AEVec2Set(&rangedPlayer->pos, data.rangedPos.x, data.rangedPos.y);
+	}
+
+	// restore stats into PlayerStats singleton
+	PlayerStats& stats = PlayerStats::Get();
+	stats.health = data.health;
+	stats.maxHealth = data.maxHealth;
+	stats.damage = data.damage;
+	stats.proficiency = data.proficiency;
+	stats.speedMult = data.speedMult;
+
+	stats.maxJumpStamina = data.maxJumpStamina;
+	stats.jumpStamina = data.jumpStamina;
+
+	stats.deathCount = data.deathCount;
+	stats.killCount = data.killCount;
 }
+
 
 void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 {

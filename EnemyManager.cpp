@@ -7,10 +7,10 @@
 
 extern MapManager mapManager;
 
-EnemyManager::~EnemyManager()
-{
-    enemies.clear();
-}
+//EnemyManager::~EnemyManager()
+//{
+//    enemies.clear();
+//}
 
 void EnemyManager::Init(Player* p) {
     player = p;

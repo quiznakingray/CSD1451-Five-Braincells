@@ -971,7 +971,7 @@ void GoalTile::Init() {
                 interactionTextBox->SetText("You Win!");
             }
             else {
-                interactionTextBox>SetText("[F] Enter");
+                interactionTextBox->SetText("[F] Enter");
             }
             if (AEInputCheckTriggered(AEVK_F))
             {
@@ -1029,7 +1029,7 @@ void CheckpointTile::Init() {
         if (player)
         {
             this->interactionTextBox->isActive = true;
-            interactionTextBox>SetText("Saved!");
+            interactionTextBox->SetText("Saved!");
             SaveManager::GetInstance().SaveAll();
            /* SaveManager::GetInstance().SavePlayerData(
             );

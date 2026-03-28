@@ -49,7 +49,7 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     s->spriteSheet.isSpriteSheet = true;
 
     Sprite* walk = new Sprite();
-    walk->meshColor = (type == EnemyType::BASIC) ? 0xFF0000FF : 0xFFFF0000;
+    walk->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
     walk->textureFileName = "Assets/SpriteSheets/test4x6.png";
     walk->spriteSheet = Sprite::SpriteSheet(6, 4);
     walk->spriteSheet.isSpriteSheet = true;
@@ -105,13 +105,13 @@ void EnemyGameObject::Update() {
     UpdateAnimation();
     GameObject::Update();
 }
-
-void EnemyGameObject::Patrol(f32 dt) {
-    if (currentState == EnemyState::IDLE || currentState == EnemyState::WALK) {
-        EnemyMovement::UpdateEnemyPatrol(this, dt);
-        currentState = EnemyState::WALK;
-    }
-}
+//
+//void EnemyGameObject::Patrol(f32 dt) {
+//    if (currentState == EnemyState::IDLE || currentState == EnemyState::WALK) {
+//        EnemyMovement::UpdateEnemyPatrol(this, dt);
+//        currentState = EnemyState::WALK;
+//    }
+//}
 
 void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
     // Call A* pathfinding to update velocity
