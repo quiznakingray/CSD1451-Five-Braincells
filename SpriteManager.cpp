@@ -53,6 +53,7 @@ void Sprite::Init()
 	if (!textureFileName.empty() && !texture)
 	{
 		texture = AEGfxTextureLoad(textureFileName.c_str());
+		prevTextureFileName = textureFileName;
 	}
 }
 
@@ -65,6 +66,15 @@ void Sprite::Update()
 		AEGfxMeshStart();
 		RenderLine();
 		mesh = AEGfxMeshEnd();
+	}
+
+	if (prevTextureFileName != textureFileName && prevTextureFileName != "")
+	{
+		prevTextureFileName = textureFileName;
+		AEGfxTexture* newTexture = AEGfxTextureLoad(textureFileName.c_str());
+		AEGfxTexture* oldTexture = texture;
+		texture = newTexture;
+		AEGfxTextureUnload(oldTexture);
 	}
 }
 

@@ -62,6 +62,8 @@ enum class TILE_ID {
 	BUTTONBLUETIMEDPRESSED = 153,
 	GATE = 160,
 	HEALTHPICKUPTILE = 170,
+	DAMAGEPICKUPTILE = 171,
+	PROFPICKUPTILE = 172,
 	PLAYER = 200,
 	ENEMY = 250,
 	CHECKPOINT = 300,
@@ -320,7 +322,7 @@ struct CrateTile : Tile {
 		rb = AddComponent(
 			new RigidBody()
 		);
-		
+
 		rb->type = RIGIDBODY_TYPE::DYNAMIC;
 		rb->mass = 5000.f;
 		rb->invMass = 1.0f / rb->mass;
@@ -332,6 +334,7 @@ struct CrateTile : Tile {
 	void Init() override;
 	void Update() override;
 };
+
 
 struct CheckpointTile : Tile {
 	CheckpointTile(TILE_ID currID_,
@@ -358,10 +361,53 @@ struct HealthPickupTile : Tile {
 		size_t col_,
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
-		currSprite->textureFileName = "Assets/Environment/gemRed.png";
+		currSprite->textureFileName = "Assets/Environment/gemGreen.png";
 	}
 	void Init() override;
 };
+
+struct DamagePickupTile : Tile {
+	int damageAmount = 1; // how much to add
+
+	DamagePickupTile(TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		size_t row_,
+		size_t col_,
+		float tileSize,
+		int damageAmount_ = 1)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true),
+		damageAmount(damageAmount_)
+	{
+		currSprite->textureFileName = "Assets/Environment/gemRed.png";
+	}
+
+	void Init() override;
+};
+
+struct ProficiencyPickupTile : Tile {
+	float proficiencyAmount = 0.1f; // amount to add (0..1)
+
+	ProficiencyPickupTile(TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		size_t row_,
+		size_t col_,
+		float tileSize,
+		float proficiencyAmount_ = 0.1f)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true),
+		proficiencyAmount(proficiencyAmount_)
+	{
+		currSprite->textureFileName = "Assets/Environment/gemBlue.png";
+	}
+
+	void Init() override;
+};
+
 
 struct CloudTile : Tile {
 	double maxTimer = 3.0;
@@ -626,9 +672,11 @@ struct LeverTile : Tile {
 		{
 		case TILE_ID::LEVERREDON:
 			currSprite->textureFileName = "Assets/Environment/laserRedSwitchOn.png";
+			std::cout << currSprite->textureFileName << '\n';
 			break;
 		case TILE_ID::LEVERREDOFF:
 			currSprite->textureFileName = "Assets/Environment/laserRedSwitchOff.png";
+			std::cout << currSprite->textureFileName << '\n';
 			break;
 		case TILE_ID::LEVERGREENON:
 			currSprite->textureFileName = "Assets/Environment/laserGreenSwitchOn.png";
@@ -931,31 +979,34 @@ struct ButtonTile : Tile {
 
 	void Init() override {
 		Tile::Init();
-		collider->center.y = 0.f;
-		collider->size.x = 0.9f;
+
+		
 		collider->isTrigger = true;
+		collider->center.y = 0.35f;
+		collider->size.y = 1.25f;
 
 		std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
 		gatesOriginalState = !gates.empty() && gates[0]->isActive;
 		gatesAreActive = gatesOriginalState;
 
-		// ensure colliders match starting active state
-		for (Tile* gate : gates)
-		{
-			gate->isActive = gate->isCurrActive;
-			//if (gate->collider) gate->collider->canCollide = gate->isActive;
-		}
-		// same for altTag gates
-		for (Tile* gate : MapManager::GetTaggedTiles(altTag, TILE_ID::GATE))
-		{
-			gate->isActive = gate->isCurrActive;
-			//if (gate->collider) gate->collider->canCollide = gate->isActive;
-		}
+		
+		for (Tile* gate : gates) gate->isActive = gate->isCurrActive;
+		for (Tile* gate : MapManager::GetTaggedTiles(altTag, TILE_ID::GATE)) gate->isActive = gate->isCurrActive;
 
-		collider->OnTriggerEnter = [this](Collider* other, int sides) {
+		const float TOP_SURFACE_TOLERANCE = 40.0f;
+
+		collider->OnTriggerEnter = [this, TOP_SURFACE_TOLERANCE](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
 			bool wasPressed = isPressed;
+
+			if (crate) {
+				float buttonTop = pos.y + scale.y * 0.5f;
+				float objectBottom = crate->pos.y - crate->scale.y * 0.5f;
+
+				
+				if (objectBottom < buttonTop - TOP_SURFACE_TOLERANCE) return;
+			}
 
 			if (player) playerCount++;
 			if (crate)  crateCount++;
@@ -964,7 +1015,7 @@ struct ButtonTile : Tile {
 
 			if (!wasPressed && isPressed) {
 				ToggleButton();
-				bool targetState = !gatesOriginalState;  // pressed = opposite of original
+				bool targetState = !gatesOriginalState;
 				if (queueRunning) {
 					hasPendingActivation = true;
 					pendingActivate = targetState;
@@ -974,21 +1025,25 @@ struct ButtonTile : Tile {
 					ActivateGates(targetState);
 				}
 			}
-		};
+			};
+
+		collider->OnTriggerOver = [](Collider* other, int)
+			{
+				std::cout << "TriggerOver with: " << typeid(*other->owner).name() << '\n';
+			};
 
 		collider->OnTriggerExit = [this](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
 			bool wasPressed = isPressed;
 
-			if (player) playerCount = max(0, playerCount - 1);
-			if (crate)  crateCount = max(0, crateCount - 1);
+			if (player) playerCount = std::max<int>(0, playerCount - 1);
+			if (crate)  crateCount = std::max<int>(0, crateCount - 1);
 
 			isPressed = (playerCount + crateCount) > 0;
 
 			if (wasPressed && !isPressed) {
 				ToggleButton();
-				// released = return to original state
 				if (queueRunning) {
 					hasPendingActivation = true;
 					pendingActivate = gatesOriginalState;
@@ -998,7 +1053,9 @@ struct ButtonTile : Tile {
 					ActivateGates(gatesOriginalState);
 				}
 			}
-		};
+			};
 	}
+
+
 };
 #endif // !MAP_MANAGER

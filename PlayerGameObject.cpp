@@ -25,7 +25,7 @@ void Player::PlayerInput()
 	{
 		if (PlayerStats::Get().ConsumeJumpStamina())
 		{
-			float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 300.0f);
+			float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 350.0f);
 			rb->velocity.y = jumpVelocity;
 		}
 		else
@@ -236,7 +236,7 @@ void Player::Init()
 	rb = AddComponent(
 		new RigidBody()
 	);
-	rb->type = RIGIDBODY_TYPE::KINEMATIC;
+	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 	rb->mass = 10.f;
 
 
@@ -272,7 +272,7 @@ void Player::TakeDamage(int amount)
 
 		// respawn: reset health and jump stamina
 		PlayerStats::Get().health = PlayerStats::Get().maxHealth;
-		PlayerStats::Get().jumpStamina = static_cast<float>(PlayerStats::Get().maxJumpStamina);
+		PlayerStats::Get().jumpStamina =PlayerStats::Get().maxJumpStamina;
 
 		std::cout << "[Player] Total deaths: " << PlayerStats::Get().deathCount << "\n";
 	}
