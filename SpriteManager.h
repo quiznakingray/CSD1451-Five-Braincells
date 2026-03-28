@@ -42,6 +42,7 @@ struct Sprite : ComponentBase{
 	AEGfxVertexList* mesh = nullptr;
 	AEGfxTexture* texture = nullptr;
 	std::string textureFileName{};
+	std::string prevTextureFileName{};
 	SPRITE_SHAPE spriteShape = SPRITE_SHAPE::SHAPE_RECT;
 	//std::array <f64, COLORSIZE > color{ };
 	struct SpriteSheet {
