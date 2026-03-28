@@ -7,6 +7,9 @@ void PhysicsManager::UpdateRigidBody(RigidBody* rb, f64 dt)
 {
     if (!rb) return;
 
+    if (rb->type == RIGIDBODY_TYPE::STATIC)
+        return;
+
     rb->onCollider = false;
     // Apply gravity
     if (rb->hasGravity ) rb->velocity.y += rb->gravity * static_cast<f32>(dt);

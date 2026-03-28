@@ -463,6 +463,13 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
     case TILE_ID::HEALTHPICKUPTILE:
         newTile = new HealthPickupTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
+    case TILE_ID::DAMAGEPICKUPTILE:
+        newTile = new DamagePickupTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::PROFPICKUPTILE:
+        newTile = new ProficiencyPickupTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+
     default:
         newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
         //newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
@@ -943,13 +950,39 @@ void HealthPickupTile::Init() {
     collider->isTrigger = true;
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player)
+        if (player && PlayerStats::Get().GetPlayerHealth() < PlayerStats::Get().GetPlayerMaxHealth())
         {
             PlayerStats::Get().IncreasePlayerHealth();
             isCurrActive = false;
         }
         };
 }
+
+void DamagePickupTile::Init() {
+    Tile::Init();
+    collider->isTrigger = true;
+    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+        Player* player = dynamic_cast<Player*>(other->owner);
+        if (player && isCurrActive) {
+
+            PlayerStats::Get().IncreasePlayerDamage();
+            isCurrActive = false;
+        }
+        };
+}
+
+void ProficiencyPickupTile::Init() {
+    Tile::Init();
+    collider->isTrigger = true;
+    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+        Player* player = dynamic_cast<Player*>(other->owner);
+        if (player && isCurrActive) {
+            PlayerStats::Get().IncreasePlayerProficiency();
+            isCurrActive = false;
+        }
+        };
+}
+
 
 void GoalTile::Init() {
     Tile::Init();
@@ -1048,7 +1081,7 @@ void CheckpointTile::Init() {
 void CrateTile::Init()
 {
     Tile::Init();
-    
+
     collider->size.x = 0.875f;
     collider->size.y = 0.875f;
 
@@ -1066,7 +1099,7 @@ void CrateTile::Init()
         Arrow* arrow = dynamic_cast<Arrow*>(other->owner);
         if (arrow && arrow->isActive)
         {
-            
+
             if (hitSides & COLLISION_SIDE::LEFT || hitSides & COLLISION_SIDE::RIGHT)
             {
                 rb->velocity.x = (hitSides & COLLISION_SIDE::LEFT) ? 200.0f : -200.0f;
@@ -1075,7 +1108,6 @@ void CrateTile::Init()
             arrow->timer = 0.0f;
         }
         };
-
     collider->OnCollisionOver = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player)
@@ -1143,7 +1175,6 @@ void CrateTile::Update() {
             interactionTextBox->isActive = false;
             return;
         }
-
         // only update grabbed side if player is moving fast enough
         if (grabbedPlayer->rb->velocity.x > 1.0f)
             grabbedSide = COLLISION_SIDE::RIGHT;
@@ -1160,7 +1191,6 @@ void CrateTile::Update() {
         rb->velocity.x = 0;
         rb->velocity.y = 0;
         rb->onCollider = grabbedPlayer->rb->onCollider;
-
         // wall clip check AFTER sync
         for (Tile* tile : nearbyTiles)
         {
@@ -1176,11 +1206,16 @@ void CrateTile::Update() {
                 collider->GetPos2D(), oCol->GetPos2D(),
                 collider->GetScale(), oCol->GetScale()))
             {
+                if (oCol->isTrigger) {
+                    collider->AddToOvelappingVector(oCol, 0); // 0 or COLLISION_SIDE::NONE
+                    oCol->AddToOvelappingVector(collider, 0);
+                    continue;
+                }
+
                 float dx = collider->GetPos2D().x - oCol->GetPos2D().x;
                 float dy = collider->GetPos2D().y - oCol->GetPos2D().y;
                 float pxOverlap = (collider->GetScale().x * 0.5f + oCol->GetScale().x * 0.5f) - fabs(dx);
                 float pyOverlap = (collider->GetScale().y * 0.5f + oCol->GetScale().y * 0.5f) - fabs(dy);
-
                 if (pxOverlap < pyOverlap)
                 {
                     // push crate out of wall
@@ -1219,7 +1254,6 @@ void CrateTile::Update() {
                 if (rb->velocity.x > 0) rb->velocity.x = 0;
             }
         }
-
         for (Collider* pCol : colliders)
         {
             playerTouching = false;
@@ -1239,7 +1273,6 @@ void CrateTile::Update() {
                     if (info.sides & COLLISION_SIDE::RIGHT) playerOnRight = true;
                 }
             }
-
             for (Tile* tile : nearbyTiles)
             {
                 if (!tile) continue;
@@ -1272,7 +1305,6 @@ void CrateTile::Update() {
                     oCol->RemoveFromOverlappingVector(pCol);
                 }
             }
-
             for (auto it = pCol->collisionInfos.begin(); it != pCol->collisionInfos.end(); )
             {
                 Collider* oCol = it->other;
