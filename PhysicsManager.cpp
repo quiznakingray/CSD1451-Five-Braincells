@@ -31,6 +31,9 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     GameObject* B = b->owner;
     if (!A || !B) return;
 
+    if (!a->canCollide || !b->canCollide)
+        return;
+
     CrateTile* crateA = dynamic_cast<CrateTile*>(A);
     CrateTile* crateB = dynamic_cast<CrateTile*>(B);
     Player* playerA = dynamic_cast<Player*>(A);

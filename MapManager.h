@@ -323,7 +323,7 @@ struct CrateTile : Tile {
 			new RigidBody()
 		);
 
-		rb->type = RIGIDBODY_TYPE::KINEMATIC;
+		rb->type = RIGIDBODY_TYPE::DYNAMIC;
 		rb->mass = 5000.f;
 		rb->invMass = 1.0f / rb->mass;
 		rb->maxImpulse = 500000.f;
@@ -1027,14 +1027,9 @@ struct ButtonTile : Tile {
 			}
 			};
 
-		collider->OnTriggerOver = [this, TOP_SURFACE_TOLERANCE](Collider* other, int sides) {
-			// Keep this minimal; OnTriggerEnter handles activation.
-			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
-			if (crate) {
-				float buttonTop = pos.y + scale.y * 0.5f;
-				float objectBottom = crate->pos.y - crate->scale.y * 0.5f;
-				if (objectBottom < buttonTop - TOP_SURFACE_TOLERANCE) return;
-			}
+		collider->OnTriggerOver = [](Collider* other, int)
+			{
+				std::cout << "TriggerOver with: " << typeid(*other->owner).name() << '\n';
 			};
 
 		collider->OnTriggerExit = [this](Collider* other, int sides) {
