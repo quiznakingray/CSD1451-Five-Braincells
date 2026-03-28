@@ -14,6 +14,7 @@
 #include <filesystem>
 #include "EnemyGameObject.h"
 #include "EnemyManager.h"
+#include "AudioManager.h"
 
 int gGameRunning = 1;
 //AEGfxVertexList* pMesh = 0;
@@ -86,6 +87,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// Game Loop
 	while (gGameRunning)
 	{
+		AudioManager::GetInstance().Init();
 		// Informing the system about the loop's start
 		gameStateManager.Update();
 

@@ -529,7 +529,9 @@ struct MapManager : public Singleton<MapManager> {
 
 	void FreeMap();
 
-	void SaveMapState();
+	void GenerateNodes();
+
+	void SaveMapState(GAME_STATE_TYPE level);
 
 	void LoadMapState();
 	

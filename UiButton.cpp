@@ -42,9 +42,6 @@ void UIButton::Init(float posX, float posY, float w, float h,
         -0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
 
     mesh = AEGfxMeshEnd();
-
-    // Initialize button click sfx
-    AudioManager::Init();
 }
 
 void UIButton::Update()
@@ -55,7 +52,7 @@ void UIButton::Update()
     if (isHovered && AEInputCheckTriggered(AEVK_LBUTTON))
     {
         isClicked = true;
-        AudioManager::PlaySFX("button_click"); // play button click sfx
+        AudioManager::GetInstance().PlaySFX("button_click"); // play button click sfx
     }
 }
 

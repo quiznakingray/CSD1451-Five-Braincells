@@ -2,6 +2,8 @@
 #include "SaveManager.h"
 #include <iostream>
 #include <cstdlib> // For rand
+#include <unordered_set>
+#include <algorithm>
 
 extern MapManager mapManager;
 
@@ -50,22 +52,53 @@ void EnemyManager::LoadEnemyStates()
     }
 }
 
-void EnemyManager::SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects) {
-    std::vector<Tile*> enemyTiles = mapManager.GetTilesWithID(TILE_ID::ENEMY);
+void EnemyManager::SpawnEnemy(EnemyType type, Tile* tile, std::vector<GameObject*>& gameObjects)
+{
+    EnemyGameObject* enemy = new EnemyGameObject();
+    enemy->Init(type, tile);
 
-    int spawned = 0;
-    for (Tile* tile : enemyTiles) {
-        if (spawned >= numBasic + numMiniBoss) break;
+    AddGameObjectToVector(enemy, gameObjects);
+    RegisterEnemy(enemy);
+}
 
-        EnemyType type = (spawned < numBasic) ? EnemyType::BASIC : EnemyType::MINI_BOSS;
+void EnemyManager::SpawnEnemies(int numEnemies, int numMiniBoss, std::vector<GameObject*>& goVec)
+{
+    auto enemyTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMY);
+    auto miniBossTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMY); // or another tileID for bosses
+
+    std::unordered_set<Tile*> occupied;
+
+    // clamp numbers to available tiles
+    numEnemies = min(numEnemies, (int)enemyTiles.size());
+    numMiniBoss = min(numMiniBoss, (int)miniBossTiles.size());
+
+    // spawn normal enemies
+    for (int i = 0; i < numEnemies; i++)
+    {
+        Tile* tile = enemyTiles[i];
+        if (occupied.find(tile) != occupied.end()) continue;
+
         EnemyGameObject* enemy = new EnemyGameObject();
-        enemy->Init(type, tile);
-        AddGameObjectToVector(enemy, gameObjects);
+        enemy->Init(EnemyType::BASIC_MELEE, tile);
+        goVec.push_back(enemy);
+        occupied.insert(tile);
         RegisterEnemy(enemy);
-        spawned++;
     }
 
-    std::cout << "[EnemyManager] Spawned " << spawned << " enemies\n";
+    // spawn mini bosses
+    for (int i = 0; i < numMiniBoss; i++)
+    {
+        Tile* tile = miniBossTiles[i];
+        if (occupied.find(tile) != occupied.end()) continue;
+
+        EnemyGameObject* boss = new EnemyGameObject();
+        boss->Init(EnemyType::MINI_BOSS_MELEE, tile); // or MINI_BOSS_RANGED
+        goVec.push_back(boss);
+        occupied.insert(tile);
+        RegisterEnemy(boss);
+    }
+
+    std::cout << "[EnemyManager] Spawn complete\n";
 }
 
 void EnemyManager::UpdateAllEnemies(f32 dt) {
@@ -74,7 +107,7 @@ void EnemyManager::UpdateAllEnemies(f32 dt) {
 
         AEVec2 playerPos = GetPlayerPos();
 
-        // Check line of sight (simple distance check)
+        // Check line of sight
         f32 dx = playerPos.x - enemy->pos.x;
         f32 dy = playerPos.y - enemy->pos.y;
         f32 distance = sqrtf(dx * dx + dy * dy);

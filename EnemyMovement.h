@@ -3,8 +3,10 @@
 
 #include "AEEngine.h"
 #include <vector>
+#include "Node.h"
 
 struct EnemyGameObject;
+
 struct EnemyMovement {
     bool movingRight = true;
 
@@ -13,6 +15,10 @@ struct EnemyMovement {
 
     // A* Pathfinding
     static std::vector<AEVec2> FindPath(AEVec2 start, AEVec2 target);
+
+    // Node system
+    static std::vector<Node*> allNodes;
+    static Node* GetClosestNode(AEVec2 pos);
 };
 
-#endif // ENEMY_MOVEMENT_H
+#endif

@@ -6,9 +6,9 @@ void AudioMenu::ApplyAudio()
     float music = musicSlider.value / 100.0f;
     float sfx = sfxSlider.value / 100.0f;
 
-    AudioManager::SetMasterVolume(master);
-    AudioManager::SetMusicVolume(music);
-    AudioManager::SetSFXVolume(sfx);
+    AudioManager::GetInstance().SetMasterVolume(master);
+    AudioManager::GetInstance().SetMusicVolume(music);
+    AudioManager::GetInstance().SetSFXVolume(sfx);
 }
 
 void AudioMenu::Init()
@@ -87,11 +87,11 @@ void AudioMenu::Update()
     // Update master volume based on master slider
     if (currMaster != prevMaster)
     {
-        AudioManager::SetMasterVolume(currMaster / 100.0f);
+        AudioManager::GetInstance().SetMasterVolume(currMaster / 100.0f);
 
         // Update music and sfx volumes based on master slider
-        AudioManager::SetMusicVolume(currMusic / 100.0f);
-        AudioManager::SetSFXVolume(currSFX / 100.0f);
+        AudioManager::GetInstance().SetMusicVolume(currMusic / 100.0f);
+        AudioManager::GetInstance().SetSFXVolume(currSFX / 100.0f);
 
         prevMaster = currMaster;
     }
@@ -99,14 +99,14 @@ void AudioMenu::Update()
     // Update music volume based on music slider
     if (currMusic != prevMusic)
     {
-        AudioManager::SetMusicVolume(currMusic / 100.0f);
+        AudioManager::GetInstance().SetMusicVolume(currMusic / 100.0f);
         prevMusic = currMusic;
     }
 
     // Update sfx volume based on sfx slider
     if (currSFX != prevSFX)
     {
-        AudioManager::SetSFXVolume(currSFX / 100.0f);
+        AudioManager::GetInstance().SetSFXVolume(currSFX / 100.0f);
         prevSFX = currSFX;
     }
 }
