@@ -1,5 +1,10 @@
 #include "UIButton.h"
 
+bool UIButton::IsClicked() const
+{
+    return isClicked;
+}
+
 bool UIButton::IsMouseOver()
 {
     s32 mx, my;

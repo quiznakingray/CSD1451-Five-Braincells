@@ -60,36 +60,24 @@ void AudioManager::Update()
 
 void AudioManager::Exit()
 {
-    // Stop all audio first
-    AEAudioStopGroup(masterGroup);
-    AEAudioStopGroup(musicGroup);
-    AEAudioStopGroup(sfxGroup);
-
-    //// Unload all sfx audio
-    //for (auto& pair : sfx)
-    //{
-    //    if (AEAudioIsValidAudio(pair.second))
-    //        AEAudioUnloadAudio(pair.second);
-    //}
-    //sfx.clear(); // clear the map
-
-    //// Unload all music audio
-    //for (auto& pair : music)
-    //{
-    //    if (AEAudioIsValidAudio(pair.second))
-    //        AEAudioUnloadAudio(pair.second);
-    //}
-    //music.clear(); // clear the map
-
-    // Unload audio groups
+    // Stop all audio first then unload audio groups
     if (AEAudioIsValidGroup(masterGroup))
+    {
+        AEAudioStopGroup(masterGroup);
         AEAudioUnloadAudioGroup(masterGroup);
+    }
 
     if (AEAudioIsValidGroup(musicGroup))
+    {
+        AEAudioStopGroup(musicGroup);
         AEAudioUnloadAudioGroup(musicGroup);
+    }
 
     if (AEAudioIsValidGroup(sfxGroup))
+    {
+        AEAudioStopGroup(sfxGroup);
         AEAudioUnloadAudioGroup(sfxGroup);
+    }
 
     // Shutdown audio system
     AEAudioExit();

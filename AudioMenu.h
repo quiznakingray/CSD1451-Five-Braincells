@@ -12,7 +12,19 @@ public:
     void Render();
     void Free();
 
+    void Toggle();
+    bool IsOpen() const;
+
 private:
+    bool isOpen = false;
+
+    s8 font;
+    f32 fontSize;
+
+    // Normalize screen coords relative to screen center
+    float NormalizeScreenX(float px);
+    float NormalizeScreenY(float py);
+
     // Audio panel
     float panelX, panelY;
     float panelW, panelH;
@@ -24,6 +36,10 @@ private:
     UIButton backButton;
 
     // Audio sliders
+    float masterPos;
+    float musicPos;
+    float sfxPos;
+
     UISlider masterSlider;
     UISlider musicSlider;
     UISlider sfxSlider;
