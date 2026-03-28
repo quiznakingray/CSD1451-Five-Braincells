@@ -8,7 +8,7 @@ enum class RIGIDBODY_TYPE
 {
 	STATIC,
 	DYNAMIC,
-	KINEMATIC
+	//KINEMATIC
 };
 struct RigidBody : ComponentBase {
 

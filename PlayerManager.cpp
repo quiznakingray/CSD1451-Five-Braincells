@@ -1,15 +1,8 @@
 #include "PlayerManager.h"
 #include "MapManager.h"
-#include "SaveManager.h"
-#include "CameraSystem.h"
-#include "PlayerStats.h"
-#include <fstream>
-#include <direct.h>
 
 AEVec2 PlayerManager::camPos = { 0.f, 0.f };
 Arrow* PlayerManager::rangePlayerArrow = nullptr;
-
-
 void PlayerManager::Init()
 {
 	meleePlayer = new MeleePlayer;
@@ -20,18 +13,13 @@ void PlayerManager::Init()
 	AEVec2Set(&rangePlayerArrow->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
 
 	currentPlayer = meleePlayer;
-	CameraSystem::SetCameraPos(meleePlayer->pos);
+	camPos = meleePlayer->pos;
 }
 
 void PlayerManager::Update(){
 	if (!currentPlayer) return;
-	double dt = AEFrameRateControllerGetFrameTime();
 	currentPlayer->PlayerInput();
-	currentPlayer->PlayerAction();
 	
-	if (currentPlayer != meleePlayer) meleePlayer->ApplyDeceleration();
-	if (currentPlayer != rangedPlayer) rangedPlayer->ApplyDeceleration();
-
 	if (AEInputCheckCurr(AEVK_COMMA) && currentPlayer != meleePlayer)
 	{
 		ChangePlayer(PLAYER_TYPE::MELEE);
@@ -41,25 +29,16 @@ void PlayerManager::Update(){
 		ChangePlayer(PLAYER_TYPE::RANGE);
 
 	}
-	if (AEInputCheckTriggered(AEVK_L) && PlayerStats::Get().health != 0)
-	{
-		--PlayerStats::Get().health;
-	}
-	rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PLAYER_ACTION::AIMING;
 
-	//regen stamina
+	rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PlayerAction::AIMING;
 
-	PlayerStats::Get().RegenStamina(dt); 
-	
+	AEVec2 target = currentPlayer->pos;
 
-	if (!canChangePlayer)
-	{
-		StartPlayerCooldown(dt);
-	}
-	else {
-		playerSwitchingCooldown = playerSwitchingDuration;
-	}
-	CameraSystem::LerpToPosition(currentPlayer->pos);
+	// Lerp camera
+	camPos.x += (target.x - camPos.x) * camLerpSpeed * AEFrameRateControllerGetFrameTime();
+	camPos.y += (target.y - camPos.y) * camLerpSpeed * AEFrameRateControllerGetFrameTime();
+
+	AEGfxSetCamPosition(camPos.x, camPos.y);
 
 }
 void PlayerManager::Render(){
@@ -68,96 +47,9 @@ void PlayerManager::Render(){
 	rangePlayerArrow->Render();
 }
 
-void PlayerManager::Free() {
-	if (meleePlayer) {
-		meleePlayer->Free();
-		delete meleePlayer;
-		meleePlayer = nullptr;
-	}
-	if (rangedPlayer) {
-		rangedPlayer->Free();
-		delete rangedPlayer;
-		rangedPlayer = nullptr;
-	}
-	if (rangePlayerArrow) {
-		rangePlayerArrow->Free();
-		delete rangePlayerArrow;
-		rangePlayerArrow = nullptr;
-	}
-	currentPlayer = nullptr;
-}
-
-void PlayerManager::SavePlayerData()
-{
-	SaveManager& save = SaveManager::GetInstance();
-
-	// positions
-	if (meleePlayer) save.playerSaveData.meleePos = meleePlayer->pos;
-	if (rangedPlayer) save.playerSaveData.rangedPos = rangedPlayer->pos;
-
-	// copy persistent stats from PlayerStats singleton
-	PlayerStats& stats = PlayerStats::Get();
-	save.playerSaveData.health = stats.health;
-	save.playerSaveData.maxHealth = stats.maxHealth;
-	save.playerSaveData.damage = stats.damage;
-	save.playerSaveData.proficiency = stats.proficiency;
-	save.playerSaveData.speedMult = stats.speedMult;
-
-	save.playerSaveData.maxJumpStamina = stats.maxJumpStamina;
-	save.playerSaveData.jumpStamina = stats.jumpStamina;
-
-	save.playerSaveData.deathCount = stats.deathCount;
-	save.playerSaveData.killCount = stats.killCount;
-
-	save.playerSaveData.hasSavedData = true;
-}
-
-void PlayerManager::Load()
-{
-	PlayerSaveData& data = SaveManager::GetInstance().playerSaveData;
-	if (!data.hasSavedData) return;
-
-	// restore positions to game objects
-	if (meleePlayer) {
-		AEVec2Set(&meleePlayer->pos, data.meleePos.x, data.meleePos.y);
-	}
-	if (rangedPlayer) {
-		AEVec2Set(&rangedPlayer->pos, data.rangedPos.x, data.rangedPos.y);
-	}
-
-	// restore stats into PlayerStats singleton
-	PlayerStats& stats = PlayerStats::Get();
-	stats.health = data.health;
-	stats.maxHealth = data.maxHealth;
-	stats.damage = data.damage;
-	stats.proficiency = data.proficiency;
-	stats.speedMult = data.speedMult;
-
-	stats.maxJumpStamina = data.maxJumpStamina;
-	stats.jumpStamina = data.jumpStamina;
-
-	stats.deathCount = data.deathCount;
-	stats.killCount = data.killCount;
-}
-
-
 void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 {
-	if (!canChangePlayer) return;
-	currentPlayerType = type;
 	currentPlayer = type == PLAYER_TYPE::MELEE
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
-	canChangePlayer = false;
-}
-
-
-
-void PlayerManager::StartPlayerCooldown(f64 dt)
-{
-	playerSwitchingCooldown -= static_cast<f32>(dt);
-	if (playerSwitchingCooldown <= 0)
-	{
-		canChangePlayer = true;
-	}
 }

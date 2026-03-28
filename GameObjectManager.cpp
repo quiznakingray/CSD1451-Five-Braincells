@@ -2,7 +2,6 @@
 #include "CollisionManager.h"
 #include "PhysicsManager.h"
 #include "MapManager.h"
-#include "CameraSystem.h"
 #include <type_traits>
 #include <iostream>
 #include <algorithm>
@@ -20,12 +19,13 @@ void GameObject::Update()
 {
 	for (ComponentBase*  comp: components)
 	{
+		//if (Collider * collider = dynamic_cast<Collider*>(comp))
+		//{
+		//	std::cout << "This is a collider" << std::endl;
+		//}
 		if (!comp->isActive) continue;
 		comp->Update();
 	}
-	posOnScreen.x = pos.x + CameraSystem::GetCameraPos().x;
-	posOnScreen.y = pos.y + CameraSystem::GetCameraPos().y;
-	posOnScreen.z = pos.z;
 }
 
 void GameObject::Render() {
@@ -40,17 +40,13 @@ void GameObject::Free()
 {
 	for (ComponentBase* comp : components)
 	{
-		comp->Free(); 
+		comp->Free();
+		delete comp;
 	}
 
-}
-GameObject::~GameObject() {
-	for (ComponentBase* comp : components)
-	{
-		delete comp; // memory cleanup only
-	}
 	components.clear();
 }
+
 void HandleState(std::vector<GameObject*>& gos)
 {
 	for (size_t i = 0; i < gos.size(); ++i)
@@ -80,8 +76,8 @@ void HandleState(std::vector<GameObject*>& gos)
 bool GameObject::isGameObjectOnScreen()
 {
 	f32 camX, camY, camMinX, camMinY, camMaxX, camMaxY;
-	f32 windowWidth = static_cast<f32>(AEGfxGetWindowWidth());
-	f32 windowHeight = static_cast<f32>(AEGfxGetWindowHeight());
+	f32 windowWidth = AEGfxGetWindowWidth();
+	f32 windowHeight = AEGfxGetWindowHeight();
 	AEGfxGetCamPosition(&camX, &camY);
 	camMinX = camX - windowWidth / 2.f;
 	camMaxX = camX + windowWidth / 2.f;
@@ -103,7 +99,6 @@ bool GameObject::isGameObjectOnScreen()
 
 void AddGameObjectToVector(GameObject* go, std::vector<GameObject*>& gos)
 {
-	if (std::find(gos.begin(), gos.end(), go) != gos.end()) return;
 	gos.push_back(go);
 
 	// sort array
@@ -116,80 +111,67 @@ void AddGameObjectToVector(GameObject* go, std::vector<GameObject*>& gos)
 
 }
 
-struct CollisionCandidate
-{
-	GameObject* go;
-	std::vector<Collider*>  colliders;
-	bool                    isStatic;
-};
-
 void HandleCollision(std::vector<GameObject*>& gos)
 {
-	// --- Broad phase: build candidate list once, O(n) ---
-	std::vector<CollisionCandidate> candidates;
-	candidates.reserve(gos.size());
-
-	for (GameObject* go : gos)
+	for (size_t i = 0; i < gos.size(); ++i)
 	{
-		if (!go->isActive) continue;
+		GameObject* firstGo = gos[i];
+		if (!firstGo->isOnCamera || !firstGo->isActive) continue;
 
-		std::vector<Collider*> cols = go->GetComponents<Collider>();
-		// strip non-collidable up front
-		cols.erase(
-			std::remove_if(cols.begin(), cols.end(),
-				[](Collider* c) { return !c->canCollide; }),
-			cols.end()
-		);
-		if (cols.empty()) continue; // no point testing this object at all
+		auto isDynamic = [](GameObject* go) {
+			RigidBody* rb = go->GetComponent<RigidBody>();
+			return rb && rb->type == RIGIDBODY_TYPE::DYNAMIC;
+			};
+		// skip static vs static + cloudTile + crateTile entirely
+		bool firstIsStatic = dynamic_cast<Tile*>(firstGo) && !isDynamic(firstGo);
 
-		RigidBody* rb = go->GetComponent<RigidBody>();
-		bool isDynamic = rb && rb->type == RIGIDBODY_TYPE::DYNAMIC;
-		bool isStaticTile = dynamic_cast<Tile*>(go) && !isDynamic;
 
-		candidates.push_back({ go, std::move(cols), isStaticTile });
-	}
-
-	// --- Narrow phase: O(n²) but on a much smaller, pre-filtered list ---
-	for (size_t i = 0; i < candidates.size(); ++i)
-	{
-		CollisionCandidate& first = candidates[i];
-
-		for (size_t j = i + 1; j < candidates.size(); ++j)
+		for (size_t j = i + 1; j < gos.size(); ++j)
 		{
-			CollisionCandidate& second = candidates[j];
+			GameObject* secondGo = gos[j];
+			if (!secondGo->isOnCamera || !secondGo->isActive) continue;
 
-			// Static vs static: never collide
-			if (first.isStatic && second.isStatic) continue;
+			bool secondIsStatic = dynamic_cast<Tile*>(secondGo) && !isDynamic(secondGo);
 
-			for (Collider* firstColl : first.colliders)
+			// two static tiles never need collision checks
+			if (firstIsStatic && secondIsStatic) continue;
+
+			std::vector<Collider*> firstGoColliders = firstGo->GetComponents<Collider>();
+			std::vector<Collider*> secondGoColliders = secondGo->GetComponents<Collider>();
+
+			for (Collider* firstColl : firstGoColliders)
 			{
-				for (Collider* secondColl : second.colliders)
+				if (!firstColl->canCollide) continue;
+				for (Collider* secondColl : secondGoColliders)
 				{
+					if (!secondColl->canCollide) continue;
+
 					bool colliding = false;
-
-					COLLIDER_TYPE ft = firstColl->type;
-					COLLIDER_TYPE st = secondColl->type;
-
-					if (ft == COLLIDER_TYPE::BOX_COLLIDER && st == COLLIDER_TYPE::BOX_COLLIDER)
+					if (firstColl->type == COLLIDER_TYPE::BOX_COLLIDER
+						&& secondColl->type == COLLIDER_TYPE::BOX_COLLIDER)
 					{
 						colliding = BoxToBoxCollision(
 							firstColl->GetPos2D(), secondColl->GetPos2D(),
 							firstColl->GetScale(), secondColl->GetScale()
 						);
 					}
-					else if ((ft == COLLIDER_TYPE::BOX_COLLIDER && st == COLLIDER_TYPE::CIRCLE_COLLIDER) ||
-						(ft == COLLIDER_TYPE::CIRCLE_COLLIDER && st == COLLIDER_TYPE::BOX_COLLIDER))
-					{
-						Collider* box = (ft == COLLIDER_TYPE::BOX_COLLIDER) ? firstColl : secondColl;
-						Collider* circle = (ft == COLLIDER_TYPE::CIRCLE_COLLIDER) ? firstColl : secondColl;
+						// circle to box
+					else if ((firstColl->type == COLLIDER_TYPE::BOX_COLLIDER
+						&& secondColl->type == COLLIDER_TYPE::CIRCLE_COLLIDER ) || 
+						(firstColl->type == COLLIDER_TYPE::CIRCLE_COLLIDER
+						&& secondColl->type == COLLIDER_TYPE::BOX_COLLIDER)){
+
+						Collider* box = firstColl->type == COLLIDER_TYPE::BOX_COLLIDER ? firstColl : secondColl;
+						Collider* circle = firstColl->type == COLLIDER_TYPE::CIRCLE_COLLIDER ? firstColl : secondColl;
+
 						colliding = BoxToCircleCollision(
 							box->GetPos2D(), circle->GetPos2D(),
-							box->GetScale(), circle->GetScale()
-						);
+							box->GetScale(), circle->GetScale());
+
 					}
-					else
-					{
-						// circle vs circle
+					else {
+
+						// circle to circle
 					}
 
 					if (colliding)
@@ -212,100 +194,85 @@ void HandleCollision(std::vector<GameObject*>& gos)
 		}
 	}
 }
+
 void HandleInteraction(std::vector<GameObject*>& gos)
 {
-	struct InteractCandidate
-	{
-		GameObject* go;
-		Collider* col;
-	};
-
-	std::vector<InteractCandidate> candidates;
-	candidates.reserve(gos.size());
-
-	for (size_t i = 0; i < gos.size(); ++i)
-	{
-		GameObject* go = gos[i];
-		if (!go->isActive || !go->isOnCamera) continue;
-		std::vector<Collider*> cols = go->GetComponents<Collider>();
-		for (size_t j = 0; j < cols.size(); ++j)
-		{
-			Collider* col = cols[j];
-			if (!col->canInteract) continue;
-			InteractCandidate c;
-			c.go = go;
-			c.col = col;
-			candidates.push_back(c);
-		}
-	}
-
-	// --- Find topmost under cursor ---
 	GameObject* topGO = nullptr;
 	Collider* topCollider = nullptr;
-	f32         highestZ = -1.f;
+	f32 highestZ = -1.f;
 
-	for (size_t i = 0; i < candidates.size(); ++i)
+	// Find topmost GameObject under cursor
+	for (GameObject* go : gos)
 	{
-		GameObject* go = candidates[i].go;
-		Collider* col = candidates[i].col;
-		if (IsCursorOverRect(
-			go->posOnScreen.x + col->center.x,
-			go->posOnScreen.y + col->center.y,
-			go->scale.x * col->size.x,
-			go->scale.y * col->size.y))
+		if (!go->isActive) continue;
+		for (Collider* col : go->GetComponents<Collider>())
 		{
-			if (go->posOnScreen.z > highestZ)
+			if (!col->canInteract || !go->isOnCamera) continue;
+			if (IsCursorOverRect(
+				go->pos.x + col->center.x,
+				go->pos.y + col->center.y,
+				go->scale.x * col->size.x,
+				go->scale.y * col->size.y))
 			{
-				highestZ = go->posOnScreen.z;
-				topGO = go;
-				topCollider = col;
+				if (go->pos.z > highestZ)
+				{
+					highestZ = go->pos.z;
+					topGO = go;
+					topCollider = col;
+				}
 			}
 		}
 	}
 
-	// --- Hoist input checks ---
-	bool lmbTriggered = AEInputCheckTriggered(AEVK_LBUTTON);
-	bool lmbHeld = AEInputCheckCurr(AEVK_LBUTTON);
-	bool lmbReleased = AEInputCheckReleased(AEVK_LBUTTON);
 
-	// --- Update interaction state ---
-	for (size_t i = 0; i < candidates.size(); ++i)
+	// Update colliders
+	for (GameObject* go : gos)
 	{
-		GameObject* go = candidates[i].go;
-		Collider* col = candidates[i].col;
-		bool isHover = (col == topCollider);
-
-		if (col->isHovering == false && isHover)
-			if (col->OnMouseEnter) col->OnMouseEnter();
-
-		if (col->isHovering == true && !isHover)
-			if (col->OnMouseExit) col->OnMouseExit();
-
-		if (isHover)
+		for (Collider* col : go->GetComponents<Collider>())
 		{
-			if (col->OnMouseOver) col->OnMouseOver();
-			if (lmbTriggered && !col->isInteracting)
+			if (!col->canInteract || !go->isOnCamera) continue;
+
+			bool isHover = (col == topCollider);
+
+			if (!col->isHovering && isHover)
 			{
-				if (col->OnMouseDown) col->OnMouseDown();
-				col->isInteracting = true;
+				if (col->OnMouseEnter) col->OnMouseEnter();
 			}
+			if (col->isHovering && !isHover)
+			{
+				if(col->OnMouseExit) col->OnMouseExit();
+			}
+
+			if (isHover)
+			{
+				if (col->OnMouseOver) col->OnMouseOver();
+				if (AEInputCheckTriggered(AEVK_LBUTTON) && !col->isInteracting)
+				{
+					if (col->OnMouseDown) col->OnMouseDown();
+					col->isInteracting = true;
+				}
+			}
+
+			if (col->isInteracting)
+			{
+				if (AEInputCheckCurr(AEVK_LBUTTON))
+				{
+					if (col->OnClick) col->OnClick();
+				}
+				else if (AEInputCheckReleased(AEVK_LBUTTON))
+				{
+					if (col->OnMouseUp) col->OnMouseUp();
+					col->isInteracting = false;
+				}
+			}
+			col->isHovering = isHover;
+
+
 		}
 
-		if (col->isInteracting)
-		{
-			if (lmbHeld)
-			{
-				if (col->OnClick) col->OnClick();
-			}
-			else if (lmbReleased)
-			{
-				if (col->OnMouseUp) col->OnMouseUp();
-				col->isInteracting = false;
-			}
-		}
-
-		col->isHovering = isHover;
 	}
+
+	
 }
 void InitGameObjects(std::vector<GameObject*>& gos)
 {
@@ -319,26 +286,18 @@ void UpdateGameObjects(std::vector<GameObject*> &gos)
 	for (GameObject* firstGo : gos)
 	{
 		if (!firstGo->isActive) continue;
-		if (!firstGo->isUI) firstGo->isOnCamera = firstGo->isGameObjectOnScreen();
 		firstGo->Update();
+		firstGo->isOnCamera = firstGo->isGameObjectOnScreen();
 	}
 	HandleCollision(gos);
 	HandleInteraction(gos);
 	HandleState(gos);
 }
-void RenderGameObjects(std::vector<GameObject*>& gos)
-{
-	for (GameObject* go : gos)
-	{
-		if (!go->isActive) continue;
-		go->Render();
-	}
-}
-
-void FreeGameObjects(std::vector<GameObject*>& gos)
-{
-	for (GameObject* go : gos)
-	{
-		go->Free();
-	}
-}
+//void RenderGameObjects(std::vector<GameObject*>& gos)
+//{
+//	for (GameObject* go : gos)
+//	{
+//		if (!go->isActive) continue;
+//		go->Render();
+//	}
+//}

@@ -18,14 +18,12 @@ enum class STATE
 
 struct GameObject {
 	AEVec3 pos{};
-	AEVec3 posOnScreen{};
 	AEVec2 scale{};
 	f32 rotation{};
 
 	bool isActive = true;
 	bool showColliders = false;
 	bool isOnCamera = true;
-	bool isUI = false;
 	//Sprite* sprite;
 	STATE objectState = STATE::IDLE;
 	
@@ -36,7 +34,7 @@ struct GameObject {
 	{
 		component->owner = this;
 		components.push_back(component);
-		//component->Init();
+		component->Init();
 		return component;
 	}
 
@@ -69,28 +67,21 @@ struct GameObject {
 	virtual void Free();
 
 	GameObject() = default;
-	virtual ~GameObject();
-	GameObject(f32 scale_x, f32 scale_y, f32 pos_x, f32 pos_y, f32 pos_z = 0.f, f32 rot = 0.f, bool setUI = false)
+	virtual ~GameObject() {};
+	GameObject(f32 scale_x, f32 scale_y, f32 pos_x, f32 pos_y, f32 pos_z = 0.f, f32 rot = 0.f)
 	{
 		AEVec2Set(&pos, pos_x, pos_y);
 		pos.z = pos_z;
 		AEVec2Set(&scale, scale_x, scale_y);
 		rotation = rot;
-		isUI = setUI;
 	}
 
 	bool isGameObjectOnScreen();
-
-	GameObject(const AEVec3& pos, const AEVec3& posOnScreen, const AEVec2& scale, const f32& rotation, bool isActive, bool showColliders, bool isOnCamera, bool isUI, const STATE& objectState, const std::vector<ComponentBase*>& components)
-		: pos(pos), posOnScreen(posOnScreen), scale(scale), rotation(rotation), isActive(isActive), showColliders(showColliders), isOnCamera(isOnCamera), isUI(isUI), objectState(objectState), components(components)
-	{
-	}
 };
-	
+
 void AddGameObjectToVector(GameObject* go, std::vector<GameObject*>& gos);
 
 void InitGameObjects(std::vector<GameObject*>& gos);
 void UpdateGameObjects(std::vector<GameObject*>& gos);
-void RenderGameObjects(std::vector<GameObject*>& gos);
-void FreeGameObjects(std::vector<GameObject* >& gos);
+//void RenderGameObjects(std::vector<GameObject*>& gos);
 #endif // !GAME_OBJECT_MANAGER_H

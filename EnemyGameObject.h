@@ -19,38 +19,6 @@ struct EnemyGameObject : GameObject
 	void Update() override;
 
 	void Render() override;
-#include "AnimatorComponent.h"
-#include "MapManager.h"
-
-enum class EnemyState {
-    IDLE,
-    WALK,
-    ATTACK
-};
-
-struct EnemyGameObject : GameObject {
-    bool isGrounded = false;
-
-    void Jump(float force);
-    bool CheckGrounded();
-
-    EnemyBase base;
-    EnemyMovement movement;
-    RigidBody* rb = nullptr;
-
-    Animator* animator = nullptr;
-    Animation* idleAnim = nullptr;
-    Animation* walkAnim = nullptr;
-
-    EnemyState currentState = EnemyState::IDLE;
-    ~EnemyGameObject();
-    void Init(EnemyType type, Tile* spawnTile);
-    void Update() override;
-    void Render() override;
-
-    void Patrol(f64 dt);
-    void FollowPlayer(AEVec2 playerPos, f64 dt);
-    void UpdateAnimation();
 };
 
 #endif

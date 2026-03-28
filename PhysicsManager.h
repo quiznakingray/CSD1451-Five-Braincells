@@ -6,7 +6,7 @@
 
 struct PhysicsManager {
 
-	static void UpdateRigidBody(RigidBody* rb, f64 dt);
+	static void UpdateRigidBody(RigidBody* rb, f32 dt);
 	
 	static void HandleCollision(Collider* a, Collider* b);
 

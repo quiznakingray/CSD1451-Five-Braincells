@@ -9,6 +9,5 @@ struct ParkourLevel {
 	static void Render() ;
 	static void Free() ;
 	static void Unload() ;
-	
 };
 #endif

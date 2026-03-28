@@ -5,7 +5,7 @@
 
 struct Player;
 
-void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float dt);
+void EnemyAttackPlayer(EnemyBase& enemy, Player& player);
 bool IsEnemyDead(const EnemyBase& enemy);
 
 #endif

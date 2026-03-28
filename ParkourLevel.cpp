@@ -1,75 +1,47 @@
 #include "ParkourLevel.h"
 #include "GameObjectManager.h"
 #include "MapManager.h"
-#include "SaveManager.h"
 #include "EnemyGameObject.h"
 #include "PlayerManager.h"
 #include "EndMenu.h"
-#include "EnemyManager.h"
-#include "CameraSystem.h"
-#include "InputManager.h"
-#include "HUD.h"
 
 //Player* player1 = nullptr;
+PlayerManager playerManager;
+EnemyGameObject* enemy1 = nullptr;
 
-std::vector<GameObject*> levelGameObjectVector{};
+std::vector<GameObject*> gameObjects1{};
+
+MapManager mapManager1;
 
 void ParkourLevel::Load()
 {
 	TextManager::Init();
-	AudioManager::GetInstance().Init();
 }
 
 void ParkourLevel::Init()
 {
 	// Clears game background
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-	switch (current) {
-	case GAME_STATE_TYPE::LEVEL1:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL1);
-		break;
-	case GAME_STATE_TYPE::LEVEL1BOSS:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01b.csv", GAME_STATE_TYPE::LEVEL1BOSS);
-		break;
-	case GAME_STATE_TYPE::LEVEL2:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_02.csv", GAME_STATE_TYPE::LEVEL2);
-		break;
-	case GAME_STATE_TYPE::LEVEL2BOSS:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_02b.csv", GAME_STATE_TYPE::LEVEL2BOSS);
-		break;
-	default:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL3);
-		break;
-	}
+
+	mapManager1.InitMap("Assets/Maps/Map_Level_01.csv", 0);
+	mapManager1.PrintMap();
 	
-	MapManager::GetInstance().AddTilesToGameObjectVector(levelGameObjectVector);
 
-	PlayerManager::GetInstance().Init();
-	AddGameObjectToVector(PlayerManager::GetInstance().meleePlayer, levelGameObjectVector);
-	AddGameObjectToVector(PlayerManager::GetInstance().rangedPlayer, levelGameObjectVector);
-	AddGameObjectToVector(PlayerManager::GetInstance().rangePlayerArrow, levelGameObjectVector);
+	mapManager1.AddTilesToGameObjectVector(gameObjects1);
 
-	EnemyManager::GetInstance().Init(PlayerManager::GetInstance().currentPlayer);
-	EnemyManager::GetInstance().SpawnEnemies(5, 1, levelGameObjectVector);
-
-	InitGameObjects(levelGameObjectVector);
-
-	if (SaveManager::GetInstance().toContinue)
-	{
-		// always load player when continuing from main menu
-		PlayerManager::GetInstance().Load();
-
-		MapManager::GetInstance().LoadMapState();
-		EnemyManager::GetInstance().LoadEnemyStates();
-		SaveManager::GetInstance().toContinue = false;
-	}
+	//player->Init();
+	//player1 = new Player();
+	playerManager.Init();
+	enemy1 = new EnemyGameObject();
+	AddGameObjectToVector(playerManager.meleePlayer, gameObjects1);
+	AddGameObjectToVector(playerManager.rangedPlayer, gameObjects1);
+	AddGameObjectToVector(playerManager.rangePlayerArrow, gameObjects1);
+	AddGameObjectToVector(enemy1, gameObjects1);
 
 	InitGameObjects(gameObjects1);
 
 	EndMenu::Init();
 	
-	// HUD
-	HUD::GetInstance().Init();
 }
 
 void ParkourLevel::Update()
@@ -89,24 +61,17 @@ void ParkourLevel::Update()
 	playerManager.Update();
 	UpdateGameObjects(gameObjects1);
 
-	InputManager::GetInstance().Update();
-	if (GameStateManager::GetInstance().isGamePause) return;
-	double dt = AEFrameRateControllerGetFrameTime();
-	PlayerManager::GetInstance().Update();
-	UpdateGameObjects(levelGameObjectVector);
-	HUD::GetInstance().Update(dt);
-	EnemyManager::GetInstance().UpdateAllEnemies(dt);
 }
 
 void ParkourLevel::Render()
 {
-	AEGfxSetBackgroundColor(0.6f, 0.8f, 0.85f);
-	MapManager::GetInstance().DrawMapSprite();
 
-	PlayerManager::GetInstance().Render();
-	EnemyManager::GetInstance().RenderEnemies();
-	HUD::GetInstance().Render();
+	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
+	mapManager1.DrawMapSprite();
 
+	//player1->Render();
+	playerManager.Render();
+	enemy1->Render();
 
 	EndMenu::Render();
 
@@ -114,22 +79,13 @@ void ParkourLevel::Render()
 
 void ParkourLevel::Free()
 {
-	//playerManager.Save();
-
 	// Clean up game objects
-	switch (next) {
-	case GAME_STATE_TYPE::LEVEL1:
-	case GAME_STATE_TYPE::LEVEL2:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-		break;
-	case GAME_STATE_TYPE::LEVEL1BOSS:
-	case GAME_STATE_TYPE::LEVEL2BOSS:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-		break;
-	default:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-		break;
+	for (auto* obj : gameObjects1)
+	{
+		if (obj )
+			delete obj;
 	}
+	gameObjects1.clear();
 
 	//// Clean up player1
 	//if (player1)
@@ -143,28 +99,6 @@ void ParkourLevel::Free()
 
 	EndMenu::Free();
 	EndMenu::isActive = false; // Reset for the next time the level loads
-	//AEGfxSetCamPosition(0.f, 0.f);
-	//FreeGameObjects(levelGameObjectVector);
-	for (auto* obj : levelGameObjectVector) {
-		// skip players � PlayerManager owns and deletes them
-		if (obj == PlayerManager::GetInstance().meleePlayer) continue;
-		if (obj == PlayerManager::GetInstance().rangedPlayer) continue;
-		if (obj == PlayerManager::GetInstance().rangePlayerArrow) continue;
-		if (dynamic_cast<Tile*>(obj)) continue;
-		obj->Free();
-		delete obj;
-	}
-	levelGameObjectVector.clear();
-	MapManager::GetInstance().FreeMap();
-	HUD::GetInstance().Free();
-	PlayerManager::GetInstance().Free();
-	//EnemyManager::GetInstance().FreeEnemies();
-	CameraSystem::ResetCameraPosition();
-	//for (auto* obj : levelGameObjectVector)
-	//{
-	//	obj = nullptr;
-	//}
-
 }
 
 void ParkourLevel::Unload()

@@ -6,14 +6,16 @@
 #include "GameObjectManager.h"
 
 #include <functional>
-#include <string>
 
-struct InputManager : Singleton <InputManager> {
+struct InputManager : public Singleton <InputManager> {
 
 	u8 interactKey = AEVK_F;
-	u8 pauseKey = AEVK_ESCAPE;
+
+	std::function<void()> OnInteractionTriggered = nullptr;
+	std::function<void()> OnInteractionHold;
+	std::function<void()> OnInteractionRelease;
 
 	void Update();
-	std::string VkCodeToString(DWORD vkCode);
+
 };
 #endif // INPUT_MANAGER_H

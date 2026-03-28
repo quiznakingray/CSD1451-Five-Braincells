@@ -2,52 +2,60 @@
 #include "PlayerGameObject.h"
 #include "MapManager.h"
 #include "PlayerManager.h"
-#include "SaveManager.h"
-#include "PlayerStats.h"
+#include "ParticleEffects.h"
 
 #include <iostream>
 #include <vector>
 
 void Player::PlayerInput()
 {
-	f64 dt = AEFrameRateControllerGetFrameTime();
+	f32 dt = AEFrameRateControllerGetFrameTime();
 	AEVec2 moveDir{};
-
-	bool isGrabbing = currentAction == PLAYER_ACTION::CRATEINTERACT;
-	float accel = isGrabbing ? 200.0f : 300.0f;
-	float maxSpeed = isGrabbing ? 200.0f : 300.0f;
-	float jumpHeight = 300.0f;  // lower jump when grabbing
-
 	//AEVec2Set(&velocity, 0.f, 0.f);
-	//std::cout << "On GRASSCENTER: " << (onGround ? "--" : "___________________________ ") << std::endl;
-	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing 
-		&& PlayerStats::Get().jumpStamina != 0)
+	//std::cout << "On ground: " << (onGround ? "--" : "___________________________ ") << std::endl;
+	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider)
 	{
-		if (PlayerStats::Get().ConsumeJumpStamina())
-		{
-			float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 300.0f);
-			rb->velocity.y = jumpVelocity;
-		}
-		else
-		{
-			std::cout << "[Jump] no stamina!\n";
-		}
-		//std::cout << "onCollider: " << rb->onCollider << std::endl;
-	}
+		//moveDir.y = 500.f;
+		//onGround = false;
 
+		float jumpHeight = 300.0f; // pixels
+
+		float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * jumpHeight);
+
+		rb->velocity.y = jumpVelocity;
+
+	}
+	//if (AEInputCheckCurr(AEVK_S))
+	//{
+	//	moveDir.y -= 1.f;
+	//}
+	float accel = 300.0f;     // acceleration power
+	float decel = 400.0f;     // deceleration power
+	float maxSpeed = 300.0f;
 	if (AEInputCheckCurr(AEVK_A))
 	{
 		//moveDir.x -= 1.f;
-		rb->velocity.x -= static_cast<f32>(accel * dt);
+		rb->velocity.x -= accel * dt;
 	}
 	else if (AEInputCheckCurr(AEVK_D))
 	{
 		//moveDir.x += 1.f;
-		rb->velocity.x += static_cast<f32>(accel * dt);
+		rb->velocity.x += accel * dt;
 	}
 	else
 	{
-		ApplyDeceleration();
+		if (rb->velocity.x > 0)
+		{
+			rb->velocity.x -= decel * dt;
+			if (rb->velocity.x < 0)
+				rb->velocity.x = 0;
+		}
+		else if (rb->velocity.x < 0)
+		{
+			rb->velocity.x += decel * dt;
+			if (rb->velocity.x > 0)
+				rb->velocity.x = 0;
+		}
 
 	}
 
@@ -56,19 +64,34 @@ void Player::PlayerInput()
 
 	if (rb->velocity.x < -maxSpeed)
 		rb->velocity.x = -maxSpeed;
+	//float length = sqrt(moveDir.x * moveDir.x);
+	//if (length > 0) {
+	//	moveDir.x /= length;
+	//}
 
+	// Set velocity
+	//rb->velocity.x = moveDir.x * speed;
+	//rb->velocity.y += moveDir.y ;
+
+	//if (AEInputCheckCurr(AEVK_M))
+	//{
+	//	animator->PlayAnimation(runningAnim);
+	//}
+	//if (AEInputCheckCurr(AEVK_N))
+	//{
+	//	animator->PlayAnimation(idleAnim);
+	//}
 }
 
 void Player::PlayerAction()
 {
-	if (rb->velocity.x != 0 && currentAction != PLAYER_ACTION::CRATEINTERACT)
+
+	if (rb->velocity.x != 0)
 	{
-		prevAction = currentAction;
-		currentAction = rb->velocity.y != 0 ? PLAYER_ACTION::JUMPING : PLAYER_ACTION::RUNNING;
+		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
 	}
-	else if (rb->velocity.x < 0.1f && currentAction != PLAYER_ACTION::CRATEINTERACT){
-		prevAction = currentAction;
-		currentAction = PLAYER_ACTION::IDLE;
+	else {
+		currentAction = PlayerAction::IDLE;
 	}
 }
 
@@ -78,10 +101,10 @@ void Player::PlayerAnimation()
 	Animation* anim = nullptr;
 	switch (currentAction)
 	{
-	case PLAYER_ACTION::IDLE:
+	case PlayerAction::IDLE:
 		anim = idleAnim;
 		break;
-	case PLAYER_ACTION::RUNNING:
+	case PlayerAction::RUNNING:
 		anim = runningAnim;
 		break;
 	default:
@@ -90,46 +113,6 @@ void Player::PlayerAnimation()
 	}
 
 	animator->PlayAnimation(anim);
-}
-
-void Player::ResetPlayer()
-{
-	currentAction = PLAYER_ACTION::IDLE;
-}
-
-void Player::ApplyDeceleration()
-{
-	if (!rb) return;
-	f64 dt = AEFrameRateControllerGetFrameTime();
-	bool isGrabbing = currentAction == PLAYER_ACTION::CRATEINTERACT;
-	float decel = isGrabbing ? 300.0f : 400.0f;
-	float maxSpeed = isGrabbing ? 200.0f : 300.0f;
-
-	if (rb->velocity.x > 0)
-	{
-		rb->velocity.x -= static_cast<f32>(decel * dt);
-		if (rb->velocity.x < 0) rb->velocity.x = 0;
-	}
-	else if (rb->velocity.x < 0)
-	{
-		rb->velocity.x += static_cast<f32>(decel * dt);
-		if (rb->velocity.x > 0) rb->velocity.x = 0;
-	}
-
-	//if (rb->velocity.x > maxSpeed)  rb->velocity.x = maxSpeed;
-	//if (rb->velocity.x < -maxSpeed) rb->velocity.x = -maxSpeed;
-}
-
-Player::~Player()
-{
-	if (idleAnim) {
-		delete idleAnim;
-		idleAnim = nullptr;
-	}
-	if (runningAnim) {
-		delete runningAnim;
-		runningAnim = nullptr;
-	}
 }
 
 void Player::Init()
@@ -150,7 +133,7 @@ void Player::Init()
 	//set animation
 	if (!idleAnim)
 	{
-		Sprite* s = new Sprite();
+		Sprite * s = new Sprite();
 		s->meshColor = 0xFF0000FF;
 		s->textureFileName = "Assets/SpriteSheets/test2x12.png";
 		s->spriteSheet = Sprite::SpriteSheet(12, 2);
@@ -162,7 +145,7 @@ void Player::Init()
 
 	if (!runningAnim)
 	{
-		Sprite* run = new Sprite();
+		Sprite * run = new Sprite();
 		run->meshColor = 0xFF0000FF;
 		run->textureFileName = "Assets/SpriteSheets/testRed4x6.png";
 		run->spriteSheet = Sprite::SpriteSheet(6, 4);
@@ -176,7 +159,7 @@ void Player::Init()
 		new Animator(idleAnim)
 	);
 
-	Collider* c = AddComponent(
+	Collider * c = AddComponent(
 		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.f, 1.f, 1.f)
 	);
 	c->OnClick = [] {
@@ -184,7 +167,7 @@ void Player::Init()
 		};
 	c->OnMouseDown = [] {
 		std::cout << "Mouse Down" << std::endl;
-		};
+		};	
 	c->OnMouseUp = [] {
 		std::cout << "Mouse Up" << std::endl;
 		};
@@ -192,9 +175,9 @@ void Player::Init()
 	//c->OnMouseEnter = [] {	
 	//	std::cout << "Mouse Enter" << std::endl;
 	//	};
-	c->OnMouseOver = [] {
-		std::cout << "Mouse Over" << std::endl;
-		};	
+	//c->OnMouseOver = [] {
+	//	std::cout << "Mouse Over" << std::endl;
+	//	};	
 	//c->OnMouseExit = [] {
 	//	std::cout << "Mouse Exit" << std::endl;
 	//	};
@@ -205,11 +188,7 @@ void Player::Init()
 			{
 				if (sides & COLLISION_SIDE::BOTTOM)
 					this->rb->onCollider = true;
-			}
-			if (CrateTile* crate = dynamic_cast<CrateTile*>(other->owner))
-			{
-				if (sides & COLLISION_SIDE::BOTTOM)
-					this->rb->onCollider = true;
+
 			}
 		};
 
@@ -217,11 +196,7 @@ void Player::Init()
 		{
 			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 			{
-				if (sides & COLLISION_SIDE::BOTTOM)
-					this->rb->onCollider = true;
-			}
-			if (CrateTile* crate = dynamic_cast<CrateTile*>(other->owner))
-			{
+				// Keep onCollider true while still standing on something
 				if (sides & COLLISION_SIDE::BOTTOM)
 					this->rb->onCollider = true;
 			}
@@ -238,11 +213,21 @@ void Player::Init()
 	rb = AddComponent(
 		new RigidBody()
 	);
-	rb->type = RIGIDBODY_TYPE::KINEMATIC;
+	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 	rb->mass = 10.f;
 
+	//AEGfxSetCamPosition(pos.x, pos.y);
 
-	//showColliders = true;
+
+	//s32 screenX, screenY;
+	//f32 camPosX, camPosY;
+	//f32 worldPosX, worldPosY;
+	//AEInputGetCursorPosition(&screenX, &screenY);
+	//AEGfxGetCamPosition(&camPosX, &camPosY);
+	//worldPosX = camPosX - screenX / 2.f;
+	//worldPosY = camPosY - screenY / 2.f;
+
+	showColliders = true;
 	speed = static_cast<f32>(200.0);
 	//AEVec2Set(&velocity, 0.f, 0.f);
 
@@ -250,40 +235,17 @@ void Player::Init()
 }
 
 void Player::Update(){
-	//float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
-	//PlayerStats::Get().RegenStamina(dt); // passive stamina regen
-
+	
 	//PlayerInput();
-
+	PlayerAction();
 	PlayerAnimation();
 
 	runningAnim->sprite->size.x =
 		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
+
+
 	GameObject::Update();
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
-}
-
-void Player::TakeDamage(int amount)
-{
-	PlayerStats::Get().health -= amount;
-
-	if (PlayerStats::Get().health <= 0)
-	{
-		// inc death counter
-		PlayerStats::Get().deathCount++;
-
-		// respawn: reset health and jump stamina
-		PlayerStats::Get().health = PlayerStats::Get().maxHealth;
-		PlayerStats::Get().jumpStamina = static_cast<float>(PlayerStats::Get().maxJumpStamina);
-
-		std::cout << "[Player] Total deaths: " << PlayerStats::Get().deathCount << "\n";
-	}
-}
-
-void Player::IncrementKills()
-{
-	PlayerStats::Get().killCount++;
-	std::cout << "[Player] Total kills: " << PlayerStats::Get().killCount << "\n";
 }
 
 void MeleePlayer::Init()
@@ -298,7 +260,7 @@ void MeleePlayer::Init()
 	idleAnim = new Animation(s);
 	idleAnim->loopAnimation = true;
 	idleAnim->animationFPS = 10.f;
-
+	
 	Sprite* run = new Sprite();
 	run->meshColor = 0xFF0000FF;
 	run->textureFileName = "Assets/SpriteSheets/Player_Melee_Run.png";
@@ -309,89 +271,6 @@ void MeleePlayer::Init()
 	runningAnim->loopAnimation = true;
 	runningAnim->animationFPS = 30.f;
 	Player::Init();
-
-	// shield collider
-	shieldCollider = AddComponent(
-		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.6f, 0.0f, 0.3f, 0.8f)
-		);
-	shieldCollider->isTrigger = true;
-
-	shieldCollider->OnTriggerEnter = [this](Collider* other, int sides)
-		{
-			if (!shieldActive) return;   // shield is down = do nothing
-
-			if (Arrow* arrow = dynamic_cast<Arrow*>(other->owner))
-			{
-				if (arrow->isEnemyProjectile)
-				{
-					arrow->isActive = false;
-					arrow->timer = 0.f;
-					std::cout << "[Shield] blocked incoming projectile!\n";
-				}
-			}
-			// add enemy projectile types!!
-		};
-	
-}
-void MeleePlayer::Update()
-{
-	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
-
-	// shield input
-	bool qHeld = AEInputCheckCurr(AEVK_Q);
-
-	if (qHeld && !shieldDepleted)
-	{
-		shieldTimer += dt;
-
-		float maxDuration = PlayerStats::Get().GetMaxShieldDuration();
-		if (shieldTimer >= maxDuration)
-		{
-			// stamina exhausted
-			shieldTimer = maxDuration;
-			shieldDepleted = true;
-			shieldActive = false;
-			std::cout << "[Shield] stamina ran out! release Q to recover stamina.\n";
-		}
-		else
-		{
-			shieldActive = true;
-		}
-	}
-	else
-	{
-			shieldActive = false;
-
-			// reset stamina when Q released
-			if (!qHeld)
-			{
-				shieldTimer = 0.0f;
-				shieldDepleted = false;
-			}
-	}
-
-	shieldCollider->isActive = shieldActive;
-	Player::Update();
-}
-
-void MeleePlayer::PlayerAction()
-{
-	// shield has prio
-	if (AEInputCheckCurr(AEVK_Q))
-	{
-		prevAction = currentAction; 
-		currentAction = PLAYER_ACTION::SHIELDING;
-		return;
-	}
-
-	Player::PlayerAction();
-}
-
-RangePlayer::~RangePlayer()
-{
-	line = nullptr;
-	playerLinePos = nullptr;  // non-owning, Sprite::Free() handles delete
-	aimLinePos = nullptr;
 }
 
 void RangePlayer::Init()
@@ -406,7 +285,7 @@ void RangePlayer::Init()
 	idleAnim = new Animation(s);
 	idleAnim->loopAnimation = true;
 	idleAnim->animationFPS = 10.f;
-
+	
 	Sprite* run = new Sprite();
 	run->meshColor = 0xFF0000FF;
 	run->textureFileName = "Assets/SpriteSheets/Player_Range_Run.png";
@@ -424,86 +303,76 @@ void RangePlayer::Init()
 	line->meshColor = 0xFFFF0000;
 	playerLinePos = new Sprite::LinePoint;
 	aimLinePos = new Sprite::LinePoint;
-	playerLinePos->pos.x = pos.x + MapManager::tileSize / 2.f;
+	playerLinePos->pos.x = pos.x + MapManager::tileSize /2.f;
 	playerLinePos->pos.y = pos.y;
 	aimLinePos->pos.x = pos.x + 10.f;
 	aimLinePos->pos.y = pos.y;
 	line->linePoints.push_back(playerLinePos);
 	line->linePoints.push_back(aimLinePos);
 
+	// init particle pool
+	//ParticleSystem::Init(5, particlePool);
+
 	Player::Init();
 }
 
 void RangePlayer::Update()
 {
-	// cooldown timer
 	double dt = AEFrameRateControllerGetFrameTime();
-	arrowTimer += static_cast<float>(dt);
-
 	s32 screenX, screenY;
 	//f32 camPosX, camPosY;
-	f32 LEVEL1PosX, LEVEL1PosY;
+	f32 worldPosX, worldPosY;
 	AEInputGetCursorPosition(&screenX, &screenY);
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
-	LEVEL1PosX = screenX + AEGfxGetWinMinX();
-	LEVEL1PosY = -(screenY - AEGfxGetWinMaxY());
-	//std::cout << LEVEL1PosX << "   " << LEVEL1PosY << std::endl;
-	playerLinePos->pos.x = pos.x + (LEVEL1PosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
+	worldPosX = screenX + AEGfxGetWinMinX();
+	worldPosY = -(screenY - AEGfxGetWinMaxY());
+	std::cout << worldPosX << "   " << worldPosY << std::endl;
+	playerLinePos->pos.x = pos.x + (worldPosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
-	aimLinePos->pos.x = LEVEL1PosX;
-	aimLinePos->pos.y = LEVEL1PosY;
+	aimLinePos->pos.x = worldPosX;
+	aimLinePos->pos.y = worldPosY;
+
+	//ParticleSystem::CreateBloodEffect(pos.x, pos.y + 100, particlePool);
+	//ParticleSystem::Update(dt, particlePool);
 	Player::Update();
 }
 
+//void RangePlayer::Render()
+//{
+//	ParticleSystem::Draw(particlePool); // paticles
+//	Player::Render(); // parent function
+//}
+
 void RangePlayer::PlayerAction()
 {
-	if (rb->velocity.x != 0 && currentAction != PLAYER_ACTION::CRATEINTERACT)
+	if (rb->velocity.x != 0)
 	{
-		prevAction = currentAction;
-		currentAction = rb->velocity.y != 0 ? PLAYER_ACTION::JUMPING : PLAYER_ACTION::RUNNING;
+		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
 	}
-	//if (rb->velocity.x != 0)
-	//{
-	//	currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
-	//}
-	else if (AEInputCheckCurr(AEVK_Q))
+	else if (AEInputCheckCurr(AEVK_LBUTTON))
 	{
-		currentAction = PLAYER_ACTION::AIMING;
-		if (AEInputCheckTriggered(AEVK_LBUTTON))
+		currentAction = PlayerAction::AIMING;
+		if (AEInputCheckTriggered(AEVK_RBUTTON))
 		{
-			// shoot if cooldown has passed
-			float cooldown = PlayerStats::Get().GetAttackCooldown();
+			// fire arrow
+			AEVec2 dir;
+			AEVec2Sub(&dir, &aimLinePos->pos, &playerLinePos->pos);
 
-			if (arrowTimer >= cooldown)
-			{
-				// fire arrow
-				AEVec2 dir;
-				AEVec2Sub(&dir, &aimLinePos->pos, &playerLinePos->pos);
+			// normalize so components are between -1 and 1
+			AEVec2Normalize(&dir, &dir);
 
-				// normalize so components are between -1 and 1
-				AEVec2Normalize(&dir, &dir);
-
-				PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir);
-
-				// reset timer
-				arrowTimer = 0.0f;
-			}
-			else
-			{
-				std::cout << "[Bow] still on cooldown!" << (cooldown - arrowTimer) << "s remaining\n";
-			}
+			PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir);
 		}
 	}
-	else if (rb->velocity.x < 0.1f && currentAction != PLAYER_ACTION::CRATEINTERACT) {
-		prevAction = currentAction;
-		currentAction = PLAYER_ACTION::IDLE;
+	else {
+		currentAction = PlayerAction::IDLE;
 	}
 }
 
 void Arrow::Init()
 {
-	AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
-	Sprite* s = AddComponent(new Sprite());
+	AEVec2Set(&scale, MapManager::tileSize , MapManager::tileSize );
+	Sprite* s = AddComponent( new Sprite());
 	s->meshColor = 0xFF0000FF;
 	s->textureFileName = "Assets/SpriteSheets/arrow.png";
 
@@ -514,9 +383,7 @@ void Arrow::Init()
 		{
 			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 			{
-				// crate will deactivate arrow on its own ontrigger
-				if (dynamic_cast<CrateTile*>(other->owner)) return;
-				if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) ||
+				if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) || 
 					((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
 				{
 					isActive = false;
@@ -527,16 +394,17 @@ void Arrow::Init()
 			}
 		};
 	c->isTrigger = true;
-	//showColliders = true;
+	showColliders = false;
 
 	rb = AddComponent(
 		new RigidBody()
 	);
-	rb->type = RIGIDBODY_TYPE::KINEMATIC;
+	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 	rb->hasGravity = false;
 	isActive = false;
-	isEnemyProjectile = false;
-	damage = 1;
+
+	ParticleSystem::Init(5, particlePool);
+
 	GameObject::Init();
 }
 
@@ -545,14 +413,25 @@ void Arrow::Update()
 	GameObject::Update();
 	if (isActive)
 	{
+		// Spawn arrow particles/trails at the current arrow position
+		
 		double dt = AEFrameRateControllerGetFrameTime();
-		timer += static_cast<f32>(dt);
+		timer += dt;
 		if (timer >= lifetime)
 		{
 			isActive = false;
 			timer = 0.0f;
 		}
+
+		ParticleSystem::CreateArrowTrail(pos.x, pos.y, rb->velocity, particlePool);
+		ParticleSystem::Update(dt, particlePool);
 	}
+}
+
+void Arrow::Render()
+{
+	if (isActive) ParticleSystem::Draw(particlePool);
+	GameObject::Render();
 }
 
 void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir)

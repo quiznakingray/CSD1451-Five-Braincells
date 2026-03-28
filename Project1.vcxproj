@@ -70,7 +70,7 @@
       <AdditionalDependencies>Alpha_EngineD.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)Assets\" "$(OutDir)Assets\" /s /e /r /y /q
+      <Command>xcopy "$(SolutionDir)Assets\" "$(OutDir)Assets\" /s /r /y /q
 xcopy "$(SolutionDir)Extern\AlphaEngine\lib\freetype.dll" "$(OutDir)" /s /r /y /q
 xcopy "$(SolutionDir)Extern\AlphaEngine\lib\Alpha_EngineD.dll" "$(OutDir)" /s /r /y /q
 xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmodL.dll" "$(OutDir)" /s /r /y /q</Command>
@@ -100,9 +100,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AnimatorComponent.cpp" />
-    <ClCompile Include="CameraSystem.cpp" />
-    <ClCompile Include="AudioManager.cpp" />
-    <ClCompile Include="AudioMenu.cpp" />
+    <ClCompile Include="BossLevel.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="ComponentBase.cpp" />
     <ClCompile Include="Credits.cpp" />
@@ -110,12 +108,10 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="EnemyBase.cpp" />
     <ClCompile Include="EnemyCombat.cpp" />
     <ClCompile Include="EnemyGameObject.cpp" />
-    <ClCompile Include="EnemyManager.cpp" />
     <ClCompile Include="EnemyMovement.cpp" />
     <ClCompile Include="GameObjectManager.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="Helper.cpp" />
-    <ClCompile Include="HUD.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Instructions.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -125,25 +121,21 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="ParticleEffects.cpp" />
     <ClCompile Include="PauseMenu.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
+    <ClCompile Include="PlayerCombat.cpp" />
     <ClCompile Include="PlayerGameObject.cpp" />
     <ClCompile Include="PlayerManager.cpp" />
     <ClCompile Include="PowerUps.cpp" />
     <ClCompile Include="RigidBodyComponent.cpp" />
-    <ClCompile Include="SaveManager.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="TextComponent.cpp" />
     <ClCompile Include="TextManager.cpp" />
     <ClCompile Include="TileData.cpp" />
-    <ClCompile Include="UiButton.cpp" />
-    <ClCompile Include="UiSlider.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimatorComponent.h" />
-    <ClInclude Include="CameraSystem.h" />
-    <ClInclude Include="AudioManager.h" />
-    <ClInclude Include="AudioMenu.h" />
+    <ClInclude Include="BossLevel.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="ComponentBase.h" />
     <ClInclude Include="Credits.h" />
@@ -151,36 +143,31 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="EnemyBase.h" />
     <ClInclude Include="EnemyCombat.h" />
     <ClInclude Include="EnemyGameObject.h" />
-    <ClInclude Include="EnemyManager.h" />
     <ClInclude Include="EnemyMovement.h" />
     <ClInclude Include="GameObjectManager.h" />
     <ClInclude Include="GameStateManager.h" />
+    <ClInclude Include="Header.h" />
     <ClInclude Include="Helper.h" />
-    <ClInclude Include="HUD.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Instructions.h" />
     <ClInclude Include="Library\rapidcsv.h" />
     <ClInclude Include="MainMenu.h" />
     <ClInclude Include="MapManager.h" />
-    <ClInclude Include="Node.h" />
     <ClInclude Include="ParkourLevel.h" />
     <ClInclude Include="ParticleEffects.h" />
     <ClInclude Include="PauseMenu.h" />
     <ClInclude Include="PhysicsManager.h" />
+    <ClInclude Include="PlayerCombat.h" />
     <ClInclude Include="PlayerGameObject.h" />
     <ClInclude Include="PlayerManager.h" />
-    <ClInclude Include="PlayerStats.h" />
     <ClInclude Include="PowerUps.h" />
     <ClInclude Include="RigidBodyComponent.h" />
-    <ClInclude Include="SaveManager.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SingletonTemplate.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="TextComponent.h" />
     <ClInclude Include="TextManager.h" />
     <ClInclude Include="TileData.h" />
-    <ClInclude Include="UiButton.h" />
-    <ClInclude Include="UiSlider.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

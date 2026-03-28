@@ -4,10 +4,8 @@
 #include "MapManager.h"
 #include "EnemyGameObject.h"
 #include "EndMenu.h"
-#include "PlayerManager.h"
 
 Player* player2 = nullptr;
-PlayerManager playerManager1;
 //EnemyGameObject* enemy2 = nullptr;
 
 std::vector<GameObject*> gameObjects2{};
@@ -29,11 +27,12 @@ void BossLevel::Init()
 
 	mapManager2.AddTilesToGameObjectVector(gameObjects2);
 
-	playerManager1.Init();
-	//playerManager.Load();
-	AddGameObjectToVector(playerManager1.meleePlayer, gameObjects2);
-	AddGameObjectToVector(playerManager1.rangedPlayer, gameObjects2);
-	AddGameObjectToVector(playerManager1.rangePlayerArrow, gameObjects2);
+	//player->Init();
+	player2 = new Player();
+	//enemy2 = new EnemyGameObject();
+	AddGameObjectToVector(player2, gameObjects2);
+	//AddGameObjectToVector(enemy, gameObjects2);
+
 	InitGameObjects(gameObjects2);
 
 	EndMenu::Init();
@@ -61,7 +60,6 @@ void BossLevel::Update()
 	}
 
 	double dt = AEFrameRateControllerGetFrameTime();
-	playerManager1.Update();
 	UpdateGameObjects(gameObjects2);
 
 	// Check for Death (Calls the shared logic)
@@ -79,7 +77,8 @@ void BossLevel::Render()
 
 	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
 	mapManager2.DrawMapSprite();
-	playerManager1.Render();
+
+	player2->Render();
 	//enemy->Render();
 
 }
@@ -94,19 +93,18 @@ void BossLevel::Free()
 	}
 	gameObjects2.clear();
 
-	//// Clean up player2
-	//if (player2)
-	//{
-	//	delete player2;
-	//	player2 = nullptr;
-	//}
+	// Clean up player2
+	if (player2)
+	{
+		delete player2;
+		player2 = nullptr;
+	}
 
 	mapManager2.FreeMap();
 	AEGfxSetCamPosition(0.f, 0.f);
 
 	EndMenu::Free();
 	EndMenu::isActive = false; // Reset for the next time the level loads
-	//AEGfxSetCamPosition(0.f, 0.f);
 }
 
 void BossLevel::Unload()
