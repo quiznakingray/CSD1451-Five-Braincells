@@ -116,18 +116,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				AESysSetFullScreen(0);
 
 			if (AEInputCheckCurr(AEVK_3)) {
-				if (mapManager.mapCurrLevel != 1) {
-					GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LEVEL2);
-					GameStateManager::GetInstance().Update();
-					mapManager.ChangeMap(1);
+				if (mapManager.mapCurrLevel != GAME_STATE_TYPE::LEVEL1) {
+					gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL2);
+					gameStateManager.Update();
+					mapManager.ChangeMap(GAME_STATE_TYPE::LEVEL2);
 				}
 
 			}
 			if (AEInputCheckCurr(AEVK_4)) {
-				if (mapManager.mapCurrLevel != 0) {
-					GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LEVEL1);
-					GameStateManager::GetInstance().Update();
-					mapManager.ChangeMap(0);
+				if (mapManager.mapCurrLevel != GAME_STATE_TYPE::LEVEL2) {
+					gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL1);
+					gameStateManager.Update();
+					mapManager.ChangeMap(GAME_STATE_TYPE::LEVEL1);
 				}
 			}
 			// Informing the system about the loop's end

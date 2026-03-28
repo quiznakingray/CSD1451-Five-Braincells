@@ -2,6 +2,7 @@
 #include "PlayerGameObject.h"
 #include "MapManager.h"
 #include "PlayerManager.h"
+#include "SaveManager.h"
 #include "PlayerStats.h"
 
 #include <iostream>
@@ -56,6 +57,23 @@ void Player::PlayerInput()
 	if (rb->velocity.x < -maxSpeed)
 		rb->velocity.x = -maxSpeed;
 
+}
+
+void Player::ReducePlayerHealth()
+{
+	health--;
+	if (health > 0) {
+		AudioManager::PlaySFX("playerHurt");
+	}
+	else
+	{
+		AudioManager::PlaySFX("playerDie");
+		health = defaultHealth;
+		SaveManager::GetInstance().toContinue = true;
+		GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
+		current = GAME_STATE_TYPE::MENU;  // force inner loop to exit
+		next = respawnLevel;           // reload the saved level
+	}
 }
 
 void Player::PlayerAction()
@@ -204,7 +222,11 @@ void Player::Init()
 			{
 				if (sides & COLLISION_SIDE::BOTTOM)
 					this->rb->onCollider = true;
-
+			}
+			if (CrateTile* crate = dynamic_cast<CrateTile*>(other->owner))
+			{
+				if (sides & COLLISION_SIDE::BOTTOM)
+					this->rb->onCollider = true;
 			}
 		};
 
@@ -212,7 +234,11 @@ void Player::Init()
 		{
 			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 			{
-				// Keep onCollider true while still standing on something
+				if (sides & COLLISION_SIDE::BOTTOM)
+					this->rb->onCollider = true;
+			}
+			if (CrateTile* crate = dynamic_cast<CrateTile*>(other->owner))
+			{
 				if (sides & COLLISION_SIDE::BOTTOM)
 					this->rb->onCollider = true;
 			}
@@ -245,13 +271,11 @@ void Player::Update(){
 	//PlayerStats::Get().RegenStamina(dt); // passive stamina regen
 
 	//PlayerInput();
-	PlayerAction();
+
 	PlayerAnimation();
 
 	runningAnim->sprite->size.x =
 		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
-
-
 	GameObject::Update();
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
 }
@@ -440,7 +464,7 @@ void RangePlayer::Update()
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
 	LEVEL1PosX = screenX + AEGfxGetWinMinX();
 	LEVEL1PosY = -(screenY - AEGfxGetWinMaxY());
-	//std::cout << worldPosX << "   " << worldPosY << std::endl;
+	//std::cout << LEVEL1PosX << "   " << LEVEL1PosY << std::endl;
 	playerLinePos->pos.x = pos.x + (LEVEL1PosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
 	aimLinePos->pos.x = LEVEL1PosX;

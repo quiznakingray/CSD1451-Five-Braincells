@@ -32,6 +32,7 @@ struct PlayerManager : public Singleton<PlayerManager>
 	void Render();
 	void Free();
 	void Load();
+	void SavePlayerData();
 	void ChangePlayer(PLAYER_TYPE type);
 private:
 	void StartPlayerCooldown(f64 dt);

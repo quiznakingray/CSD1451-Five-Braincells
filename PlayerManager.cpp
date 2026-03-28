@@ -26,6 +26,7 @@ void PlayerManager::Update(){
 	if (!currentPlayer) return;
 	double dt = AEFrameRateControllerGetFrameTime();
 	currentPlayer->PlayerInput();
+	currentPlayer->PlayerAction();
 	
 	if (currentPlayer != meleePlayer) meleePlayer->ApplyDeceleration();
 	if (currentPlayer != rangedPlayer) rangedPlayer->ApplyDeceleration();
@@ -85,13 +86,22 @@ void PlayerManager::Free() {
 	currentPlayer = nullptr;
 }
 
+void PlayerManager::SavePlayerData()
+{
+	SaveManager& save = SaveManager::GetInstance();
+
+	save.playerSaveData.meleePos = meleePlayer->pos;
+	save.playerSaveData.rangedPos = rangedPlayer->pos;
+	save.playerSaveData.health = meleePlayer->health;
+	save.playerSaveData.hasSavedData = true;
+
+}
 void PlayerManager::Load()
 {
-	SaveManager::GetInstance().LoadPlayerData();
 	PlayerSaveData& data = SaveManager::GetInstance().playerSaveData;
+	if (!data.hasSavedData) return;
 
-	if (!data.hasSavedData || !data.preserveOnLoad) return;
-
+	meleePlayer->health = data.health;
 	AEVec2Set(&meleePlayer->pos, data.meleePos.x, data.meleePos.y);
 	AEVec2Set(&rangedPlayer->pos, data.rangedPos.x, data.rangedPos.y);
 }

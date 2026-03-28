@@ -42,6 +42,7 @@ struct Player : GameObject {
 	void Update() override;
 
 	void PlayerInput();
+	void ReducePlayerHealth();
 	virtual void PlayerAction();
 	void ApplyDeceleration();
 

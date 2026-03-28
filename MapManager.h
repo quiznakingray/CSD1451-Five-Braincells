@@ -15,6 +15,7 @@
 #include "InputManager.h"
 #include "GameStateManager.h"
 #include "PlayerStats.h"
+#include "AudioManager.h"
 
 #include "Helper.h"
 
@@ -23,6 +24,8 @@
 #define MAX_LEVELS 5
 
 struct PlayerManager; // forward declaration
+struct EnemyManager; // forward declaration
+struct PlayerStats; // forward declaration
 
 enum class TILE_ID {
 	EMPTY = 0,
@@ -170,40 +173,7 @@ struct SpikeTile : Tile {
 		currSprite->textureFileName = "Assets/Environment/spike.png";
 	}
 
-	void Init() override {
-		Tile::Init();
-		collider->size.x = 0.7f; 
-		collider->size.y = 0.7f;
-		collider->OnCollisionEnter = [this](Collider* other, int sides) {
-			if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				PlayerStats::Get().health--;
-				std::cout << PlayerStats::Get().health << '\n';
-				// knockback based on collision side
-				RigidBody* playerRb = player->GetComponent<RigidBody>();
-				float knockbackX = 1000.0f;
-				float knockbackY = 500.0f;
-
-				switch (static_cast<int>(currID))
-				{
-					case static_cast<int>(TILE_ID::SPIKEUP):
-						playerRb->velocity.y = -knockbackY;
-						break;
-					case static_cast<int>(TILE_ID::SPIKEDOWN):
-						playerRb->velocity.y = knockbackY;
-						break;
-					case static_cast<int>(TILE_ID::SPIKELEFT):
-						playerRb->velocity.x = knockbackX;
-						break;
-					case static_cast<int>(TILE_ID::SPIKERIGHT):
-						playerRb->velocity.x = -knockbackX;
-						break;
-					default:
-						break;
-				}
-			}
-		};
-	}
+	void Init() override;
 };
 
 struct GroundTile : Tile {
@@ -390,18 +360,7 @@ struct HealthPickupTile : Tile {
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
 		currSprite->textureFileName = "Assets/Environment/gemRed.png";
 	}
-	void Init() override {
-		Tile::Init();
-		collider->isTrigger = true;
-		collider->OnTriggerEnter = [this](Collider* other, int sides) {
-			Player* player = dynamic_cast<Player*>(other->owner);
-			if (player)
-			{
-				isCurrActive = false;
-			}
-			};
-		
-	}
+	void Init() override;
 };
 
 struct CloudTile : Tile {
@@ -427,7 +386,7 @@ struct CloudTile : Tile {
 		);
 		rb->type = RIGIDBODY_TYPE::STATIC;
 		rb->hasGravity = false;
-		currSprite->textureFileName = "Assets/Environment/cloud.png";
+		currSprite->textureFileName = "Assets/Environment/cloudLeft.png";
 	}
 	void StartCloudCountdown()
 	{
@@ -544,7 +503,7 @@ struct MapManager : public Singleton<MapManager> {
 
 	static constexpr  float tileSize = 80.f;
 	const char delimiter = ',';
-	static unsigned int mapCurrLevel;
+	static GAME_STATE_TYPE mapCurrLevel;
 	static size_t rowCount;
 	static size_t colCount;
 
@@ -557,9 +516,9 @@ struct MapManager : public Singleton<MapManager> {
 
 #pragma region MapFuncs
 	// Loads a map
-	void InitMap(std::string fileName, unsigned int currLevel);
+	void InitMap(std::string fileName, GAME_STATE_TYPE currLevel);
 
-	void ChangeMap(unsigned int currLevel);
+	void ChangeMap(GAME_STATE_TYPE currLevel);
 
 	void PrintMap();
 
@@ -569,7 +528,7 @@ struct MapManager : public Singleton<MapManager> {
 
 	void FreeMap();
 
-	void SaveMapState(GAME_STATE_TYPE level);
+	void SaveMapState();
 
 	void LoadMapState();
 	
@@ -580,7 +539,7 @@ struct MapManager : public Singleton<MapManager> {
 	void DrawTile(Sprite currSprite, AEMtx33 transform);
 
 	// Inits tile variables
-	Tile* InitTile(int mapIndex, std::string cell, size_t col, size_t row);
+	Tile* InitTile(std::string cell, size_t col, size_t row);
 
 	// Sets tile variables
 	AEGfxTexture* SetTileTexture(TILE_ID currID);
@@ -713,7 +672,7 @@ struct LeverTile : Tile {
 			currID = TILE_ID::LEVERREDON;
 			break;
 		}
-
+		AudioManager::PlaySFX("leverSwitch");
 		SetTexture();
 	}
 
@@ -757,7 +716,7 @@ struct LeverTile : Tile {
 
 	void Init() override {
 		Tile::Init();
-
+		
 		//showColliders = true;
 		collider->center.y = 0.5f;
 		collider->size.x = 2.f;
@@ -778,9 +737,11 @@ struct LeverTile : Tile {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
 				this->interactionTextBox->isActive = true;
-				if (AEInputCheckTriggered(AEVK_F))
+				// prevent triggering from melee shield collider
+				if (AEInputCheckTriggered(AEVK_F) && other->size.x >= 0.99)
 				{
 					TriggerLever();
+					std::cout << "lever triggered\n";
 				}
 			}
 			// catch arrows that spawned inside the trigger
@@ -869,6 +830,7 @@ struct ButtonTile : Tile {
 			currID = TILE_ID::BUTTONBLUEUNPRESSED;
 			break;
 		}
+		AudioManager::PlaySFX("buttonSwitch");
 		SetTexture();
 	}
 
@@ -892,23 +854,27 @@ struct ButtonTile : Tile {
 			queueRunning = false;
 			gateQueue.clear();
 
-			// get all gates
+			// get currTag gates that haven't reached target state
 			std::vector<Tile*> allGates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
-
-			// filter first - only keep gates that haven't reached target state
 			for (Tile* gate : allGates)
 			{
 				if (gate->isActive != _activate)
 					gateQueue.push_back(gate);
 			}
 
+			// get altTag gates that haven't reached inverted target state
+			std::vector<Tile*> altGates = MapManager::GetTaggedTiles(altTag, TILE_ID::GATE);
+			for (Tile* gate : altGates)
+			{
+				if (gate->isActive != !_activate)
+					gateQueue.push_back(gate);
+			}
+
 			if (_activate) {
-				// activating: bottom to top
 				std::sort(gateQueue.begin(), gateQueue.end(),
 					[](Tile* a, Tile* b) { return a->row > b->row; });
 			}
 			else {
-				// deactivating: top to bottom
 				std::sort(gateQueue.begin(), gateQueue.end(),
 					[](Tile* a, Tile* b) { return a->row < b->row; });
 			}
@@ -944,9 +910,14 @@ struct ButtonTile : Tile {
 
 			if (gate)
 			{
-				gate->isActive = activate;
-				gate->isCurrActive = activate;
-				if (gate->collider) gate->collider->canCollide = activate;
+				// check if this gate belongs to altTag
+				std::vector<Tile*> altGates = MapManager::GetTaggedTiles(altTag, TILE_ID::GATE);
+				bool isAltGate = std::find(altGates.begin(), altGates.end(), gate) != altGates.end();
+
+				bool gateActivate = isAltGate ? !activate : activate;
+				gate->isActive = gateActivate;
+				gate->isCurrActive = gateActivate;
+				if (gate->collider) gate->collider->canCollide = gateActivate;
 			}
 
 			if (!gateQueue.empty())
@@ -960,12 +931,24 @@ struct ButtonTile : Tile {
 		Tile::Init();
 		collider->center.y = 0.f;
 		collider->size.x = 0.9f;
-		collider->size.y = 0.5f;
 		collider->isTrigger = true;
 
 		std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
 		gatesOriginalState = !gates.empty() && gates[0]->isActive;
 		gatesAreActive = gatesOriginalState;
+
+		// ensure colliders match starting active state
+		for (Tile* gate : gates)
+		{
+			gate->isActive = gate->isCurrActive;
+			//if (gate->collider) gate->collider->canCollide = gate->isActive;
+		}
+		// same for altTag gates
+		for (Tile* gate : MapManager::GetTaggedTiles(altTag, TILE_ID::GATE))
+		{
+			gate->isActive = gate->isCurrActive;
+			//if (gate->collider) gate->collider->canCollide = gate->isActive;
+		}
 
 		collider->OnTriggerEnter = [this](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
