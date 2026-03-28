@@ -61,14 +61,18 @@ void Player::PlayerInput()
 
 void Player::PlayerAction()
 {
-	if (rb->velocity.x != 0 && currentAction != PLAYER_ACTION::CRATEINTERACT)
-	{
-		prevAction = currentAction;
-		currentAction = rb->velocity.y != 0 ? PLAYER_ACTION::JUMPING : PLAYER_ACTION::RUNNING;
+	if (rb->velocity.y != 0) {
+		currentAction = PLAYER_ACTION::JUMPING;
 	}
-	else if (rb->velocity.x < 0.1f && currentAction != PLAYER_ACTION::CRATEINTERACT){
-		prevAction = currentAction;
-		currentAction = PLAYER_ACTION::IDLE;
+	else {
+
+		if (rb->velocity.x != 0 && currentAction != PLAYER_ACTION::CRATEINTERACT)
+		{
+			currentAction = PLAYER_ACTION::RUNNING;
+		}
+		else if (rb->velocity.x < 0.1f && currentAction != PLAYER_ACTION::CRATEINTERACT){
+			currentAction = PLAYER_ACTION::IDLE;
+		}
 	}
 }
 
@@ -84,7 +88,7 @@ Animation* Player::PlayerAnimation()
 
 	if (currentAction == PLAYER_ACTION::JUMPING)
 	{
-
+		anim = jumpAnim;
 	}
 
 	return anim;
@@ -128,6 +132,10 @@ Player::~Player()
 		delete runningAnim;
 		runningAnim = nullptr;
 	}
+	if (jumpAnim) {
+		delete jumpAnim;
+		jumpAnim = nullptr;
+	}
 }
 
 void Player::Init()
@@ -167,6 +175,18 @@ void Player::Init()
 		run->spriteSheet.isSpriteSheet = true;
 
 		runningAnim = new Animation(run);
+
+	}
+
+	if (!jumpAnim)
+	{
+		Sprite* jump = new Sprite();
+		jump->meshColor = 0xFF0000FF;
+		jump->textureFileName = "Assets/SpriteSheets/testRed4x6.png";
+		jump->spriteSheet = Sprite::SpriteSheet(6, 4);
+		jump->spriteSheet.isSpriteSheet = true;
+
+		jumpAnim = new Animation(jump);
 
 	}
 
@@ -251,11 +271,13 @@ void Player::Update(){
 	//float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
 	//PlayerStats::Get().RegenStamina(dt); // passive stamina regen
 
-	//PlayerInput();
+	PlayerAction();
 
 	animator->PlayAnimation(PlayerAnimation());
 
 	runningAnim->sprite->size.x =
+		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
+	jumpAnim->sprite->size.x =
 		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
 	GameObject::Update();
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
@@ -306,6 +328,16 @@ void MeleePlayer::Init()
 	runningAnim = new Animation(run);
 	runningAnim->loopAnimation = true;
 	runningAnim->animationFPS = 30.f;
+
+	Sprite* jump = new Sprite();
+	jump->meshColor = 0xFF0000FF;
+	jump->textureFileName = "Assets/SpriteSheets/Player_Melee_Jump.png";
+	jump->spriteSheet = Sprite::SpriteSheet(1, 1);
+	jump->spriteSheet.isSpriteSheet = true;
+
+	jumpAnim = new Animation(jump);
+	jumpAnim->loopAnimation = true;
+	jumpAnim->animationFPS = 30.f;
 
 	// shield collider
 	shieldCollider = AddComponent(
@@ -372,14 +404,26 @@ void MeleePlayer::Update()
 	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
 
 	// shield input
-	if (PlayerManager::GetInstance().currentPlayer == this)
-	{
-		bool qHeld = AEInputCheckCurr(AEVK_Q);
 
-		if (qHeld && !shieldDepleted)
+	
+	shieldCollider->isActive = shieldActive;
+	shieldBubbleAnimation->isActive = shieldActive;
+	
+	Player::Update();
+}
+
+void MeleePlayer::PlayerInput()
+{
+	double dt = AEFrameRateControllerGetFrameTime();
+
+	bool qHeld = AEInputCheckCurr(AEVK_Q);
+	if (qHeld)
+	{
+		inShieldAction = true;
+		if (!shieldDepleted)
 		{
 			shieldTimer += dt;
-
+			//currentAction = PLAYER_ACTION::SHIELDING;
 			float maxDuration = PlayerStats::Get().GetMaxShieldDuration();
 			if (shieldTimer >= maxDuration)
 			{
@@ -393,32 +437,35 @@ void MeleePlayer::Update()
 			{
 				shieldActive = true;
 			}
-		}
-		else
-		{
-			shieldActive = false;
-
-			// reset stamina when Q released
-			if (!qHeld)
-			{
-				shieldTimer = 0.0f;
-				shieldDepleted = false;
-			}
+			return;
 		}
 
 	}
-	shieldCollider->isActive = shieldActive;
-	shieldBubbleAnimation->isActive = shieldActive;
+	else {
+
 	
-	Player::Update();
+		shieldActive = false;
+
+		// reset stamina when Q released
+		if (!qHeld)
+		{
+			shieldTimer = 0.0f;
+			shieldDepleted = false;
+		}
+		
+		inShieldAction = false;
+	}
+
+	Player::PlayerInput();
+
 }
 
 void MeleePlayer::PlayerAction()
 {
 	// shield has prio
-	if (AEInputCheckCurr(AEVK_Q))
+	if (inShieldAction)
 	{
-		prevAction = currentAction; 
+		//prevAction = currentAction; 
 		currentAction = PLAYER_ACTION::SHIELDING;
 		return;
 	}
@@ -440,6 +487,10 @@ Animation* MeleePlayer::PlayerAnimation()
 
 RangePlayer::~RangePlayer()
 {
+	if (aimingAnim) {
+		delete aimingAnim;
+		aimingAnim = nullptr;
+	}
 	line = nullptr;
 	playerLinePos = nullptr;  // non-owning, Sprite::Free() handles delete
 	aimLinePos = nullptr;
@@ -468,6 +519,26 @@ void RangePlayer::Init()
 	runningAnim->loopAnimation = true;
 	runningAnim->animationFPS = 30.f;
 
+	Sprite* jump = new Sprite();
+	jump->meshColor = 0xFF0000FF;
+	jump->textureFileName = "Assets/SpriteSheets/Player_Range_Jump.png";
+	jump->spriteSheet = Sprite::SpriteSheet(1, 1);
+	jump->spriteSheet.isSpriteSheet = true;
+
+	jumpAnim = new Animation(jump);
+	jumpAnim->loopAnimation = true;
+	jumpAnim->animationFPS = 30.f;
+
+	Sprite* aiming = new Sprite();
+	aiming->meshColor = 0xFF0000FF;
+	aiming->textureFileName = "Assets/SpriteSheets/Player_Range_Aim.png";
+	aiming->spriteSheet = Sprite::SpriteSheet(1, 1);
+	aiming->spriteSheet.isSpriteSheet = true;
+
+	aimingAnim = new Animation(aiming);
+	aimingAnim->loopAnimation = true;
+	//aimingAnim->animationFPS = 30.f;
+
 	line = AddComponent(new Sprite()
 	);
 	line->spriteShape = SPRITE_SHAPE::SHAPE_LINE;
@@ -493,30 +564,27 @@ void RangePlayer::Update()
 
 	s32 screenX, screenY;
 	//f32 camPosX, camPosY;
-	f32 LEVEL1PosX, LEVEL1PosY;
+	f32 worldPosX, worldPosY;
 	AEInputGetCursorPosition(&screenX, &screenY);
 	//AEGfxGetCamPosition(&camPosX, &camPosY);
-	LEVEL1PosX = screenX + AEGfxGetWinMinX();
-	LEVEL1PosY = -(screenY - AEGfxGetWinMaxY());
-	//std::cout << LEVEL1PosX << "   " << LEVEL1PosY << std::endl;
-	playerLinePos->pos.x = pos.x + (LEVEL1PosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
+	worldPosX = screenX + AEGfxGetWinMinX();
+	worldPosY = -(screenY - AEGfxGetWinMaxY());
+	//std::cout << worldPosX << "   " << worldPosY << std::endl;
+	playerLinePos->pos.x = pos.x + (worldPosX < pos.x ? -1 : 1) * MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
-	aimLinePos->pos.x = LEVEL1PosX;
-	aimLinePos->pos.y = LEVEL1PosY;
+	aimLinePos->pos.x = worldPosX;
+	aimLinePos->pos.y = worldPosY;
+	aimingAnim->sprite->size.x =
+		fabs(runningAnim->sprite->size.x) * (worldPosX < pos.x ? -1 : 1);
 	Player::Update();
 }
 
-void RangePlayer::PlayerAction()
+void RangePlayer::PlayerInput()
 {
-	Player::PlayerAction();
-	if (rb->velocity.x != 0 && currentAction != PLAYER_ACTION::CRATEINTERACT)
-	{
-		prevAction = currentAction;
-		currentAction = rb->velocity.y != 0 ? PLAYER_ACTION::JUMPING : PLAYER_ACTION::RUNNING;
-	}
+
 	if (AEInputCheckCurr(AEVK_Q))
 	{
-		currentAction = PLAYER_ACTION::AIMING;
+		aiming = true;
 		if (AEInputCheckTriggered(AEVK_LBUTTON))
 		{
 			// shoot if cooldown has passed
@@ -541,11 +609,40 @@ void RangePlayer::PlayerAction()
 				std::cout << "[Bow] still on cooldown!" << (cooldown - arrowTimer) << "s remaining\n";
 			}
 		}
+		return;
 	}
-	else if (rb->velocity.x < 0.1f && currentAction != PLAYER_ACTION::CRATEINTERACT) {
-		prevAction = currentAction;
-		currentAction = PLAYER_ACTION::IDLE;
+	else {
+		aiming = false;
 	}
+	Player::PlayerInput();
+}
+
+void RangePlayer::PlayerAction()
+{
+	//if (rb->velocity.x != 0 && currentAction != PLAYER_ACTION::CRATEINTERACT)
+	//{
+	//	prevAction = currentAction;
+	//	currentAction = rb->velocity.y != 0 ? PLAYER_ACTION::JUMPING : PLAYER_ACTION::RUNNING;
+	//}
+	if (aiming)
+	{
+		currentAction = PLAYER_ACTION::AIMING;
+		return;
+	}
+
+	Player::PlayerAction();
+}
+
+Animation* RangePlayer::PlayerAnimation()
+{
+	if (!animator) return nullptr;
+	Animation* anim = Player::PlayerAnimation();
+
+	if (currentAction == PLAYER_ACTION::AIMING)
+	{
+		anim = aimingAnim;
+	}
+	return anim;
 }
 
 void Arrow::Init()
@@ -618,8 +715,5 @@ void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir)
 
 	// flip sprite if moving left
 	Sprite* s = GetComponent<Sprite>();
-	if (rb->velocity.x < 0)
-		s->size.x = -fabs(s->size.x);
-	else
-		s->size.x = fabs(s->size.x);
+	s->size.x = fabs(s->size.x);
 }
