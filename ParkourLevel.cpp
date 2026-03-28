@@ -3,6 +3,7 @@
 #include "MapManager.h"
 #include "EnemyGameObject.h"
 #include "PlayerManager.h"
+#include "EndMenu.h"
 
 //Player* player1 = nullptr;
 PlayerManager playerManager;
@@ -38,14 +39,28 @@ void ParkourLevel::Init()
 	AddGameObjectToVector(enemy1, gameObjects1);
 
 	InitGameObjects(gameObjects1);
+
+	EndMenu::Init();
 	
 }
 
 void ParkourLevel::Update()
 {
+	// 1. Check if the player is dead (Example using PlayerStats if available)
+	if (/* playerHP <= 0 */) { // Placeholder: Replace with your actual HP variable
+		EndMenu::isWin = false;
+		EndMenu::isActive = true;
+	}
+
+	// 2. Run Menu Update and skip level logic if active
+	if (EndMenu::isActive) {
+		EndMenu::Update();
+		return;
+	}
 	double dt = AEFrameRateControllerGetFrameTime();
 	playerManager.Update();
 	UpdateGameObjects(gameObjects1);
+
 }
 
 void ParkourLevel::Render()
@@ -57,6 +72,8 @@ void ParkourLevel::Render()
 	//player1->Render();
 	playerManager.Render();
 	enemy1->Render();
+
+	EndMenu::Render();
 
 }
 
@@ -79,6 +96,9 @@ void ParkourLevel::Free()
 
 	mapManager1.FreeMap();
 	AEGfxSetCamPosition(0.f, 0.f);
+
+	EndMenu::Free();
+	EndMenu::isActive = false; // Reset for the next time the level loads
 }
 
 void ParkourLevel::Unload()

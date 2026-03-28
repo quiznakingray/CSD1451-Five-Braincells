@@ -3,6 +3,7 @@
 #include "PlayerGameObject.h"
 #include "MapManager.h"
 #include "EnemyGameObject.h"
+#include "EndMenu.h"
 
 Player* player2 = nullptr;
 //EnemyGameObject* enemy2 = nullptr;
@@ -33,12 +34,42 @@ void BossLevel::Init()
 	//AddGameObjectToVector(enemy, gameObjects2);
 
 	InitGameObjects(gameObjects2);
+
+	EndMenu::Init();
 }
 
 void BossLevel::Update()
 {
+
+	// Check for Win Condition
+	if (/* bossHP <= 0 */) { // Placeholder: Replace when you find Boss HP
+		EndMenu::isWin = true;
+		EndMenu::isActive = true;
+	}
+
+	// Check for Lose Condition
+	if (/* playerHP <= 0 */) {
+		EndMenu::isWin = false;
+		EndMenu::isActive = true;
+	}
+
+	// Update Menu and intercept level logic
+	if (EndMenu::isActive) {
+		EndMenu::Update();
+		return;
+	}
+
 	double dt = AEFrameRateControllerGetFrameTime();
 	UpdateGameObjects(gameObjects2);
+
+	// Check for Death (Calls the shared logic)
+	CheckPlayerDeath();
+
+	// 4. Check for Boss Win (Level specific)
+	if (bossHP <= 0) {
+		EndMenu::isWin = true;
+		EndMenu::isActive = true;
+	}
 }
 
 void BossLevel::Render()
@@ -71,6 +102,9 @@ void BossLevel::Free()
 
 	mapManager2.FreeMap();
 	AEGfxSetCamPosition(0.f, 0.f);
+
+	EndMenu::Free();
+	EndMenu::isActive = false; // Reset for the next time the level loads
 }
 
 void BossLevel::Unload()

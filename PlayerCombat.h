@@ -2,6 +2,7 @@
 #define PLAYER_COMBAT_H
 
 #include "AEEngine.h"
+#include "EndMenu.h"
 
 // player structure
 struct PlayerStats {
@@ -34,6 +35,13 @@ struct AbilityButton {
     void GameStateDraw();
     void GameStateFree();
     void GameStateUnload();
+
+    void CheckPlayerDeath() {
+        if (playerStats.health <= 0) {
+            EndMenu::isWin = false;
+            EndMenu::isActive = true;
+        }
+    }
 
 #endif
 
