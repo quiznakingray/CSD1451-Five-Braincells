@@ -72,24 +72,22 @@ void Player::PlayerAction()
 	}
 }
 
-void Player::PlayerAnimation()
+Animation* Player::PlayerAnimation()
 {
-	if (!animator) return;
-	Animation* anim = nullptr;
-	switch (currentAction)
+	if (!animator) return nullptr;
+	Animation* anim = idleAnim;
+
+	if (currentAction == PLAYER_ACTION::RUNNING)
 	{
-	case PLAYER_ACTION::IDLE:
-		anim = idleAnim;
-		break;
-	case PLAYER_ACTION::RUNNING:
 		anim = runningAnim;
-		break;
-	default:
-		anim = idleAnim;
-		break;
 	}
 
-	animator->PlayAnimation(anim);
+	if (currentAction == PLAYER_ACTION::JUMPING)
+	{
+
+	}
+
+	return anim;
 }
 
 void Player::ResetPlayer()
@@ -255,7 +253,7 @@ void Player::Update(){
 
 	//PlayerInput();
 
-	PlayerAnimation();
+	animator->PlayAnimation(PlayerAnimation());
 
 	runningAnim->sprite->size.x =
 		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
@@ -308,7 +306,6 @@ void MeleePlayer::Init()
 	runningAnim = new Animation(run);
 	runningAnim->loopAnimation = true;
 	runningAnim->animationFPS = 30.f;
-	Player::Init();
 
 	// shield collider
 	shieldCollider = AddComponent(
@@ -330,36 +327,75 @@ void MeleePlayer::Init()
 				}
 			}
 			// add enemy projectile types!!
-		};
+	};
 	
+	Player::Init();
+
+	// shielding
+	Sprite* shielding = new Sprite();
+	shielding->meshColor = 0xFF0000FF;
+	shielding->textureFileName = "Assets/SpriteSheets/Player_Melee_Shielding.png";
+	shielding->spriteSheet = Sprite::SpriteSheet(2, 7);
+	shielding->spriteSheet.isSpriteSheet = true;
+
+	shieldingAnim = new Animation(shielding);
+	shieldingAnim->loopAnimation = true;
+	shieldingAnim->animationFPS = 15.f;
+
+	// shield animator
+	Sprite *shieldSprite = new Sprite(1.5f, 1.5f);
+	shieldSprite->textureFileName = "Assets/SpriteSheets/Player_Melee_Bubble_Shield.png";
+	shieldSprite->spriteSheet = Sprite::SpriteSheet(2, 7);
+	shieldSprite->spriteSheet.isSpriteSheet = true;
+
+	shieldAmin = new Animation(shieldSprite);
+	shieldAmin->loopAnimation = true;
+	shieldAmin->animationFPS = 15.f;
+
+	// shield animation 
+	shieldBubbleAnimation = AddComponent(new Animator(shieldAmin));
+	shieldBubbleAnimation->Init();;
+}
+MeleePlayer::~MeleePlayer()
+{
+	if (shieldingAnim) {
+		delete shieldingAnim;
+		shieldingAnim = nullptr;
+	}
+	if (shieldAmin) {
+		delete shieldAmin;
+		shieldAmin = nullptr;
+	}
 }
 void MeleePlayer::Update()
 {
 	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
 
 	// shield input
-	bool qHeld = AEInputCheckCurr(AEVK_Q);
-
-	if (qHeld && !shieldDepleted)
+	if (PlayerManager::GetInstance().currentPlayer == this)
 	{
-		shieldTimer += dt;
+		bool qHeld = AEInputCheckCurr(AEVK_Q);
 
-		float maxDuration = PlayerStats::Get().GetMaxShieldDuration();
-		if (shieldTimer >= maxDuration)
+		if (qHeld && !shieldDepleted)
 		{
-			// stamina exhausted
-			shieldTimer = maxDuration;
-			shieldDepleted = true;
-			shieldActive = false;
-			std::cout << "[Shield] stamina ran out! release Q to recover stamina.\n";
+			shieldTimer += dt;
+
+			float maxDuration = PlayerStats::Get().GetMaxShieldDuration();
+			if (shieldTimer >= maxDuration)
+			{
+				// stamina exhausted
+				shieldTimer = maxDuration;
+				shieldDepleted = true;
+				shieldActive = false;
+				std::cout << "[Shield] stamina ran out! release Q to recover stamina.\n";
+			}
+			else
+			{
+				shieldActive = true;
+			}
 		}
 		else
 		{
-			shieldActive = true;
-		}
-	}
-	else
-	{
 			shieldActive = false;
 
 			// reset stamina when Q released
@@ -368,9 +404,12 @@ void MeleePlayer::Update()
 				shieldTimer = 0.0f;
 				shieldDepleted = false;
 			}
-	}
+		}
 
+	}
 	shieldCollider->isActive = shieldActive;
+	shieldBubbleAnimation->isActive = shieldActive;
+	
 	Player::Update();
 }
 
@@ -383,8 +422,20 @@ void MeleePlayer::PlayerAction()
 		currentAction = PLAYER_ACTION::SHIELDING;
 		return;
 	}
-
 	Player::PlayerAction();
+
+}
+
+Animation* MeleePlayer::PlayerAnimation()
+{
+	if (!animator) return nullptr;
+	Animation* anim = Player::PlayerAnimation();
+
+	if (currentAction == PLAYER_ACTION::SHIELDING)
+	{
+		anim = shieldingAnim;
+	}
+	return anim;
 }
 
 RangePlayer::~RangePlayer()
@@ -457,16 +508,13 @@ void RangePlayer::Update()
 
 void RangePlayer::PlayerAction()
 {
+	Player::PlayerAction();
 	if (rb->velocity.x != 0 && currentAction != PLAYER_ACTION::CRATEINTERACT)
 	{
 		prevAction = currentAction;
 		currentAction = rb->velocity.y != 0 ? PLAYER_ACTION::JUMPING : PLAYER_ACTION::RUNNING;
 	}
-	//if (rb->velocity.x != 0)
-	//{
-	//	currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
-	//}
-	else if (AEInputCheckCurr(AEVK_Q))
+	if (AEInputCheckCurr(AEVK_Q))
 	{
 		currentAction = PLAYER_ACTION::AIMING;
 		if (AEInputCheckTriggered(AEVK_LBUTTON))

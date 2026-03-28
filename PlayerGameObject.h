@@ -48,10 +48,10 @@ struct Player : GameObject {
 
 	void TakeDamage(int amount);
 	static void IncrementKills();
+	virtual Animation* PlayerAnimation();
 private:
 
 
-	void PlayerAnimation();
 
 
 	void ResetPlayer();
@@ -65,12 +65,16 @@ struct MeleePlayer : Player {
 	float shieldTimer = 0.0f; // no. of seconds the shield has been held for this keypress
 	bool shieldDepleted = false; // true after shield runs out, release Q for reset.
 
+	Animation* shieldingAnim = nullptr;
+	Animation* shieldAmin = nullptr;
+	Animator* shieldBubbleAnimation = nullptr;
 	Collider* shieldCollider = nullptr; 
 
 	void Init() override;
-	~MeleePlayer() = default;
+	~MeleePlayer();
 	void Update() override;
 	void PlayerAction() override;
+	Animation* PlayerAnimation() override;
 
 };
 

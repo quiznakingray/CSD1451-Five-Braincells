@@ -31,6 +31,7 @@ Animator::~Animator()
 void Animator::PlayAnimation(Animation* a)
 {
 	// if it already playing
+	if (!a) return;
 	if (currentAnimation == a || nextAnimation == a) return;
 
 	//set next animation
