@@ -65,7 +65,7 @@ void MainMenu_Init() {
     audioMenu.Init(); // initialize audio panel
 
     // Play main menu bgm
-    AudioManager::GetInstance().PlayMusic("menu_bgm");
+    //AudioManager::GetInstance().PlayMusic("menu_bgm");
 }
 
 void MainMenu_Update() {

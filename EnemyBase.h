@@ -2,29 +2,42 @@
 #define ENEMY_BASE_H
 
 #include "AEEngine.h"
+#include "PlayerGameObject.h"
 
 enum class EnemyType
 {
-	BASIC,
-	MINI_BOSS
+    BASIC_MELEE,
+    BASIC_RANGED,
+    MINI_BOSS_MELEE,
+    MINI_BOSS_RANGED
 };
 
 struct EnemyStats
 {
-	f32 speed;
-	s32 health;
-	s32 attack;
+    f32 speed;
+    s32 health;
+    s32 maxHealth;
+    s32 attack;
+
+    f32 attackRange;
+    f32 attackCooldown;
 };
 
 struct EnemyBase
 {
-	EnemyType type;
-	EnemyStats stats;
+    EnemyType type;
+    EnemyStats stats;
 
-	AEVec2 patrolStart;
-	AEVec2 patrolEnd;
+    AEVec2 patrolStart;
+    AEVec2 patrolEnd;
 
-	bool isAlive;
+    f32 attackTimer;
+
+    bool isAlive;
+    bool canMove;
+
+    Arrow* projectile = nullptr;
+    virtual ~EnemyBase() {}
 };
 
 void InitEnemyBase(EnemyBase& enemy, EnemyType type);

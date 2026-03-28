@@ -88,7 +88,7 @@ void Player::PlayerAction()
 		prevAction = currentAction;
 		currentAction = rb->velocity.y != 0 ? PlayerAction::JUMPING : PlayerAction::RUNNING;
 	}
-	else if (rb->velocity.x < 0.1f && currentAction != PlayerAction::CRATEINTERACT){
+	else if (rb->velocity.x < 0.1f && currentAction != PlayerAction::CRATEINTERACT) {
 		prevAction = currentAction;
 		currentAction = PlayerAction::IDLE;
 	}
@@ -114,6 +114,18 @@ void Player::PlayerAnimation()
 	animator->PlayAnimation(anim);
 }
 
+void Player::TakeDamage(int damage) {
+	health -= damage;
+	if (health < 0) health = 0;
+	std::cout << "Player took " << damage << " damage. Current health: " << health << std::endl;
+}
+
+void Player::Heal(int amount) {
+	health += amount;
+	if (health > 5) health = 5;
+	std::cout << "Player healed " << amount << ". Current health: " << health << std::endl;
+}
+
 void Player::Init()
 {
 
@@ -132,7 +144,7 @@ void Player::Init()
 	//set animation
 	if (!idleAnim)
 	{
-		Sprite * s = new Sprite();
+		Sprite* s = new Sprite();
 		s->meshColor = 0xFF0000FF;
 		s->textureFileName = "Assets/SpriteSheets/test2x12.png";
 		s->spriteSheet = Sprite::SpriteSheet(12, 2);
@@ -144,7 +156,7 @@ void Player::Init()
 
 	if (!runningAnim)
 	{
-		Sprite * run = new Sprite();
+		Sprite* run = new Sprite();
 		run->meshColor = 0xFF0000FF;
 		run->textureFileName = "Assets/SpriteSheets/testRed4x6.png";
 		run->spriteSheet = Sprite::SpriteSheet(6, 4);
@@ -158,7 +170,7 @@ void Player::Init()
 		new Animator(idleAnim)
 	);
 
-	Collider * c = AddComponent(
+	Collider* c = AddComponent(
 		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.f, 1.f, 1.f)
 	);
 	c->OnClick = [] {
@@ -166,7 +178,7 @@ void Player::Init()
 		};
 	c->OnMouseDown = [] {
 		std::cout << "Mouse Down" << std::endl;
-		};	
+		};
 	c->OnMouseUp = [] {
 		std::cout << "Mouse Up" << std::endl;
 		};
@@ -233,7 +245,7 @@ void Player::Init()
 	GameObject::Init();
 }
 
-void Player::Update(){
+void Player::Update() {
 	//PlayerInput();
 	PlayerAction();
 	PlayerAnimation();
@@ -258,7 +270,7 @@ void MeleePlayer::Init()
 	idleAnim = new Animation(s);
 	idleAnim->loopAnimation = true;
 	idleAnim->animationFPS = 10.f;
-	
+
 	Sprite* run = new Sprite();
 	run->meshColor = 0xFF0000FF;
 	run->textureFileName = "Assets/SpriteSheets/Player_Melee_Run.png";
@@ -283,7 +295,7 @@ void RangePlayer::Init()
 	idleAnim = new Animation(s);
 	idleAnim->loopAnimation = true;
 	idleAnim->animationFPS = 10.f;
-	
+
 	Sprite* run = new Sprite();
 	run->meshColor = 0xFF0000FF;
 	run->textureFileName = "Assets/SpriteSheets/Player_Range_Run.png";
@@ -301,7 +313,7 @@ void RangePlayer::Init()
 	line->meshColor = 0xFFFF0000;
 	playerLinePos = new Sprite::LinePoint;
 	aimLinePos = new Sprite::LinePoint;
-	playerLinePos->pos.x = pos.x + MapManager::tileSize /2.f;
+	playerLinePos->pos.x = pos.x + MapManager::tileSize / 2.f;
 	playerLinePos->pos.y = pos.y;
 	aimLinePos->pos.x = pos.x + 10.f;
 	aimLinePos->pos.y = pos.y;
@@ -362,8 +374,8 @@ void RangePlayer::PlayerAction()
 
 void Arrow::Init()
 {
-	AEVec2Set(&scale, MapManager::tileSize , MapManager::tileSize );
-	Sprite* s = AddComponent( new Sprite());
+	AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
+	Sprite* s = AddComponent(new Sprite());
 	s->meshColor = 0xFF0000FF;
 	s->textureFileName = "Assets/SpriteSheets/arrow.png";
 
@@ -376,7 +388,7 @@ void Arrow::Init()
 			{
 				// crate will deactivate arrow on its own ontrigger
 				if (dynamic_cast<CrateTile*>(other->owner)) return;
-				if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) || 
+				if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) ||
 					((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
 				{
 					isActive = false;

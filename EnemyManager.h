@@ -12,14 +12,15 @@ private:
     friend class Singleton<EnemyManager>;
 
     std::vector<EnemyGameObject*> enemies;
-    Player* player;
 
 public:
+    Player* player;
     void Init(Player* p);
 
     void RegisterEnemy(EnemyGameObject* enemy);
 
     void SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects);
+    void SpawnEnemy(EnemyType type, Tile* tile, std::vector<GameObject*>& gameObjects);
 
     void UpdateAllEnemies(f32 dt);
 

@@ -15,6 +15,11 @@ enum class EnemyState {
 };
 
 struct EnemyGameObject : GameObject {
+    bool isGrounded = false;
+
+    void Jump(float force);
+    bool CheckGrounded();
+
     EnemyBase base;
     EnemyMovement movement;
     RigidBody* rb = nullptr;

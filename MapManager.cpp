@@ -1,8 +1,10 @@
-#include "MapManager.h"
+﻿#include "MapManager.h"
 #include "SpriteManager.h"
 #include "PlayerGameObject.h"
 #include "PlayerManager.h"
 #include "SaveManager.h"
+#include "Node.h"
+#include "EnemyMovement.h"
 #include <array>
 #include <algorithm>
 #include <iostream>
@@ -16,6 +18,69 @@ AEGfxVertexList* mesh;
 unsigned int MapManager::mapCurrLevel = 0;
 size_t MapManager::rowCount = 0;
 size_t MapManager::colCount = 0;
+
+void MapManager::GenerateNodes()
+{
+    EnemyMovement::allNodes.clear();
+
+    std::vector<std::vector<Node*>> nodeGrid;
+    nodeGrid.resize(rowCount, std::vector<Node*>(colCount, nullptr));
+
+    //------------------------------------------------------------
+    // 1. Create Nodes (only on walkable tiles)
+    //------------------------------------------------------------
+    for (size_t r = 0; r < rowCount; ++r)
+    {
+        for (size_t c = 0; c < colCount; ++c)
+        {
+            Tile* tile = arrMapInfo[r][c];
+
+            // 👉 Define walkable tiles here
+            if (tile->currID != TILE_ID::EMPTY)
+            {
+                Node* node = new Node();
+
+                node->position = {
+                    tile->pos.x,
+                    tile->pos.y
+                };
+
+                nodeGrid[r][c] = node;
+                EnemyMovement::allNodes.push_back(node);
+            }
+        }
+    }
+
+    //------------------------------------------------------------
+    // 2. Connect Neighbours (4-directional grid)
+    //------------------------------------------------------------
+    for (size_t r = 0; r < rowCount; ++r)
+    {
+        for (size_t c = 0; c < colCount; ++c)
+        {
+            Node* node = nodeGrid[r][c];
+            if (!node) continue;
+
+            // Up
+            if (r > 0 && nodeGrid[r - 1][c])
+                node->neighbors.push_back(nodeGrid[r - 1][c]);
+
+            // Down
+            if (r < rowCount - 1 && nodeGrid[r + 1][c])
+                node->neighbors.push_back(nodeGrid[r + 1][c]);
+
+            // Left
+            if (c > 0 && nodeGrid[r][c - 1])
+                node->neighbors.push_back(nodeGrid[r][c - 1]);
+
+            // Right
+            if (c < colCount - 1 && nodeGrid[r][c + 1])
+                node->neighbors.push_back(nodeGrid[r][c + 1]);
+        }
+    }
+
+    std::cout << "[MapManager] Nodes Generated: " << EnemyMovement::allNodes.size() << "\n";
+}
 
 void MapManager::InitMap(std::string fileName, unsigned int currLevel)
 {
@@ -57,6 +122,8 @@ void MapManager::InitMap(std::string fileName, unsigned int currLevel)
 
     // Saving the mesh (list of triangles) in pMesh
     mesh = AEGfxMeshEnd();
+
+    GenerateNodes();
 }
 
 void MapManager::ChangeMap(unsigned int currLevel)
@@ -144,6 +211,12 @@ void MapManager::FreeMap()
             }
         }
     }
+
+    for (Node* node : EnemyMovement::allNodes)
+    {
+        delete node;
+    }
+    EnemyMovement::allNodes.clear();
 }
 
 void MapManager::SaveMapState(GAME_STATE_TYPE level)
