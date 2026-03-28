@@ -101,13 +101,13 @@ void AudioManager::SetSFXVolume(float v)
     AEAudioSetGroupVolume(sfxGroup, v * masterVolume);
 }
 
-float AudioManager::GetMasterVolume() { return masterVolume; }
-float AudioManager::GetMusicVolume() { return musicVolume; }
-float AudioManager::GetSFXVolume() { return sfxVolume; }
+float AudioManager::GetMasterVolume() const { return masterVolume; }
+float AudioManager::GetMusicVolume() const { return musicVolume; }
+float AudioManager::GetSFXVolume() const { return sfxVolume; }
 
-AEAudioGroup AudioManager::GetMasterGroup() { return masterGroup; }
-AEAudioGroup AudioManager::GetMusicGroup() { return musicGroup; }
-AEAudioGroup AudioManager::GetSFXGroup() { return sfxGroup; }
+AEAudioGroup AudioManager::GetMasterGroup() const { return masterGroup; }
+AEAudioGroup AudioManager::GetMusicGroup() const { return musicGroup; }
+AEAudioGroup AudioManager::GetSFXGroup() const { return sfxGroup; }
 
 void AudioManager::PlaySFX(const std::string& name)
 {

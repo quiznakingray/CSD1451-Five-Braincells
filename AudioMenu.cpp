@@ -10,12 +10,12 @@ bool AudioMenu::IsOpen() const
     return isOpen;
 }
 
-float AudioMenu::NormalizeScreenX(float px)
+float AudioMenu::NormalizeScreenX(float px) const
 {
     return px / (AEGfxGetWindowWidth() * 0.5f);
 }
 
-float AudioMenu::NormalizeScreenY(float py)
+float AudioMenu::NormalizeScreenY(float py) const
 {
     return py / (AEGfxGetWindowHeight() * 0.5f);
 }
@@ -34,18 +34,10 @@ void AudioMenu::ApplyAudio()
 void AudioMenu::Init()
 {
     // Font
-    fontSize = 80.0f;
     font = AEGfxCreateFont("Assets/liberation-mono.ttf", static_cast<int>(fontSize));
 
     float screenW = (float)AEGfxGetWindowWidth();
     float screenH = (float)AEGfxGetWindowHeight();
-
-    // Normalized screen center (0,0)
-    panelX = 0.0f;
-    panelY = 0.0f;
-
-    panelW = 700.0f; // width in normalized space
-    panelH = 700.0f; // height in normalized space
 
     panelTex = AEGfxTextureLoad("Assets/TEMP_Sprites/audio_panel.png");
 
@@ -93,6 +85,35 @@ void AudioMenu::Init()
     masterSlider.Init(0.0f, masterPos, sliderWidth, sliderHeight, 0, 100, 100, bar, handle);
     musicSlider.Init(0.0f, musicPos, sliderWidth, sliderHeight, 0, 100, 100, bar, handle);
     sfxSlider.Init(0.0f, sfxPos, sliderWidth, sliderHeight, 0, 100, 100, bar, handle);
+
+    float offsetX = sliderWidth * 0.57f; // distance from slider center
+
+    // Master +/- button
+    masterMinus.Init(-offsetX, masterPos, btnSize, btnSize,
+        "Assets/TEMP_Sprites/button_idle.png",
+        "Assets/TEMP_Sprites/button_hover.png");
+
+    masterPlus.Init(offsetX, masterPos, btnSize, btnSize,
+        "Assets/TEMP_Sprites/button_idle.png",
+        "Assets/TEMP_Sprites/button_hover.png");
+
+    // Music +/- button
+    musicMinus.Init(-offsetX, musicPos, btnSize, btnSize,
+        "Assets/TEMP_Sprites/button_idle.png",
+        "Assets/TEMP_Sprites/button_hover.png");
+
+    musicPlus.Init(offsetX, musicPos, btnSize, btnSize,
+        "Assets/TEMP_Sprites/button_idle.png",
+        "Assets/TEMP_Sprites/button_hover.png");
+
+    // Sfx +/- button
+    sfxMinus.Init(-offsetX, sfxPos, btnSize, btnSize,
+        "Assets/TEMP_Sprites/button_idle.png",
+        "Assets/TEMP_Sprites/button_hover.png");
+
+    sfxPlus.Init(offsetX, sfxPos, btnSize, btnSize,
+        "Assets/TEMP_Sprites/button_idle.png",
+        "Assets/TEMP_Sprites/button_hover.png");
 }
 
 void AudioMenu::Update()
@@ -141,6 +162,43 @@ void AudioMenu::Update()
         AudioManager::GetInstance().GetInstance().SetSFXVolume(currSFX / 100.0f);
         prevSFX = currSFX;
     }
+
+    masterMinus.Update();
+    masterPlus.Update();
+    musicMinus.Update();
+    musicPlus.Update();
+    sfxMinus.Update();
+    sfxPlus.Update();
+
+    // Update master volume based on master +/- button
+    if (masterMinus.IsClicked())
+    {
+        masterSlider.value = AEClamp(masterSlider.value - 1.0f, 0.0f, 100.0f);
+    }
+    if (masterPlus.IsClicked())
+    {
+        masterSlider.value = AEClamp(masterSlider.value + 1.0f, 0.0f, 100.0f);
+    }
+
+    // Update music volume based on music +/- button
+    if (musicMinus.IsClicked())
+    {
+        musicSlider.value = AEClamp(musicSlider.value - 1.0f, 0.0f, 100.0f);
+    }
+    if (musicPlus.IsClicked())
+    {
+        musicSlider.value = AEClamp(musicSlider.value + 1.0f, 0.0f, 100.0f);
+    }
+
+    // Update sfx volume based on sfx +/- button
+    if (sfxMinus.IsClicked())
+    {
+        sfxSlider.value = AEClamp(sfxSlider.value - 1.0f, 0.0f, 100.0f);
+    }
+    if (sfxPlus.IsClicked())
+    {
+        sfxSlider.value = AEClamp(sfxSlider.value + 1.0f, 0.0f, 100.0f);
+    }
 }
 
 void AudioMenu::Render()
@@ -173,11 +231,33 @@ void AudioMenu::Render()
         AEGfxSetColorToAdd(0, 0, 0, 0);
         AEGfxSetColorToMultiply(1, 1, 1, 1);
 
-        // Button and sliders
+        // Back button and sliders
         backButton.Render();
         masterSlider.Render();
         musicSlider.Render();
         sfxSlider.Render();
+
+        // Increase / Decrease buttons
+        masterMinus.Render();
+        masterPlus.Render();
+
+        musicMinus.Render();
+        musicPlus.Render();
+
+        sfxMinus.Render();
+        sfxPlus.Render();
+
+        // Master +/- text
+        AEGfxPrint(font, "-", NormalizeScreenX(-panelW * 0.47f), NormalizeScreenY(masterPos + -10.7f), fontSize * 0.006f, 1, 1, 1, 1);
+        AEGfxPrint(font, "+", NormalizeScreenX(panelW * 0.44f), NormalizeScreenY(masterPos + -10.7f), fontSize * 0.006f, 1, 1, 1, 1);
+
+        // Music +/- text
+        AEGfxPrint(font, "-", NormalizeScreenX(-panelW * 0.47f), NormalizeScreenY(musicPos + -10.7f), fontSize * 0.006f, 1, 1, 1, 1);
+        AEGfxPrint(font, "+", NormalizeScreenX(panelW * 0.44f), NormalizeScreenY(musicPos + -10.7f), fontSize * 0.006f, 1, 1, 1, 1);
+
+        // Sfx +/- text
+        AEGfxPrint(font, "-", NormalizeScreenX(-panelW * 0.47f), NormalizeScreenY(sfxPos + -10.7f), fontSize * 0.006f, 1, 1, 1, 1);
+        AEGfxPrint(font, "+", NormalizeScreenX(panelW * 0.44f), NormalizeScreenY(sfxPos + -10.7f), fontSize * 0.006f, 1, 1, 1, 1);
 
         // Back button text
         float backTextX = NormalizeScreenX(panelX - 40.0f); // button center X
@@ -219,6 +299,13 @@ void AudioMenu::Free()
     masterSlider.Free();
     musicSlider.Free();
     sfxSlider.Free();
+
+    masterMinus.Free();
+    masterPlus.Free();
+    musicMinus.Free();
+    musicPlus.Free();
+    sfxMinus.Free();
+    sfxPlus.Free();
 
     if (panelTex)
     {
