@@ -22,11 +22,15 @@ void Player::PlayerInput()
 	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing 
 		&& PlayerManager::GetInstance().currentStamina != 0)
 	{
-		//moveDir.y = 500.f;
-		//onGround = false;
-		PlayerManager::GetInstance().currentStamina--;
-		float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 300.0f);
-		rb->velocity.y = jumpVelocity;
+		if (PlayerStats::Get().ConsumeJumpStamina())
+		{
+			float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 300.0f);
+			rb->velocity.y = jumpVelocity;
+		}
+		else
+		{
+			std::cout << "[Jump] no stamina!\n";
+		}
 	}
 	//if (AEInputCheckCurr(AEVK_S))
 	//{
@@ -239,6 +243,9 @@ void Player::Init()
 }
 
 void Player::Update(){
+	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
+	PlayerStats::Get().RegenStamina(dt); // passive stamina regen
+
 	//PlayerInput();
 	float dt = AEFrameRateControllerGetFrameTime();
 	PlayerAction();
@@ -250,6 +257,29 @@ void Player::Update(){
 
 	GameObject::Update();
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
+}
+
+void Player::TakeDamage(int amount)
+{
+	health -= amount;
+
+	if (health <= 0)
+	{
+		// inc death counter
+		PlayerStats::Get().deathCount++;
+
+		// respawn: reset health and jump stamina
+		health = PlayerStats::Get().maxHealth;
+		PlayerStats::Get().jumpStamina = static_cast<float>(PlayerStats::Get().maxJumpStamina);
+
+		std::cout << "[Player] Total deaths: " << PlayerStats::Get().deathCount << "\n";
+	}
+}
+
+void Player::IncrementKills()
+{
+	PlayerStats::Get().killCount++;
+	std::cout << "[Player] Total kills: " << PlayerStats::Get().killCount << "\n";
 }
 
 void MeleePlayer::Init()
