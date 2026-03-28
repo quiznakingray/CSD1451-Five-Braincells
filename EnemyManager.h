@@ -22,7 +22,7 @@ public:
     void SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects);
     void SpawnEnemy(EnemyType type, Tile* tile, std::vector<GameObject*>& gameObjects);
 
-    static void UpdateAllEnemies(f64 dt);
+    void UpdateAllEnemies(f64 dt);
 
     void RenderEnemies();
 

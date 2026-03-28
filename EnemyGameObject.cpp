@@ -105,13 +105,13 @@ void EnemyGameObject::Update() {
     UpdateAnimation();
     GameObject::Update();
 }
-//
-//void EnemyGameObject::Patrol(f32 dt) {
-//    if (currentState == EnemyState::IDLE || currentState == EnemyState::WALK) {
-//        EnemyMovement::UpdateEnemyPatrol(this, dt);
-//        currentState = EnemyState::WALK;
-//    }
-//}
+
+void EnemyGameObject::Patrol(f64 dt) {
+    if (currentState == EnemyState::IDLE || currentState == EnemyState::WALK) {
+        EnemyMovement::UpdateEnemyPatrol(this, dt);
+        currentState = EnemyState::WALK;
+    }
+}
 
 void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
     // Call A* pathfinding to update velocity
