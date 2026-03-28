@@ -16,21 +16,26 @@ enum class PLAYER_TYPE {
 
 struct PlayerManager : public Singleton<PlayerManager>
 {
+	f32 playerSwitchingCooldown = 0.f;
+	f32 playerSwitchingDuration = 2.f;
+	bool canChangePlayer = true;
+
 	MeleePlayer* meleePlayer{};
 	RangePlayer* rangedPlayer{};
 
 	static Arrow* rangePlayerArrow;
 	Player* currentPlayer = meleePlayer;
-
-	AEVec2 camPos{};
-	f32 camLerpSpeed = 5.f;
+	PLAYER_TYPE currentPlayerType = PLAYER_TYPE::MELEE;
 
 	void Init();
 	void Update();
 	void Render();
+	void Free();
 	void Load();
 	void SavePlayerData();
 	void ChangePlayer(PLAYER_TYPE type);
+private:
+	void StartPlayerCooldown(f64 dt);
 };
 
 #endif

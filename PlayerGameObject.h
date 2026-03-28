@@ -5,7 +5,7 @@
 #include "PhysicsManager.h"
 #include "AnimatorComponent.h"
 
-enum class PlayerAction {
+enum class PLAYER_ACTION {
 	IDLE,
 	RUNNING,
 	JUMPING,
@@ -24,12 +24,9 @@ struct Player : GameObject {
 
 	//STATE playerState = STATE::IDLE;
 	f32 speed{};
-
 	RigidBody* rb = nullptr;
 
-
-	int health = 100;
-
+	
 	//AEVec2 velocity{};
 
 	// animation
@@ -37,22 +34,27 @@ struct Player : GameObject {
 	Animation* idleAnim = nullptr;
 	Animation* runningAnim = nullptr;
 
-	PlayerAction currentAction = PlayerAction::IDLE;
-	PlayerAction prevAction = PlayerAction::IDLE;
+	PLAYER_ACTION currentAction = PLAYER_ACTION::IDLE;
+	PLAYER_ACTION prevAction = PLAYER_ACTION::IDLE;
 
+	~Player();
 	void Init() override;
 	void Update() override;
 
 	void PlayerInput();
 	void ReducePlayerHealth();
 	virtual void PlayerAction();
+	void ApplyDeceleration();
 
-	void TakeDamage(int damage);
-	void Heal(int amount);
+	void TakeDamage(int amount);
+	static void IncrementKills();
 private:
 
 
 	void PlayerAnimation();
+
+
+	void ResetPlayer();
 };
 
 struct MeleePlayer : Player {
@@ -66,6 +68,7 @@ struct MeleePlayer : Player {
 	Collider* shieldCollider = nullptr; 
 
 	void Init() override;
+	~MeleePlayer() = default;
 	void Update() override;
 	void PlayerAction() override;
 
@@ -76,6 +79,8 @@ struct RangePlayer : Player {
 	Sprite* line = nullptr;
 	Sprite::LinePoint* playerLinePos = nullptr;
 	Sprite::LinePoint* aimLinePos = nullptr;
+	
+	~RangePlayer();
 
 	float arrowTimer = 0.0f; // no. of seconds since last shot
 
@@ -88,7 +93,7 @@ struct RangePlayer : Player {
 struct Arrow : GameObject {
 
 	RigidBody* rb = nullptr;
-	f32 speed = 500.f;
+	f32 speed = 600.f;
 	f32 timer = 0.0f;
 	f32 lifetime = 5.f;
 	int damage = 10;

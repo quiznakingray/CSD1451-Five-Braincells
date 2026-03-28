@@ -4,7 +4,7 @@
 
 void RigidBody::Update()
 {
-	if (!this->owner->isActive ||!this->owner->isOnCamera) return;
+	if (!this->owner->isActive ) return;
 	PhysicsManager::UpdateRigidBody(this, AEFrameRateControllerGetFrameTime());
 
 	std::vector<Collider*> colliders = this->owner->GetComponents<Collider>();

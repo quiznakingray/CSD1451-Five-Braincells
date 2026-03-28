@@ -1,10 +1,13 @@
 #include "PlayerManager.h"
 #include "MapManager.h"
 #include "SaveManager.h"
+#include "CameraSystem.h"
+#include "PlayerStats.h"
 #include <fstream>
 #include <direct.h>
 
 Arrow* PlayerManager::rangePlayerArrow = nullptr;
+
 
 void PlayerManager::Init()
 {
@@ -16,14 +19,18 @@ void PlayerManager::Init()
 	AEVec2Set(&rangePlayerArrow->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
 
 	currentPlayer = meleePlayer;
-	camPos = meleePlayer->pos;
+	CameraSystem::SetCameraPos(meleePlayer->pos);
 }
 
 void PlayerManager::Update(){
 	if (!currentPlayer) return;
+	double dt = AEFrameRateControllerGetFrameTime();
 	currentPlayer->PlayerInput();
 	currentPlayer->PlayerAction();
 	
+	if (currentPlayer != meleePlayer) meleePlayer->ApplyDeceleration();
+	if (currentPlayer != rangedPlayer) rangedPlayer->ApplyDeceleration();
+
 	if (AEInputCheckCurr(AEVK_COMMA) && currentPlayer != meleePlayer)
 	{
 		ChangePlayer(PLAYER_TYPE::MELEE);
@@ -33,22 +40,50 @@ void PlayerManager::Update(){
 		ChangePlayer(PLAYER_TYPE::RANGE);
 
 	}
+	if (AEInputCheckTriggered(AEVK_L) && PlayerStats::Get().health != 0)
+	{
+		--PlayerStats::Get().health;
+	}
+	rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PLAYER_ACTION::AIMING;
 
-	rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PlayerAction::AIMING;
+	//regen stamina
 
-	AEVec2 target = currentPlayer->pos;
+	PlayerStats::Get().RegenStamina(dt); 
+	
 
-	// Lerp camera
-	camPos.x += static_cast<f32>((target.x - camPos.x) * camLerpSpeed * AEFrameRateControllerGetFrameTime());
-	camPos.y += static_cast<f32>((target.y - camPos.y) * camLerpSpeed * AEFrameRateControllerGetFrameTime());
-
-	AEGfxSetCamPosition(camPos.x, camPos.y);
+	if (!canChangePlayer)
+	{
+		StartPlayerCooldown(dt);
+	}
+	else {
+		playerSwitchingCooldown = playerSwitchingDuration;
+	}
+	CameraSystem::LerpToPosition(currentPlayer->pos);
 
 }
 void PlayerManager::Render(){
 	meleePlayer->Render();
 	rangedPlayer->Render();
 	rangePlayerArrow->Render();
+}
+
+void PlayerManager::Free() {
+	if (meleePlayer) {
+		meleePlayer->Free();
+		delete meleePlayer;
+		meleePlayer = nullptr;
+	}
+	if (rangedPlayer) {
+		rangedPlayer->Free();
+		delete rangedPlayer;
+		rangedPlayer = nullptr;
+	}
+	if (rangePlayerArrow) {
+		rangePlayerArrow->Free();
+		delete rangePlayerArrow;
+		rangePlayerArrow = nullptr;
+	}
+	currentPlayer = nullptr;
 }
 
 void PlayerManager::SavePlayerData()
@@ -73,7 +108,21 @@ void PlayerManager::Load()
 
 void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 {
+	if (!canChangePlayer) return;
+	currentPlayerType = type;
 	currentPlayer = type == PLAYER_TYPE::MELEE
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
+	canChangePlayer = false;
+}
+
+
+
+void PlayerManager::StartPlayerCooldown(f64 dt)
+{
+	playerSwitchingCooldown -= static_cast<f32>(dt);
+	if (playerSwitchingCooldown <= 0)
+	{
+		canChangePlayer = true;
+	}
 }

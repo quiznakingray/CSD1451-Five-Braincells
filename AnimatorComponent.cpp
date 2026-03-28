@@ -1,5 +1,13 @@
 #include "AnimatorComponent.h"
 
+Animation::~Animation()
+{
+	Free();
+	if (sprite) {
+		delete sprite;
+		sprite = nullptr;
+	}
+}
 void Animation::Init() {
 	if (!sprite) return;
 	sprite->Init();
@@ -10,6 +18,15 @@ void Animation::Init() {
 void Animation::Free() {
 	if (!sprite) return;
 	sprite->Free();
+}
+Animator::~Animator()
+{
+	if (currentAnimation) {
+		currentAnimation = nullptr;
+	}
+	if (nextAnimation) {
+		nextAnimation = nullptr;
+	}
 }
 void Animator::PlayAnimation(Animation* a)
 {
@@ -50,12 +67,13 @@ void Animator::Update()
 	if (nextAnimation && currentAnimation != nextAnimation)
 	{
 		// free current animation
-		currentAnimation->Free();
+		//currentAnimation->Free();
 		currentAnimation = nextAnimation;
 
 		// initialize next animation
 		currentAnimation->Init();
 		animationTimer = 0.0f;
+		nextAnimation = nullptr;
 
 	}
 
@@ -71,12 +89,7 @@ void Animator::Render()
 
 void Animator::Free()
 {
-	if (currentAnimation) {
-		currentAnimation->Free();
-		delete currentAnimation;
-	} 
-	if (nextAnimation) {
-		nextAnimation->Free();
-		delete nextAnimation;
-	}
+	if (currentAnimation) currentAnimation->Free();
+	if (nextAnimation) nextAnimation->Free();
+
 }

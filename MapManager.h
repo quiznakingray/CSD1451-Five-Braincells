@@ -14,6 +14,7 @@
 #include "TextComponent.h"
 #include "InputManager.h"
 #include "GameStateManager.h"
+#include "PlayerStats.h"
 #include "AudioManager.h"
 
 #include "Helper.h"
@@ -126,7 +127,7 @@ struct Tile : GameObject {
 		//showColliders = true;
 	}
 
-
+	~Tile();
 	void Init() override {
 
 		collider = AddComponent(
@@ -140,7 +141,7 @@ struct Tile : GameObject {
 			interactionTextBox = AddComponent(
 				new Text()
 			);
-			interactionTextBox->text = "[Interact]";
+			interactionTextBox->SetText("[Interact]");
 			interactionTextBox->center.y = 100.f;
 			interactionTextBox->isActive = false;
 		}
@@ -261,9 +262,6 @@ struct WallTile : Tile {
 
 	}
 
-	void Init() override {
-		Tile::Init();
-	}
 };
 struct LaserTile : Tile {
 	LaserTile(
@@ -497,7 +495,7 @@ struct GoalTile : Tile {
 		float tileSize)
 		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true) {
 		currSprite->textureFileName = "Assets/Environment/doorclose.png";
-	}
+	}		
 	void Init() override;
 };
 
@@ -513,6 +511,7 @@ struct MapManager : public Singleton<MapManager> {
 	//S MapManager() {};
 	//S ~MapManager() {};
 	//S get_instance();
+
 
 
 #pragma region MapFuncs
@@ -546,6 +545,7 @@ struct MapManager : public Singleton<MapManager> {
 
 	// Sets tile variables
 	AEGfxTexture* SetTileTexture(TILE_ID currID);
+	std::string GetTileTexture(TILE_ID currID);
 
 	// Checks if tile needs to have special properties applied
 	void CheckTileToInit(Tile* tile);
@@ -554,19 +554,17 @@ struct MapManager : public Singleton<MapManager> {
 	void RotateTile(double rotation, Tile tile);
 
 	// Resets tile currID back to bgID
-	void ResetTile(unsigned int col, unsigned int row);
+	//void ResetTile(unsigned int col, unsigned int row);
 
-	// Returns true if tile currID is on map regardless of position
-	bool FindTile(unsigned int* col, unsigned int* row, unsigned int currID);
+	//// Returns true if tile currID is on map regardless of position
+	//bool FindTile(unsigned int* col, unsigned int* row, unsigned int currID);
 
 	// returns a vector of all tiles with given currID
 	std::vector<Tile*> GetTilesWithID(TILE_ID currID);
 
-	// Gets tile from col and row provided
-	Tile* GetTile(unsigned int col, unsigned int row);
 
 	// Sets map info
-	void SetTile(unsigned int col, unsigned int row, unsigned int currID, unsigned int currTag);
+	/*void SetTile(unsigned int col, unsigned int row, unsigned int currID, unsigned int currTag);*/
 
 	// Finds all tiles on the map with provided currTag
 	std::vector<Tile*> GetTaggedTiles(int tag);
@@ -574,17 +572,17 @@ struct MapManager : public Singleton<MapManager> {
 	// Finds all tiles on the map with provided currTag and id
 	static std::vector<Tile*> GetTaggedTiles(int tag, TILE_ID id);
 
-	// compares row of tiles in ascending order
-	int compRowAsc(const Tile** t1, const Tile** t2);
+	//// compares row of tiles in ascending order
+	//int compRowAsc(const Tile** t1, const Tile** t2);
 
-	// compares rows of tiles in descending order
-	int compRowDsc(const Tile** t1, const Tile** t2);
+	//// compares rows of tiles in descending order
+	//int compRowDsc(const Tile** t1, const Tile** t2);
 
-	// compares cols of tiles in ascending order
-	int compColAsc(const Tile** t1, const Tile** t2);
+	//// compares cols of tiles in ascending order
+	//int compColAsc(const Tile** t1, const Tile** t2);
 
-	// compares cols of tiles in descending order
-	int compColDsc(const Tile** t1, const Tile** t2);
+	//// compares cols of tiles in descending order
+	//int compColDsc(const Tile** t1, const Tile** t2);
 
 	// get tiles near position
 	static std::vector<Tile*> GetTilesNearPos(AEVec2 pos, AEVec2 scale);
@@ -595,9 +593,12 @@ struct MapManager : public Singleton<MapManager> {
 #pragma endregion
 
 #pragma region GetFuncs
+	// Gets tile from col and row provided
+	Tile* GetTile(size_t col, size_t row);
 	static Tile* GetTile(TILE_ID id);
 	static AEVec2 GetPlayerSpawnPos();
-
+	size_t GetRow();
+	size_t GetCol();
 	void AddTilesToGameObjectVector(std::vector<GameObject*>& gos);
 };
 
@@ -624,25 +625,25 @@ struct LeverTile : Tile {
 		switch (currID)
 		{
 		case TILE_ID::LEVERREDON:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
+			currSprite->textureFileName = "Assets/Environment/laserRedSwitchOn.png";
 			break;
 		case TILE_ID::LEVERREDOFF:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOff.png");
+			currSprite->textureFileName = "Assets/Environment/laserRedSwitchOff.png";
 			break;
 		case TILE_ID::LEVERGREENON:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOn.png");
+			currSprite->textureFileName = "Assets/Environment/laserGreenSwitchOn.png";
 			break;
 		case TILE_ID::LEVERGREENOFF:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserGreenSwitchOff.png");
+			currSprite->textureFileName = "Assets/Environment/laserGreenSwitchOff.png";
 			break;
 		case TILE_ID::LEVERBLUEON:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserBlueSwitchOn.png");
+			currSprite->textureFileName = "Assets/Environment/laserBlueSwitchOn.png";
 			break;
 		case TILE_ID::LEVERBLUEOFF:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserBlueSwitchOff.png");
+			currSprite->textureFileName = "Assets/Environment/laserBlueSwitchOff.png";
 			break;
 		default:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/laserRedSwitchOn.png");
+			currSprite->textureFileName = "Assets/Environment/laserRedSwitchOn.png";
 			break;
 		}
 	}
@@ -803,14 +804,14 @@ struct ButtonTile : Tile {
 		{
 		case TILE_ID::BUTTONBLUEUNPRESSED:
 		case TILE_ID::BUTTONBLUETIMEDUNPRESSED:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
+			currSprite->textureFileName = "Assets/Environment/buttonBlueUnpressed.png";
 			break;
 		case TILE_ID::BUTTONBLUEPRESSED:
 		case TILE_ID::BUTTONBLUETIMEDPRESSED:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBluePressed.png");
+			currSprite->textureFileName = "Assets/Environment/buttonBluePressed.png";
 			break;
 		default:
-			currSprite->texture = AEGfxTextureLoad("Assets/Environment/buttonBlueUnpressed.png");
+			currSprite->textureFileName = "Assets/Environment/buttonBlueUnpressed.png";
 			break;
 		}
 	}

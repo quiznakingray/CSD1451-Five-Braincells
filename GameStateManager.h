@@ -1,6 +1,7 @@
 #ifndef GAME_STATE_MANAGER
 #define GAME_STATE_MANAGER
 
+#include "SingletonTemplate.h"
 typedef void(*FP)(void);
 extern FP fpLoad , fpInitialize , fpUpdate , fpRender , fpFree , fpUnload ;
 
@@ -11,7 +12,6 @@ enum class GAME_STATE_TYPE {
 	LEVEL2,
 	LEVEL2BOSS,
 	LEVEL3,
-	COMBAT
 };
 extern GAME_STATE_TYPE current, next;
 
@@ -26,8 +26,9 @@ struct GameState {
 	virtual void Unload(){};
 };
 
-struct GameStateManager {
+struct GameStateManager :Singleton<GameStateManager>{
 
+	bool isGamePause = false;
 	void Initialize(GAME_STATE_TYPE type);
 
 	GAME_STATE_TYPE GetCurrentState();
