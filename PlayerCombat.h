@@ -13,6 +13,9 @@ struct PlayerStats {
     const char* playername;
 };
 
+// Make playerStats visible to other files
+extern PlayerStats playerStats;
+
 // abilities
 struct AbilityButton {
     float x, y;
@@ -36,12 +39,8 @@ struct AbilityButton {
     void GameStateFree();
     void GameStateUnload();
 
-    void CheckPlayerDeath() {
-        if (playerStats.health <= 0) {
-            EndMenu::isWin = false;
-            EndMenu::isActive = true;
-        }
-    }
+    // Function to check death across all levels
+    void CheckPlayerDeath();
 
 #endif
 

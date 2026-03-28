@@ -4,6 +4,7 @@
 #include "EnemyGameObject.h"
 #include "PlayerManager.h"
 #include "EndMenu.h"
+#include "PlayerCombat.h"
 
 //Player* player1 = nullptr;
 PlayerManager playerManager;
@@ -57,6 +58,9 @@ void ParkourLevel::Update()
 		EndMenu::Update();
 		return;
 	}
+
+	CheckPlayerDeath(); // Check if player is dead
+
 	double dt = AEFrameRateControllerGetFrameTime();
 	playerManager.Update();
 	UpdateGameObjects(gameObjects1);

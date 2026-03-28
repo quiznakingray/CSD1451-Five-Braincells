@@ -1,6 +1,7 @@
 #include "AEEngine.h"
 #include "PlayerCombat.h"
 #include "GameStateManager.h"
+#include "EndMenu.h"
 
 // consts
 const float WINDOW_WIDTH = 1600.0f;
@@ -67,6 +68,14 @@ AEGfxVertexList* CreateCircleMesh(float radius, int segments, float r, float g, 
     }
 
     return AEGfxMeshEnd();
+}
+
+// End Menu show up when player is dead
+void CheckPlayerDeath() {
+    if (playerStats.health <= 0) {
+        EndMenu::isWin = false;
+        EndMenu::isActive = true;
+    }
 }
 
 // check if point is inside rectangle

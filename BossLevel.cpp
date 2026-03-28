@@ -4,6 +4,7 @@
 #include "MapManager.h"
 #include "EnemyGameObject.h"
 #include "EndMenu.h"
+#include "PlayerCombat.h" 
 
 Player* player2 = nullptr;
 //EnemyGameObject* enemy2 = nullptr;
@@ -11,6 +12,9 @@ Player* player2 = nullptr;
 std::vector<GameObject*> gameObjects2{};
 
 MapManager mapManager2;
+
+// Define the missing bossHP identifier
+//int bossHP = 100;
 
 void BossLevel::Load()
 {
@@ -80,6 +84,8 @@ void BossLevel::Render()
 
 	player2->Render();
 	//enemy->Render();
+
+	EndMenu::Render();
 
 }
 
