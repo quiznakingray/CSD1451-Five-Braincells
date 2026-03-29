@@ -5,6 +5,8 @@
 #include "SaveManager.h"
 #include "PlayerStats.h"
 #include "ParticleEffects.h"
+#include "EnemyGameObject.h""
+#include "EnemyCombat.h""
 
 #include <iostream>
 #include <vector>
@@ -264,12 +266,13 @@ void Player::Init()
 	//showColliders = true;
 	speed = static_cast<f32>(200.0);
 	//AEVec2Set(&velocity, 0.f, 0.f);
+	ParticleSystem::Init(5, hurtParticles);
 
 	GameObject::Init();
 }
 
 void Player::Update(){
-	//float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
+	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
 	//PlayerStats::Get().RegenStamina(dt); // passive stamina regen
 
 	PlayerAction();
@@ -280,12 +283,33 @@ void Player::Update(){
 		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
 	jumpAnim->sprite->size.x =
 		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
+
+	if (gotHurt)
+	{
+		hurtDuration -= dt;
+		if (hurtDuration <= 0.f)
+		{
+			gotHurt = false;
+			hurtDuration = 2.0f;
+		}
+	}
+	ParticleSystem::CreateHitEffect(pos.x, pos.y, hurtParticles);
+	ParticleSystem::Update(dt, hurtParticles);
+
 	GameObject::Update();
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
 }
 
+void Player::Render()
+{
+	GameObject::Render();
+	if(gotHurt)
+		ParticleSystem::Draw(hurtParticles);
+}
+
 void Player::TakeDamage(int amount)
 {
+	gotHurt = true;
 	PlayerStats::Get().health -= amount;
 
 	if (PlayerStats::Get().health <= 0)
@@ -670,18 +694,26 @@ void Arrow::Init()
 	);
 	c->OnTriggerEnter = [this](Collider* other, int sides)
 		{
-			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
+			if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) ||
+				((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
 			{
-				// crate will deactivate arrow on its own ontrigger
-				if (dynamic_cast<CrateTile*>(other->owner)) return;
-				if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) ||
-					((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
+				if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 				{
+					// crate will deactivate arrow on its own ontrigger
+					if (dynamic_cast<CrateTile*>(other->owner)) return;
+
 					isActive = false;
 					timer = 0.0f;
 
 				}
 
+				if (EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(other->owner))
+				{
+					std::cout << "Hit enemy for " << damage << " damage!\n";
+
+					isActive = false;
+					EnemyTakeDamage(enemy->base, damage);
+				}
 			}
 		};
 	c->isTrigger = true;

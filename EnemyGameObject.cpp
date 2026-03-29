@@ -15,7 +15,14 @@ void EnemyGameObject::Jump(float force) {
 EnemyGameObject::~EnemyGameObject() {
     delete patrolAnim; patrolAnim = nullptr;
     delete chaseAnim; chaseAnim = nullptr;
-    delete attackAnim; attackAnim = nullptr;
+    delete attackAnim; attackAnim = nullptr; 
+
+    FreeGameObjects(healthBarObjects);
+    for (GameObject* go : healthBarObjects)
+        delete go;
+    healthBarObjects.clear();
+    healthBarBG = nullptr;
+    healthBarFG = nullptr;
 }
 
 void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
@@ -70,12 +77,14 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     AddComponent(new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0, 0, 1, 1));
 
     base.isAlive = true;
+    InitHealthBar();
     GameObject::Init();
 }
 
 void EnemyGameObject::Update() {
     float dt = AEFrameRateControllerGetFrameTime();
-
+	isActive = base.isAlive;
+    //if (!base.isAlive) return;
     if (!EnemyManager::GetInstance().player) {
         UpdateAnimation();
         GameObject::Update();
@@ -161,9 +170,60 @@ void EnemyGameObject::UpdateAnimation() {
         (base.currentState == EnemyState::CHASE) ? chaseAnim :
         attackAnim;
     animator->PlayAnimation(anim);
+    UpdateHealthBar();
 }
 
+void EnemyGameObject::InitHealthBar()
+{
+    float barW = scale.x * 0.8f;
+    float barH = 10.f;
+    float offsetY = scale.y / 2.f + 20.f; // float above enemy
+
+    // Background (dark red)
+    healthBarBG = new GameObject(barW, barH, pos.x, pos.y + offsetY, pos.z + 0.1f, 0, false);
+    healthBarBG->AddComponent(new Sprite())->meshColor = 0xFF440000;
+
+    // Foreground (bright green)
+    healthBarFG = new GameObject(barW, barH, pos.x, pos.y + offsetY, pos.z + 0.2f, 0, false);
+    healthBarFG->AddComponent(new Sprite())->meshColor = 0xFF00FF00;
+
+    healthBarObjects.push_back(healthBarBG);
+    healthBarObjects.push_back(healthBarFG);
+    InitGameObjects(healthBarObjects);
+} 
+void EnemyGameObject::UpdateHealthBar()
+{
+    if (!healthBarBG || !healthBarFG) return;
+
+    float offsetY = scale.y / 2.f + 20.f;
+    float barW = scale.x * 0.8f;
+    float ratio = (float)base.stats.health / (float)base.stats.maxHealth;
+    ratio = ratio < 0.f ? 0.f : ratio > 1.f ? 1.f : ratio;
+
+    // Follow enemy position
+    healthBarBG->pos.x = pos.x;
+    healthBarBG->pos.y = pos.y + offsetY;
+
+    // Shrink foreground based on health ratio
+    // Anchor left: offset x so it shrinks from right
+    healthBarFG->pos.x = pos.x - (barW * (1.f - ratio)) / 2.f;
+    healthBarFG->pos.y = pos.y + offsetY;
+    healthBarFG->scale.x = barW * ratio;
+
+    // Hide when full health, show when damaged
+    healthBarBG->isActive = (base.stats.health <= base.stats.maxHealth);
+    healthBarFG->isActive = (base.stats.health <= base.stats.maxHealth);
+
+    // Color shifts green -> yellow -> red as health drops
+    if (ratio > 0.5f) healthBarFG->GetComponent<Sprite>()->meshColor = 0xFF00FF00;
+    else if (ratio > 0.25f) healthBarFG->GetComponent<Sprite>()->meshColor = 0xFF00FFFF;
+    else                    healthBarFG->GetComponent<Sprite>()->meshColor = 0xFF0000FF;
+
+    UpdateGameObjects(healthBarObjects);
+}
 void EnemyGameObject::Render() {
-    GameObject::Render();
+    if (!isActive) return;
     if (base.projectile) base.projectile->Render();
+    RenderGameObjects(healthBarObjects);
+    GameObject::Render();
 }

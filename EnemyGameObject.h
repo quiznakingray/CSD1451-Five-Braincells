@@ -23,6 +23,10 @@ struct EnemyGameObject : GameObject {
     Animation* chaseAnim = nullptr;
     Animation* attackAnim = nullptr;
 
+    GameObject* healthBarBG = nullptr;
+    GameObject* healthBarFG = nullptr;
+    std::vector<GameObject*> healthBarObjects;
+
     ~EnemyGameObject();
     void Init(EnemyType type, Tile* spawnTile);
     void Update() override;
@@ -31,6 +35,8 @@ struct EnemyGameObject : GameObject {
     void Patrol(f64 dt);
     void FollowPlayer(AEVec2 playerPos, f64 dt);
     void UpdateAnimation();
+    void InitHealthBar();
+    void UpdateHealthBar();
 };
 
 #endif

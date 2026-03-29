@@ -39,9 +39,14 @@ struct Player : GameObject {
 	PLAYER_ACTION currentAction = PLAYER_ACTION::IDLE;
 	PLAYER_ACTION prevAction = PLAYER_ACTION::IDLE;
 
+	std::vector<Particle> hurtParticles;
+	bool gotHurt = false;
+	float hurtTimer = 0.0f;
+	float hurtDuration = 2.0f;
 	~Player();
 	void Init() override;
 	void Update() override;
+	void Render() override;
 
 	virtual void PlayerInput();
 	void ReducePlayerHealth();
