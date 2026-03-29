@@ -53,7 +53,7 @@ struct Player : GameObject {
 	virtual void PlayerAction();
 	void ApplyDeceleration();
 
-	void TakeDamage(int amount);
+	virtual void TakeDamage(int amount);
 	static void IncrementKills();
 	virtual Animation* PlayerAnimation();
 private:
@@ -84,6 +84,7 @@ struct MeleePlayer : Player {
 	void PlayerInput() override;
 	void PlayerAction() override;
 	Animation* PlayerAnimation() override;
+	void TakeDamage(int amount) override;
 
 };
 

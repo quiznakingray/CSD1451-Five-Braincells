@@ -510,6 +510,16 @@ Animation* MeleePlayer::PlayerAnimation()
 	return anim;
 }
 
+void MeleePlayer::TakeDamage(int amount)
+{
+	if(shieldActive)
+	{
+		std::cout << "[Shield] blocked incoming damage!\n";
+		return;
+	}
+	Player::TakeDamage(amount);
+}
+
 RangePlayer::~RangePlayer()
 {
 	if (aimingAnim) {
