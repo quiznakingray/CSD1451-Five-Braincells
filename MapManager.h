@@ -16,6 +16,7 @@
 #include "GameStateManager.h"
 #include "PlayerStats.h"
 #include "AudioManager.h"
+#include "PlayerManager.h"
 
 #include "Helper.h"
 
@@ -788,7 +789,8 @@ struct LeverTile : Tile {
 			{
 				this->interactionTextBox->isActive = true;
 				// prevent triggering from melee shield collider
-				if (AEInputCheckTriggered(AEVK_F) && other->size.x >= 0.99)
+				if (AEInputCheckTriggered(AEVK_F) && other->size.x >= 0.99 && 
+					PlayerManager::GetInstance().currentPlayer == player)
 				{
 					TriggerLever();
 					std::cout << "lever triggered\n";
@@ -997,6 +999,7 @@ struct ButtonTile : Tile {
 
 		collider->OnTriggerEnter = [this, TOP_SURFACE_TOLERANCE](Collider* other, int sides) {
 			Player* player = dynamic_cast<Player*>(other->owner);
+			
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
 			bool wasPressed = isPressed;
 
