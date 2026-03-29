@@ -7,7 +7,7 @@
 
 
 
-static AEGfxVertexList* pMesh;
+AEGfxVertexList* pMesh;
 
 void EndMenu::Init() {
     // Create a simple rectangular mesh for buttons
