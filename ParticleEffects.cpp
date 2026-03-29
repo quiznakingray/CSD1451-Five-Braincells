@@ -1,5 +1,6 @@
 #include "ParticleEffects.h"
 #include "PlayerManager.h"
+#include "CameraSystem.h"
 
 std::vector<Particle> ParticleSystem::particlePool;
 AEGfxVertexList* ParticleSystem::pParticleMesh = nullptr;
@@ -72,7 +73,7 @@ void ParticleSystem::Draw() {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
     // Get the camera position so particles stay in the game world
-    AEVec2 camPos = PlayerManager::camPos;
+    AEVec2 camPos = CameraSystem::GetCameraPos();
 
     for (auto& p : particlePool) {
         if (p.active) {

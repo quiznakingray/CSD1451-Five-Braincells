@@ -118,7 +118,7 @@ void MainMenu_Update() {
             if (strcmp(btn.text, "INSTRUCTIONS") == 0) next = GAME_STATE_TYPE::INSTRUCTIONS;
             if (strcmp(btn.text, "EXIT") == 0) gGameRunning = 0;
             // Checks if settings button is clicked
-            if (strcmp(btn.text, "SETTINGS") == 0)
+            if (strcmp(btn.text, "SETTING") == 0)
             {
                 isAudioMenuOpen = true; // open audio panel
             }

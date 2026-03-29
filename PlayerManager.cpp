@@ -6,7 +6,6 @@
 #include <fstream>
 #include <direct.h>
 
-AEVec2 PlayerManager::camPos = { 0.f, 0.f };
 Arrow* PlayerManager::rangePlayerArrow = nullptr;
 
 
