@@ -1064,10 +1064,6 @@ void CheckpointTile::Init() {
             this->interactionTextBox->isActive = true;
             interactionTextBox->SetText("Saved!");
             SaveManager::GetInstance().SaveAll();
-           /* SaveManager::GetInstance().SavePlayerData(
-            );
-            MapManager::GetInstance().SaveMapState(current);
-            EnemyManager::GetInstance().SaveEnemyStates();*/
         }
         };
     collider->OnTriggerExit = [this](Collider* other, int sides) {
