@@ -33,6 +33,7 @@ struct Player : GameObject {
 	Animator* animator = nullptr;
 	Animation* idleAnim = nullptr;
 	Animation* runningAnim = nullptr;
+	Animation* jumpAnim = nullptr;
 
 	PLAYER_ACTION currentAction = PLAYER_ACTION::IDLE;
 	PLAYER_ACTION prevAction = PLAYER_ACTION::IDLE;
@@ -41,17 +42,17 @@ struct Player : GameObject {
 	void Init() override;
 	void Update() override;
 
-	void PlayerInput();
+	virtual void PlayerInput();
 	void ReducePlayerHealth();
 	virtual void PlayerAction();
 	void ApplyDeceleration();
 
 	void TakeDamage(int amount);
 	static void IncrementKills();
+	virtual Animation* PlayerAnimation();
 private:
 
 
-	void PlayerAnimation();
 
 
 	void ResetPlayer();
@@ -59,23 +60,30 @@ private:
 
 struct MeleePlayer : Player {
 
+	bool inShieldAction = false; // will be true when Q is held down/enough stamina.
 	bool shieldActive = false; // will be true when Q is held down/enough stamina.
 
 	// shield duration
 	float shieldTimer = 0.0f; // no. of seconds the shield has been held for this keypress
 	bool shieldDepleted = false; // true after shield runs out, release Q for reset.
 
+	Animation* shieldingAnim = nullptr;
+	Animation* shieldAmin = nullptr;
+	Animator* shieldBubbleAnimation = nullptr;
 	Collider* shieldCollider = nullptr; 
 
 	void Init() override;
-	~MeleePlayer() = default;
+	~MeleePlayer();
 	void Update() override;
+	void PlayerInput() override;
 	void PlayerAction() override;
+	Animation* PlayerAnimation() override;
 
 };
 
 struct RangePlayer : Player {
 
+	Animation* aimingAnim = nullptr;
 	Sprite* line = nullptr;
 	Sprite::LinePoint* playerLinePos = nullptr;
 	Sprite::LinePoint* aimLinePos = nullptr;
@@ -83,11 +91,14 @@ struct RangePlayer : Player {
 	~RangePlayer();
 
 	float arrowTimer = 0.0f; // no. of seconds since last shot
-
+	bool aiming = false;
 	void Init() override;
 	void Update() override;
 
+	void PlayerInput() override;
 	void PlayerAction() override;
+	Animation* PlayerAnimation() override;
+
 };
 
 struct Arrow : GameObject {

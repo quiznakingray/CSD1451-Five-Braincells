@@ -1,6 +1,11 @@
 #include "UIButton.h"
 
-bool UIButton::IsMouseOver()
+bool UIButton::IsClicked() const
+{
+    return isClicked;
+}
+
+bool UIButton::IsMouseOver() const
 {
     s32 mx, my;
     AEInputGetCursorPosition(&mx, &my);
@@ -23,9 +28,6 @@ void UIButton::Init(float posX, float posY, float w, float h,
     y = posY;
     width = w;
     height = h;
-
-    isHovered = false;
-    isClicked = false;
 
     texIdle = AEGfxTextureLoad(idlePath);
     texHover = AEGfxTextureLoad(hoverPath);

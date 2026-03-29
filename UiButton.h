@@ -16,14 +16,16 @@ public:
     void Render();
     void Free();
 
+    bool IsClicked() const;
+
 private:
     float x, y;
     float width, height;
 
-    bool isHovered;
-    bool isClicked;
+    bool isHovered = false;
+    bool isClicked = false;
 
-    bool IsMouseOver(); // check if mouse cursor over button
+    bool IsMouseOver() const; // check if mouse cursor over button
 
     AEGfxTexture* texIdle;
     AEGfxTexture* texHover;

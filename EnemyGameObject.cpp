@@ -25,6 +25,10 @@ EnemyGameObject::~EnemyGameObject()
         delete walkAnim;
         walkAnim = nullptr;
     }
+    if (attackAnim) {
+        delete attackAnim;
+        attackAnim = nullptr;
+    }
 }
 
 void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
@@ -50,18 +54,31 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     // Sprite setup
     Sprite* s = new Sprite();
     s->meshColor = (type == EnemyType::BASIC_MELEE) ? 0xFF0000FF : 0xFFFF0000;
-    s->textureFileName = "Assets/SpriteSheets/testRed4x6.png";
-    s->spriteSheet = Sprite::SpriteSheet(6, 4);
+    s->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Idle.png";
+    s->spriteSheet = Sprite::SpriteSheet(2, 7);
     s->spriteSheet.isSpriteSheet = true;
 
     Sprite* walk = new Sprite();
     walk->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
-    walk->textureFileName = "Assets/SpriteSheets/test4x6.png";
-    walk->spriteSheet = Sprite::SpriteSheet(6, 4);
+    walk->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Walk.png";
+    walk->spriteSheet = Sprite::SpriteSheet(2, 7);
     walk->spriteSheet.isSpriteSheet = true;
 
+    Sprite* attack = new Sprite();
+    attack->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
+    attack->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Attack.png";
+    attack->spriteSheet = Sprite::SpriteSheet(2, 7);
+    attack->spriteSheet.isSpriteSheet = true;
+
     idleAnim = new Animation(s);
+    idleAnim->loopAnimation = true;
+    idleAnim->animationFPS = 10.f;
     walkAnim = new Animation(walk);
+    walkAnim->loopAnimation = true;
+    walkAnim->animationFPS = 10.f;
+    attackAnim = new Animation(attack);
+    attackAnim->loopAnimation = true;
+    attackAnim->animationFPS = 10.f;
 
     // Add Rigidbody first
     rb = AddComponent(new RigidBody());
@@ -179,12 +196,11 @@ void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
 void EnemyGameObject::UpdateAnimation() {
     if (!animator) return;
 
-    Animation* anim = nullptr;
+    Animation* anim = idleAnim;
     switch (currentState) {
     case EnemyState::IDLE: anim = idleAnim; break;
     case EnemyState::WALK: anim = walkAnim; break;
-    case EnemyState::ATTACK: anim = walkAnim; break; // Can add attack later
-    default: anim = idleAnim; break;
+    case EnemyState::ATTACK: anim = attackAnim; break; // Can add attack later
     }
 
     animator->PlayAnimation(anim);

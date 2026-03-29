@@ -10,24 +10,24 @@ void InitEnemyBase(EnemyBase& enemy, EnemyType type)
     switch (type)
     {
     case EnemyType::BASIC_MELEE:
-        enemy.stats = { 80.f, 50, 50, 10, 150.f, 1.2f };
+        enemy.stats = { 80.f, 50, 50, 2, 150.f, 5.f };
         enemy.canMove = true;
         break;
 
     case EnemyType::BASIC_RANGED:
-        enemy.stats = { 60.f, 40, 40, 8, 600.f, 2.0f };
+        enemy.stats = { 60.f, 40, 40, 1, 600.f, 2.0f };
         enemy.canMove = true;
         enemy.projectile = new Arrow();
         enemy.projectile->Init();
         break;
 
     case EnemyType::MINI_BOSS_MELEE:
-        enemy.stats = { 0.f, 200, 200, 20, 200.f, 1.5f };
+        enemy.stats = { 0.f, 200, 200, 3, 200.f, 1.5f };
         enemy.canMove = false;
         break;
 
     case EnemyType::MINI_BOSS_RANGED:
-        enemy.stats = { 0.f, 150, 150, 15, 700.f, 2.5f };
+        enemy.stats = { 0.f, 150, 150, 2, 700.f, 2.5f };
         enemy.canMove = false;
         enemy.projectile = new Arrow();
         enemy.projectile->Init();

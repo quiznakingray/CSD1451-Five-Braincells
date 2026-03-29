@@ -19,9 +19,9 @@ public:
     void SetSFXVolume(float v);
 
     // Get volumes for save files
-    float GetMasterVolume();
-    float GetMusicVolume();
-    float GetSFXVolume();
+    float GetMasterVolume() const;
+    float GetMusicVolume() const;
+    float GetSFXVolume() const;
 
     void PlaySFX(const std::string& name);
     void PlayMusic(const std::string& name, bool loop = true);
@@ -44,9 +44,9 @@ private:
     float sfxVolume = 1.0f;
 
     // Get audio groups
-    AEAudioGroup GetMasterGroup();
-    AEAudioGroup GetMusicGroup();
-    AEAudioGroup GetSFXGroup();
+    AEAudioGroup GetMasterGroup() const;
+    AEAudioGroup GetMusicGroup() const;
+    AEAudioGroup GetSFXGroup() const;
 
     void LoadAllAudio(); // load all audio files here
 };
