@@ -122,7 +122,7 @@ void Sprite::Render()  {
 	AEGfxSetBlendMode(blendMode);
 	AEGfxSetTransparency(opacity);
 	AEGfxSetTransform(transform.m);
-	if (texture != nullptr) AEGfxTextureSet(texture, spriteSheet.isSpriteSheet ? spriteSheet.UVOffsetX : 0, spriteSheet.isSpriteSheet ? spriteSheet.UVOffsetY : 0);
+	if (texture != nullptr) AEGfxTextureSet(texture, spriteSheet.isSpriteSheet ? spriteSheet.UVOffsetX : 0.f, spriteSheet.isSpriteSheet ? spriteSheet.UVOffsetY : 0.f);
 	// Tell Alpha Engine to draw the mesh with the above settings.
 	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 
@@ -307,6 +307,10 @@ void FreeSprite(Sprite* sprite)
 
 void Sprite::RenderRect(f32 u0, f32 v0, f32 u1, f32 v1)
 {
+	const f32 E = 0.001f;
+	u0 += E; v0 += E;
+	u1 -= E; v1 -= E;
+
 	AEGfxTriAdd(
 		-0.5f, -0.5f, meshColor, u0, v1,
 		0.5f, -0.5f, meshColor, u1, v1,

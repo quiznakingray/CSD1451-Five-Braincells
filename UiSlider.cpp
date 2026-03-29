@@ -66,14 +66,16 @@ void UISlider::Init(float posX, float posY, float w, float h,
 
     // Create quad mesh
     AEGfxMeshStart();
+    const float E = 0.001f;
+    AEGfxTriAdd(
+        -0.5f, -0.5f, 0xFFFFFFFF, E, 1.0f - E,
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f - E, 1.0f - E,
+        -0.5f, 0.5f, 0xFFFFFFFF, E, E);
 
-    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 1,
-        0.5f, -0.5f, 0xFFFFFFFF, 1, 1,
-        0.5f, 0.5f, 0xFFFFFFFF, 1, 0);
-
-    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 1,
-        0.5f, 0.5f, 0xFFFFFFFF, 1, 0,
-        -0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
+    AEGfxTriAdd(
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f - E, 1.0f - E,
+        0.5f, 0.5f, 0xFFFFFFFF, 1.0f - E, E,
+        -0.5f, 0.5f, 0xFFFFFFFF, E, E);
 
     mesh = AEGfxMeshEnd();
 }
@@ -128,6 +130,9 @@ void UISlider::Update()
 
 void UISlider::Render()
 {
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
     // Draw slider value text
     if (showValue)
     {
