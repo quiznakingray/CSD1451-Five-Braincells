@@ -104,7 +104,6 @@ void ParkourLevel::Update()
 	double dt = AEFrameRateControllerGetFrameTime();
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
-	EnemyManager::GetInstance().UpdateAllEnemies(dt);
 	HUD::GetInstance().Update(dt);
 }
 

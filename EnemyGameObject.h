@@ -8,12 +8,6 @@
 #include "AnimatorComponent.h"
 #include "MapManager.h"
 
-enum class EnemyState {
-    IDLE,
-    WALK,
-    ATTACK
-};
-
 struct EnemyGameObject : GameObject {
     bool isGrounded = false;
 
@@ -25,11 +19,10 @@ struct EnemyGameObject : GameObject {
     RigidBody* rb = nullptr;
 
     Animator* animator = nullptr;
-    Animation* idleAnim = nullptr;
-    Animation* walkAnim = nullptr;
+    Animation* patrolAnim = nullptr;
+    Animation* chaseAnim = nullptr;
     Animation* attackAnim = nullptr;
 
-    EnemyState currentState = EnemyState::IDLE;
     ~EnemyGameObject();
     void Init(EnemyType type, Tile* spawnTile);
     void Update() override;

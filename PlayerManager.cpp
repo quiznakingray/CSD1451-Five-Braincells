@@ -1,4 +1,5 @@
 #include "PlayerManager.h"
+#include "EnemyManager.h"
 #include "MapManager.h"
 #include "SaveManager.h"
 #include "CameraSystem.h"
@@ -148,6 +149,7 @@ void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
 	canChangePlayer = false;
+	EnemyManager::GetInstance().SetTarget(currentPlayer);
 }
 
 

@@ -163,7 +163,7 @@ void HUD::Init()
 		//bar bg
 		GameObject* barBG = new GameObject(healthBarScale.x, healthBarScale.y, posX, healthBarStartPos.y, 1, 0, true);
 		Sprite* barBGSprite = barBG->AddComponent(new Sprite());
-		barBGSprite->meshColor = 0xFFb80707;
+		barBGSprite->meshColor = 0xFF640707;
 		healthBarsBG.push_back(barBG);
 		AddGameObjectToVector(barBG, HUDGameObjects);
 
