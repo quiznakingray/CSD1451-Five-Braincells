@@ -20,18 +20,18 @@ public:
 
 private:
     s8 font;
-    f32 fontSize;
+    const f32 fontSize = 80.0f;
 
     // Slider value text
     int prevValue;
-    bool showValue; // show slider value
+    bool showValue = false; // show slider value
 
-    float displayTimer; // how long to show text
-    float displayDuration; // how long text stays visible
+    float displayTimer = 0.0f; // how long to show text
+    const float displayDuration = 0.5f; // how long text stays visible
 
     // Normalize screen coords relative to screen center
-    float NormalizeScreenX(float px);
-    float NormalizeScreenY(float py);
+    float NormalizeScreenX(float px) const;
+    float NormalizeScreenY(float py) const;
 
     float HandleX(); // update slider handle pos x
     bool IsMouseOverHandle(); // check if mouse cursor over slider handle
@@ -47,7 +47,7 @@ private:
     // Slider value
     float minValue;
     float maxValue;
-    bool isDragging; // check if slider handle is being dragged
+    bool isDragging = false; // check if slider handle is being dragged
 
     AEGfxTexture* barTex;
     AEGfxTexture* handleTex;

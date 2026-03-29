@@ -1,11 +1,11 @@
 ﻿#include "UISlider.h"
 
-float UISlider::NormalizeScreenX(float px)
+float UISlider::NormalizeScreenX(float px) const
 {
     return px / (AEGfxGetWindowWidth() * 0.5f);
 }
 
-float UISlider::NormalizeScreenY(float py)
+float UISlider::NormalizeScreenY(float py) const
 {
     return py / (AEGfxGetWindowHeight() * 0.5f);
 }
@@ -39,12 +39,7 @@ void UISlider::Init(float posX, float posY, float w, float h,
     const char* barPath, const char* handlePath)
 {
     // Font
-    fontSize = 80.0f;
     font = AEGfxCreateFont("Assets/liberation-mono.ttf", static_cast<int>(fontSize));
-
-    // Slider value display timer
-    displayDuration = 0.5f; // show for 0.5 seconds
-    displayTimer = 0.0f;
 
     // Slider bar
     barX = posX;
@@ -58,15 +53,12 @@ void UISlider::Init(float posX, float posY, float w, float h,
     value = startVal;
 
     prevValue = static_cast<int>(value);
-    showValue = false;
 
     // Slider handle
     handleX = HandleX();
     handleY = barY + 5.0f;
     handleWidth = barWidth * 0.05f;
     handleHeight = barHeight * 0.7f;
-
-    isDragging = false;
 
     // Load slider bar and handle textures
     barTex = AEGfxTextureLoad(barPath);

@@ -13,7 +13,6 @@ extern int gGameRunning;
 static s8 menuFont;
 static AEGfxVertexList* pRectMesh;
 
-static bool isAudioMenuOpen = false;
 static AudioMenu audioMenu;
 static AEGfxTexture* pBackgroundTex; // Background variable
 static int highScore = 1500;         // Example high score
@@ -75,14 +74,14 @@ void MainMenu_Update() {
     AEInputGetCursorPosition(&mX, &mY);
 
     // Checks if audio panel is open
-    if (isAudioMenuOpen)
+    if (audioMenu.IsOpen())
     {
         audioMenu.Update();
 
         // Escape button closes audio panel
-        if (AEInputCheckTriggered(AEVK_ESCAPE))
+        if (AEInputCheckTriggered(AEVK_ESCAPE) && audioMenu.IsOpen())
         {
-            isAudioMenuOpen = false;
+            audioMenu.Toggle();
         }
         return; // stop main menu interaction when audio panel is open
     }
@@ -118,9 +117,9 @@ void MainMenu_Update() {
             if (strcmp(btn.text, "INSTRUCTIONS") == 0) next = GAME_STATE_TYPE::INSTRUCTIONS;
             if (strcmp(btn.text, "EXIT") == 0) gGameRunning = 0;
             // Checks if settings button is clicked
-            if (strcmp(btn.text, "SETTING") == 0)
+            if (strcmp(btn.text, "SETTING") == 0 && !audioMenu.IsOpen())
             {
-                isAudioMenuOpen = true; // open audio panel
+                audioMenu.Toggle(); // open audio panel
             }
         }
     }
@@ -134,7 +133,7 @@ void MainMenu_Draw() {
     AEGfxPrint(menuFont, "DUNGEON & PUZZLE", -0.4f, 0.6f, 1.1f, 1.0f, 0.8f, 0.0f, 1.0f);
 
     // Checks if audio panel is open
-    if (isAudioMenuOpen)
+    if (audioMenu.IsOpen())
     {
         audioMenu.Render(); // renders audio panel
         return;
