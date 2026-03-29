@@ -26,7 +26,7 @@ void PlayerManager::Update(){
 	if (!currentPlayer) return;
 	double dt = AEFrameRateControllerGetFrameTime();
 	currentPlayer->PlayerInput();
-	currentPlayer->PlayerAction();
+	//currentPlayer->PlayerAction();
 	
 	if (currentPlayer != meleePlayer) meleePlayer->ApplyDeceleration();
 	if (currentPlayer != rangedPlayer) rangedPlayer->ApplyDeceleration();

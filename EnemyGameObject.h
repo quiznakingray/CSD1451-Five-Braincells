@@ -27,6 +27,7 @@ struct EnemyGameObject : GameObject {
     Animator* animator = nullptr;
     Animation* idleAnim = nullptr;
     Animation* walkAnim = nullptr;
+    Animation* attackAnim = nullptr;
 
     EnemyState currentState = EnemyState::IDLE;
     ~EnemyGameObject();

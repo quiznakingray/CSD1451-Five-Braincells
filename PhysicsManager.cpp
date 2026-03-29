@@ -7,6 +7,9 @@ void PhysicsManager::UpdateRigidBody(RigidBody* rb, f64 dt)
 {
     if (!rb) return;
 
+    if (rb->type == RIGIDBODY_TYPE::STATIC)
+        return;
+
     rb->onCollider = false;
     // Apply gravity
     if (rb->hasGravity ) rb->velocity.y += rb->gravity * static_cast<f32>(dt);
@@ -27,6 +30,9 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     GameObject* A = a->owner;
     GameObject* B = b->owner;
     if (!A || !B) return;
+
+    if (!a->canCollide || !b->canCollide)
+        return;
 
     CrateTile* crateA = dynamic_cast<CrateTile*>(A);
     CrateTile* crateB = dynamic_cast<CrateTile*>(B);
@@ -119,24 +125,51 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     // Dynamic vs Dynamic � split resolution by mass (unchanged)
     if (aIsDynamic && bIsDynamic)
     {
-        bool resolveX = pxOverlap < pyOverlap;
-        float totalMass = ra->mass + rb->mass;
-        float aRatio = rb->mass / totalMass;
-        float bRatio = ra->mass / totalMass;
-        if (resolveX)
-        {
-            if (dx > 0) { move(A, pxOverlap * aRatio, 0, ra); move(B, -pxOverlap * bRatio, 0, rb); }
-            else { move(A, -pxOverlap * aRatio, 0, ra); move(B, pxOverlap * bRatio, 0, rb); }
-        }
-        else
-        {
-            // skip vertical resolution if either object is jumping upward
-            if (ra->velocity.y > 0.f || rb->velocity.y > 0.f) return;
+        // A can only push B if A's mass >= B's mass AND A is moving toward B
+        float relVelX = ra->velocity.x - rb->velocity.x;
+        float relVelY = ra->velocity.y - rb->velocity.y;
 
-            if (dy > 0) { move(A, 0, pyOverlap * aRatio, ra); move(B, 0, -pyOverlap * bRatio, rb); }
-            else { move(A, 0, -pyOverlap * aRatio, ra); move(B, 0, pyOverlap * bRatio, rb); }
+        bool aMovingTowardB = (dx < 0 && relVelX > 0) || (dx > 0 && relVelX < 0);
+        bool bMovingTowardA = (dx > 0 && relVelX > 0) || (dx < 0 && relVelX < 0);
+
+        bool aCanPushB = (ra->mass > rb->mass) && aMovingTowardB;
+        bool bCanPushA = (rb->mass > ra->mass) && bMovingTowardA;
+
+        //if (!aCanPushB && !bCanPushA) return; // neither qualifies, no resolution
+
+        if (aCanPushB && !bCanPushA)
+        {
+            if (rb->mass < ra->mass)
+            {
+                // B is lighter — push B out of the way
+                if (dx > 0) move(B, -pxOverlap, 0, rb, true);
+                else        move(B, pxOverlap, 0, rb, true);
+            }
+            else
+            {
+                // Equal mass — A runs up against B like a wall, stop A
+                if (dx > 0) move(A, pxOverlap, 0, ra, true);
+                else        move(A, -pxOverlap, 0, ra, true);
+            }
+            return;
         }
-        return;
+        if (bCanPushA && !aCanPushB)
+        {
+            if (ra->mass < rb->mass)
+            {
+                // A is lighter — push A out of the way
+                if (dx > 0) move(A, pxOverlap, 0, ra, true);
+                else        move(A, -pxOverlap, 0, ra, true);
+            }
+            else
+            {
+                // Equal mass — B runs up against A like a wall, stop B
+                if (dx > 0) move(B, -pxOverlap, 0, rb, true);
+                else        move(B, pxOverlap, 0, rb, true);
+            }
+            return;
+        }
+
     }
 
     // One side is dynamic; the other is static or kinematic � push the dynamic body

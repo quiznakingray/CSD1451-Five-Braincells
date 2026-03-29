@@ -92,13 +92,71 @@ struct PlayerStats
         }
     }
 
-    void IncreasePlayerHealth() {
-        health++;
-        std::cout << health << '\n';
+    void IncreasePlayerHealth(int amount = 1)
+    {
+        health += amount;
+        if (health > maxHealth) health = maxHealth;
+        std::cout << "Health: " << health << '\n';
     }
 
-    int GetPlayerHealth() {
+    int GetPlayerHealth() const {
         return health;
+    }
+
+    int GetPlayerMaxHealth() const {
+        return maxHealth;
+    }
+
+    void SetPlayerHealth(int h) {
+        health = h;
+        if (health > maxHealth) health = maxHealth;
+        if (health < 0) health = 0;
+    }
+
+    void SetPlayerMaxHealth(int mh) {
+        maxHealth = mh;
+        if (health > maxHealth) health = maxHealth;
+    }
+
+    // Damage helpers (new)
+    void IncreasePlayerDamage(int amount = 1)
+    {
+        damage += amount;
+        if (damage < 0) damage = 0;
+        std::cout << "Damage: " << damage << '\n';
+    }
+
+    void DecreasePlayerDamage(int amount = 1)
+    {
+        damage -= amount;
+        if (damage < 0) damage = 0;
+    }
+
+    int GetPlayerDamage() const {
+        return damage;
+    }
+
+    void SetPlayerDamage(int d) {
+        damage = d < 0 ? 0 : d;
+    }
+
+    // Proficiency helpers (new)
+    void IncreasePlayerProficiency(float amount = 0.05f)
+    {
+        proficiency += amount;
+        if (proficiency > 1.0f) proficiency = 1.0f;
+        if (proficiency < 0.0f) proficiency = 0.0f;
+        std::cout << "Proficiency: " << proficiency << '\n';
+    }
+
+    void DecreasePlayerProficiency(float amount = 0.05f)
+    {
+        proficiency -= amount;
+        if (proficiency < 0.0f) proficiency = 0.0f;
+    }
+
+    float GetPlayerProficiency() const {
+        return proficiency;
     }
 
     // singleton access 
@@ -117,7 +175,7 @@ struct PlayerStats
         proficiency = 0.0f;
         speedMult = 1.0f;
         maxJumpStamina = BASE_MAX_STAMINA;
-        jumpStamina = static_cast<float>(BASE_MAX_STAMINA);
+        jumpStamina = BASE_MAX_STAMINA;
     }
 
     void ResetCounters()
