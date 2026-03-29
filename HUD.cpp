@@ -5,6 +5,8 @@
 #include "PlayerManager.h"
 #include "PlayerStats.h"
 #include "TextComponent.h"
+#include "InputManager.h"
+#include "TextManager.h"
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -38,6 +40,9 @@ void PlayerUI::Init(std::vector<GameObject*>& go)
 
 void HUD::Init()
 {
+	if (!HUDGameObjects.empty())
+		Free();
+
 	// shieldPlayerIO
 	AEVec3 playerUIStartPos;
 	AEVec2 playerUIScale;
@@ -56,12 +61,22 @@ void HUD::Init()
 	GameObject* shieldPlayer = new GameObject(playerUIScale.x, playerUIScale.y, playerUIStartPos.x, playerUIStartPos.y, playerUIStartPos.z, 0, true);
 	Sprite* sSprite = shieldPlayer->AddComponent(new Sprite());
 	sSprite->meshColor = 0xFF00FF00;
+	sSprite->textureFileName = "Assets/SpriteSheets/Player_Melee_Mugshot.png";
 	Collider* sCollider = shieldPlayer->AddComponent(new Collider());
 	sCollider->canInteract = true;
 	sCollider->OnClick = [] {
 		PlayerManager::GetInstance().ChangePlayer(PLAYER_TYPE::MELEE);
 		};	
 
+	Sprite* sButtonSprite = shieldPlayer->AddComponent(new Sprite);
+	sButtonSprite->meshColor = 0xFF000000;
+	sButtonSprite->offset = { 0, playerUIScale.y / 2.f };
+	sButtonSprite->size = { 0.25f, 0.25f};
+
+	Text* sText = shieldPlayer->AddComponent(new Text());
+	sText->inWorldSpace = false;
+	sText->center.y = playerUIScale.y / 2.f;
+	sText->SetText(InputManager::VkCodeToString(AEVK_E));
 
 	//cooldown overlay (shield)
 	GameObject* shieldPlayerCooldown = new GameObject(playerUIScale.x, playerUIScale.y, playerUIStartPos.x, playerUIStartPos.y, playerUIStartPos.z, 0, true);
@@ -87,11 +102,21 @@ void HUD::Init()
 		playerUIStartPos.x + playerUIScale.x + 70, playerUIStartPos.y, playerUIStartPos.z, 0, true);
 	Sprite* s = rangePlayer->AddComponent(new Sprite());
 	s->meshColor = 0xFF00FF00;
+	s->textureFileName = "Assets/SpriteSheets/Player_Range_Mugshot.png";
 	Collider* c = rangePlayer->AddComponent(new Collider());
 	c->canInteract = true;
 	c->OnClick = [] {
 		PlayerManager::GetInstance().ChangePlayer(PLAYER_TYPE::RANGE);
 		};	
+	Sprite* rButtonSprite = rangePlayer->AddComponent(new Sprite);
+	rButtonSprite->meshColor = 0xFF000000;
+	rButtonSprite->offset = { 0, playerUIScale.y / 2.f };
+	rButtonSprite->size = { 0.25f, 0.25f };
+
+	Text* rText = rangePlayer->AddComponent(new Text());
+	rText->inWorldSpace = false;
+	rText->center.y = playerUIScale.y / 2.f;
+	rText->SetText(InputManager::VkCodeToString(AEVK_R));
 
 	GameObject* rangePlayerCooldown = new GameObject(playerUIScale.x, playerUIScale.y, playerUIStartPos.x + playerUIScale.x + 70, playerUIStartPos.y, playerUIStartPos.z, 0, true);
 	Sprite* rSpriteCooldown = rangePlayerCooldown->AddComponent(new Sprite());
@@ -150,13 +175,74 @@ void HUD::Init()
 
 		AddGameObjectToVector(bar, HUDGameObjects);
 	}
+
+	// --- SHIELD PLAYER ACTION HINTS ---
+	AEVec2 sHintPos = {AEGfxGetWindowWidth() / 2.f - 200, playerUIStartPos.y };
+
+	// Q - Hold hint
+	sHintQ = new GameObject(400, 50, sHintPos.x, sHintPos.y, playerUIStartPos.z, 0, true);
+	sHintQ->AddComponent(new Sprite())->meshColor = 0xFF333333;
+	Text* sHintQText = sHintQ->AddComponent(new Text());
+	sHintQText->inWorldSpace = false;
+	sHintQText->SetText("[" + InputManager::VkCodeToString(AEVK_Q) + "] Hold - Shield");
+	AddGameObjectToVector(sHintQ, HUDGameObjects);
+
+	// --- RANGE PLAYER ACTION HINTS ---
+	AEVec2 rHintPos = { sHintPos.x, playerUIStartPos.y};
+
+	// Q - Hold hint
+	rHintQ = new GameObject(400, 50, rHintPos.x, rHintPos.y, playerUIStartPos.z, 0, true);
+	rHintQ->AddComponent(new Sprite())->meshColor = 0xFF333333;
+	Text* rHintQText = rHintQ->AddComponent(new Text());
+	rHintQText->inWorldSpace = false;
+	rHintQText->SetText("[" + InputManager::VkCodeToString(AEVK_Q) + "] Hold - Aim");
+	AddGameObjectToVector(rHintQ, HUDGameObjects);
+
+	// LMB - Click hint
+	rHintLMB = new GameObject(400, 50, rHintPos.x, rHintPos.y - 45.f, playerUIStartPos.z, 0, true);
+	rHintLMB->AddComponent(new Sprite())->meshColor = 0xFF333333;
+	Text* rHintLMBText = rHintLMB->AddComponent(new Text());
+	rHintLMBText->inWorldSpace = false;
+	rHintLMBText->SetText("[" + InputManager::VkCodeToString(AEVK_LBUTTON) + "] - Shoot");
+	AddGameObjectToVector(rHintLMB, HUDGameObjects);
+
+	// -------------------------------------------------------
+	// TOP STATS (deaths, kills, timer)
+	// -------------------------------------------------------
+	float topY = AEGfxGetWindowHeight() / 2.0f - 40.f;
+	float leftX = -AEGfxGetWindowWidth() / 2.0f + 120.f;
+	float rightX = AEGfxGetWindowWidth() / 2.0f - 120.f;
+
+	deathCountObj = new GameObject(200, 40, leftX, topY, 1, 0, true);
+	deathCountObj->AddComponent(new Sprite())->meshColor = 0xFF333333;
+	Text* deathText = deathCountObj->AddComponent(new Text());
+	deathText->inWorldSpace = false;
+	deathText->SetText("Deaths: 0");
+	AddGameObjectToVector(deathCountObj, HUDGameObjects);
+
+	killCountObj = new GameObject(200, 40, leftX, topY - 50.f, 1, 0, true);
+	killCountObj->AddComponent(new Sprite())->meshColor = 0xFF333333;
+	Text* killText = killCountObj->AddComponent(new Text());
+	killText->inWorldSpace = false;
+	killText->SetText("Kills: 0");
+	AddGameObjectToVector(killCountObj, HUDGameObjects);
+
+	timerObj = new GameObject(200, 40, rightX, topY, 1, 0, true);
+	timerObj->AddComponent(new Sprite())->meshColor = 0xFF333333;
+	Text* timerText = timerObj->AddComponent(new Text());
+	timerText->inWorldSpace = false;
+	timerText->SetText("0:00");
+	AddGameObjectToVector(timerObj, HUDGameObjects);
 	InitGameObjects(HUDGameObjects);
 }
 void HUD::Update(f64 dt)
 {
 	// update players
-	shieldPlayerUI->border->isActive = (PlayerManager::GetInstance().currentPlayerType == PLAYER_TYPE::MELEE);
-	rangePlayerUI->border->isActive = (PlayerManager::GetInstance().currentPlayerType == PLAYER_TYPE::RANGE);
+	bool isMelee = PlayerManager::GetInstance().currentPlayerType == PLAYER_TYPE::MELEE;
+	bool isRange = PlayerManager::GetInstance().currentPlayerType == PLAYER_TYPE::RANGE;
+
+	shieldPlayerUI->border->isActive = isMelee;
+	rangePlayerUI->border->isActive = isRange;
 
 	shieldPlayerUI->cooldown->isActive = rangePlayerUI->cooldown->isActive = !PlayerManager::GetInstance().canChangePlayer;
 	
@@ -174,7 +260,28 @@ void HUD::Update(f64 dt)
 	{
 		healthBars[i]->isActive = (PlayerStats::Get().health >= i + 1);
 	}
+
+	sHintQ->isActive = isMelee;
+	rHintQ->isActive = isRange;
+	rHintLMB->isActive = isRange;
 	UpdateGameObjects(HUDGameObjects);
+
+	// --- TOP STATS ---
+	elapsedTime += static_cast<float>(dt);
+	int totalSeconds = static_cast<int>(elapsedTime);
+	int minutes = totalSeconds / 60;
+	int seconds = totalSeconds % 60;
+	char timerBuf[16];
+	sprintf_s(timerBuf, "%d:%02d", minutes, seconds);
+
+	auto setText = [](GameObject* obj, const std::string& str) {
+		std::vector<Text*> texts = obj->GetComponents<Text>();
+		if (!texts.empty()) texts[0]->SetText(str);
+		};
+
+	setText(timerObj, timerBuf);
+	setText(deathCountObj, "Deaths: " + std::to_string(PlayerStats::Get().deathCount));
+	setText(killCountObj, "Kills: " + std::to_string(PlayerStats::Get().killCount));
 
 }
 
@@ -186,6 +293,7 @@ void HUD::Render() {
 }
 
 void HUD::Free() {
+	elapsedTime = 0.0f;
 	FreeGameObjects(HUDGameObjects);
 	for (GameObject* go : HUDGameObjects) {
 		delete go;
@@ -201,4 +309,11 @@ void HUD::Free() {
 	shieldPlayerUI = nullptr;
 	delete rangePlayerUI;
 	rangePlayerUI = nullptr;
+
+	deathCountObj = nullptr;
+	killCountObj = nullptr;
+	timerObj = nullptr;
+	sHintQ = nullptr;
+	rHintQ = nullptr;
+	rHintLMB = nullptr;
 }

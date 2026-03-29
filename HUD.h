@@ -46,6 +46,17 @@ private:
 	std::vector<GameObject*> healthBarsBG;
 	std::vector<GameObject*> healthBars;
 
+	GameObject* sHintQ = nullptr;
+	GameObject* rHintQ = nullptr;
+	GameObject* rHintLMB = nullptr;
+
+	// Top stats
+	GameObject* deathCountObj = nullptr;
+	GameObject* killCountObj = nullptr;
+	GameObject* timerObj = nullptr;
+	float       elapsedTime = 0.0f;
+
+
 };
 
 #endif

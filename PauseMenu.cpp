@@ -165,7 +165,7 @@ void PauseMenu::Free() {
     ConfirmationMenu::GetInstance().Free();
     FreeGameObjects(gameObjectVector);
     for (GameObject* g : gameObjectVector) {
-        g = nullptr;
+        delete g;
     }
     gameObjectVector.clear();
     if (pButtonMesh) {
@@ -242,7 +242,7 @@ void ConfirmationMenu::Free()
 {
     FreeGameObjects(gameObjectVector);
     for (GameObject* g : gameObjectVector) {
-        g = nullptr;
+        delete g;
     }
     gameObjectVector.clear();
 }

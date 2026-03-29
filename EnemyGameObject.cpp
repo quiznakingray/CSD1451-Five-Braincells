@@ -82,7 +82,8 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
 
     // Add Rigidbody first
     rb = AddComponent(new RigidBody());
-    rb->type = RIGIDBODY_TYPE::KINEMATIC;
+    rb->type = RIGIDBODY_TYPE::DYNAMIC;
+    rb->mass = 10;
 
     // Add Animator after Rigidbody
     animator = AddComponent(new Animator(idleAnim));

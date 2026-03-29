@@ -31,11 +31,11 @@ void PlayerManager::Update(){
 	if (currentPlayer != meleePlayer) meleePlayer->ApplyDeceleration();
 	if (currentPlayer != rangedPlayer) rangedPlayer->ApplyDeceleration();
 
-	if (AEInputCheckCurr(AEVK_COMMA) && currentPlayer != meleePlayer)
+	if (AEInputCheckCurr(AEVK_E) && currentPlayer != meleePlayer)
 	{
 		ChangePlayer(PLAYER_TYPE::MELEE);
 	}
-	else if (AEInputCheckCurr(AEVK_PERIOD) && currentPlayer != rangedPlayer)
+	else if (AEInputCheckCurr(AEVK_R) && currentPlayer != rangedPlayer)
 	{
 		ChangePlayer(PLAYER_TYPE::RANGE);
 

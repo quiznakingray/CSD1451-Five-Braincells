@@ -67,7 +67,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	//_CrtSetBreakAlloc(87012);
+	//_CrtSetBreakAlloc(136607);
 	//int gGameRunning = 1;
 
 	// Initialization of your own variables go here
