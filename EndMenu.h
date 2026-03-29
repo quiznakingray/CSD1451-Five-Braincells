@@ -4,7 +4,7 @@
 #include "SingletonTemplate.h"
 
 struct EndMenu : Singleton<EndMenu> {
-    bool isActive;    // Is the pop-up currently showing?
+    bool isActive = true;    // Is the pop-up currently showing?
     bool isWin;       // True for "Congrats", False for "You Are Dead"
 
     // Stats Placeholders

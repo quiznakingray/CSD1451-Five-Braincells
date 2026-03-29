@@ -1,6 +1,7 @@
 #include "EndMenu.h"
 #include "AEEngine.h"
 #include "GameStateManager.h"
+#include "TextManager.h"
 #include <iostream>
 #include <cstdio> // For sprintf_s
 
@@ -34,7 +35,7 @@ void EndMenu::Update() {
         if (AEInputCheckTriggered(AEVK_LBUTTON)) {
             isActive = false;
             GameStateManager gsm;
-            gsm.ChangeState(GAME_STATE_TYPE::WORLD); // Restart from beginning
+            gsm.ChangeState(GAME_STATE_TYPE::LEVEL1); // Restart from beginning
         }
     }
 
@@ -58,15 +59,15 @@ void EndMenu::Render() {
 
     // Corrected: AEGfxPrint takes 7 arguments, removed the leading '1'
     if (isWin) {
-        AEGfxPrint((char*)"Congrats, You Win!", -0.2f, 0.4f, 1.5f, 1.0f, 1.0f, 0.0f);
-        AEGfxPrint(deathText, -0.15f, 0.2f, 1.0f, 1.0f, 1.0f, 1.0f);
+        AEGfxPrint(TextManager::pFont, (char*)"Congrats, You Win!", -0.2f, 0.4f, 1.5f, 1.0f, 1.0f, 0.0f, 1.0f);
+        AEGfxPrint(TextManager::pFont,deathText, -0.15f, 0.2f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
     }
     else {
-        AEGfxPrint((char*)"You Are Dead, Yikes!", -0.2f, 0.4f, 1.5f, 1.0f, 0.0f, 0.0f);
+        AEGfxPrint(TextManager::pFont, (char*)"You Are Dead, Yikes!", -0.2f, 0.4f, 1.5f, 1.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    AEGfxPrint(scoreText, -0.15f, 0.1f, 1.0f, 1.0f, 1.0f, 1.0f);
-    AEGfxPrint(timeText, -0.15f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxPrint(TextManager::pFont, scoreText, -0.15f, 0.1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxPrint(TextManager::pFont, timeText, -0.15f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void EndMenu::Free() {

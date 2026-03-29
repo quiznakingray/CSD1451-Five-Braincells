@@ -57,7 +57,7 @@ void ParkourLevel::Init()
 	InitGameObjects(levelGameObjectVector);
 
 
-	EndMenu::Init();
+	//EndMenu::GetInstance().Init();
 	
 
 	if (SaveManager::GetInstance().toContinue)
@@ -81,24 +81,25 @@ void ParkourLevel::Init()
 void ParkourLevel::Update()
 {
 	InputManager::GetInstance().Update();
-	if (GameStateManager::GetInstance().isGamePause) {
+	if (GameStateManager::GetInstance().showPauseMenu) {
 
 		PauseMenu::GetInstance().Update();
 		return;
 	}
+	
 	// 1. Check if the player is dead (Example using PlayerStats if available)
-	if (/* playerHP <= 0 */) { // Placeholder: Replace with your actual HP variable
-		EndMenu::isWin = false;
-		EndMenu::isActive = true;
-	}
+	//if (/* playerHP <= 0 */) { // Placeholder: Replace with your actual HP variable
+	//	EndMenu::GetInstance().isWin = false;
+	//	EndMenu::GetInstance().isActive = true;
+	//}
 
 	// 2. Run Menu Update and skip level logic if active
-	if (EndMenu::isActive) {
-		EndMenu::Update();
-		return;
-	}
+	//if (EndMenu::GetInstance().isActive) {
+	//	EndMenu::GetInstance().Update();
+	//	//return;
+	//}
 
-	CheckPlayerDeath(); // Check if player is dead
+	//CheckPlayerDeath(); // Check if player is dead
 
 	double dt = AEFrameRateControllerGetFrameTime();
 	PlayerManager::GetInstance().Update();
@@ -114,12 +115,12 @@ void ParkourLevel::Render()
 	PlayerManager::GetInstance().Render();
 	EnemyManager::GetInstance().RenderEnemies();
 	HUD::GetInstance().Render();
-	if (GameStateManager::GetInstance().isGamePause) {
+	if (GameStateManager::GetInstance().showPauseMenu) {
 		PauseMenu::GetInstance().Render();
 	}
-
-	EndMenu::Render();
-
+	//if (EndMenu::GetInstance().isActive) {
+		//EndMenu::GetInstance().Render();
+	//}
 }
 
 void ParkourLevel::Free()
@@ -171,11 +172,11 @@ void ParkourLevel::Free()
 	//}
 	PauseMenu::GetInstance().Free();
 
-	EndMenu::Free();
-	EndMenu::isActive = false; // Reset for the next time the level loads
+	//EndMenu::GetInstance().Free();
+	//EndMenu::GetInstance().isActive = false; // Reset for the next time the level loads
 }
 
 void ParkourLevel::Unload()
 {
-	GameStateManager::GetInstance().isGamePause = false;
+	GameStateManager::GetInstance().showPauseMenu = false;
 }

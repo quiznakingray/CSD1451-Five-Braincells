@@ -21,7 +21,7 @@ void InputManager::Update()
 	//pause key
 	if (AEInputCheckTriggered(pauseKey))
 	{
-		GameStateManager::GetInstance().isGamePause = !GameStateManager::GetInstance().isGamePause;
+		GameStateManager::GetInstance().showPauseMenu = true;
 
 	}
 }

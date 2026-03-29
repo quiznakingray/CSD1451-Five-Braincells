@@ -66,6 +66,7 @@ GameObject* PauseButton(float w, float h, float x, float y,
 }
 void PauseMenu::Init()
 {
+    showConfirmation = false;
     // Background overlay
     GameObject* bg = new GameObject(AEGfxGetWindowWidth(), AEGfxGetWindowHeight(), 0, 0, 0, 0, true);
     Sprite* bgSprite = bg->AddComponent(new Sprite());
@@ -79,7 +80,7 @@ void PauseMenu::Init()
     AddGameObjectToVector(panel, gameObjectVector);
 
     PauseButton(300, 60, 0, 100, "RESUME", gameObjectVector, [] {
-        GameStateManager::GetInstance().isGamePause = false;
+        GameStateManager::GetInstance().showPauseMenu = false;
         });
     PauseButton(300, 60, 0, 0, "RESTART", gameObjectVector, [] {
         isRestartConfirm = true;
@@ -161,9 +162,12 @@ void PauseMenu::Render() {
 }
 
 void PauseMenu::Free() {
-    if (showConfirmation)
-        ConfirmationMenu::GetInstance().Free();
+    ConfirmationMenu::GetInstance().Free();
     FreeGameObjects(gameObjectVector);
+    for (GameObject* g : gameObjectVector) {
+        g = nullptr;
+    }
+    gameObjectVector.clear();
     if (pButtonMesh) {
         AEGfxMeshFree(pButtonMesh);
         pButtonMesh = nullptr;
@@ -237,4 +241,8 @@ void ConfirmationMenu::Render() {
 void ConfirmationMenu::Free()
 {
     FreeGameObjects(gameObjectVector);
+    for (GameObject* g : gameObjectVector) {
+        g = nullptr;
+    }
+    gameObjectVector.clear();
 }
