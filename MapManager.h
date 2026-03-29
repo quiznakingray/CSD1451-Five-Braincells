@@ -1003,13 +1003,13 @@ struct ButtonTile : Tile {
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
 			bool wasPressed = isPressed;
 
-			if (crate) {
-				float buttonTop = pos.y + scale.y * 0.5f;
-				float objectBottom = crate->pos.y - crate->scale.y * 0.5f;
+			//if (crate) {
+			//	float buttonTop = pos.y + scale.y * 0.5f;
+			//	float objectBottom = crate->pos.y - crate->scale.y * 0.5f;
 
-				
-				if (objectBottom < buttonTop - TOP_SURFACE_TOLERANCE) return;
-			}
+			//	
+			//	if (objectBottom < buttonTop - TOP_SURFACE_TOLERANCE) return;
+			//}
 
 			if (player) playerCount++;
 			if (crate)  crateCount++;

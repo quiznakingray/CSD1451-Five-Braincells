@@ -17,7 +17,7 @@ struct PlayerStats
     static constexpr int   BASE_MAX_STAMINA = 3;     // starting cap
     static constexpr int   HARD_MAX_STAMINA = 5;     // powerup ceiling
     static constexpr float STAMINA_REGEN_RATE = 1.0f;  // charges per second
-    static constexpr float STAMINA_REGEN_DURATION = 5.0f;  // charges per second
+    static constexpr float STAMINA_REGEN_DURATION = 3.0f;  // charges per second
 
     // upgradeable stats
     int health = 3;       // current hearts
