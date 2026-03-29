@@ -1089,6 +1089,8 @@ void CrateTile::Init()
             AudioManager::GetInstance().PlaySFX("crateLanding");
         }
         Player* player = dynamic_cast<Player*>(other->owner);
+        if (PlayerManager::GetInstance().currentPlayer != player)
+            return;
         if (player && !pushState)
             interactionTextBox->isActive = true;
 
@@ -1108,6 +1110,8 @@ void CrateTile::Init()
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player)
         {
+            if (PlayerManager::GetInstance().currentPlayer != player)
+                return;
             if (AEInputCheckTriggered(AEVK_F)) {
                 pushState = !pushState;
                 if (pushState) {
