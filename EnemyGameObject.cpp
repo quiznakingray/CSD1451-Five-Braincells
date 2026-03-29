@@ -1,57 +1,37 @@
 ﻿#include "EnemyGameObject.h"
 #include "EnemyManager.h"
-#include <iostream>
-#include "EnemyMovement.h"
 #include "EnemyCombat.h"
+#include <iostream>
+#include <cmath>
 
 bool EnemyGameObject::CheckGrounded() {
-    // Replace with collision check if have
     return (fabs(rb->velocity.y) < 0.01f);
 }
 
 void EnemyGameObject::Jump(float force) {
-    if (CheckGrounded()) {
-        rb->velocity.y = force;
-    }
+    if (CheckGrounded()) rb->velocity.y = force;
 }
 
-EnemyGameObject::~EnemyGameObject()
-{
-    if (idleAnim) {
-        delete idleAnim;
-        idleAnim = nullptr;
-    }
-    if (walkAnim) {
-        delete walkAnim;
-        walkAnim = nullptr;
-    }
-    if (attackAnim) {
-        delete attackAnim;
-        attackAnim = nullptr;
-    }
+EnemyGameObject::~EnemyGameObject() {
+    delete patrolAnim; patrolAnim = nullptr;
+    delete chaseAnim; chaseAnim = nullptr;
+    delete attackAnim; attackAnim = nullptr;
 }
 
 void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     InitEnemyBase(base, type);
     EnemyMovement::InitEnemyMovement(movement);
 
-    if (!spawnTile) {
-        //std::cout << "[EnemyGameObject] No spawn tile provided!\n";
-        return;
-    }
+    if (!spawnTile) return;
 
-    // Position
     AEVec2Set(&pos, spawnTile->pos.x + 50, spawnTile->pos.y);
     pos.z = 1.f;
-
-    // Scale
     AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
 
-    // Patrol points around spawn
     base.patrolStart = { spawnTile->pos.x - 100.f, spawnTile->pos.y - 100.f };
     base.patrolEnd = { spawnTile->pos.x + 150.f, spawnTile->pos.y - 100.f };
 
-    // Sprite setup
+    // Setup animations
     Sprite* s = new Sprite();
     s->meshColor = (type == EnemyType::BASIC_MELEE) ? 0xFF0000FF : 0xFFFF0000;
     s->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Idle.png";
@@ -70,59 +50,67 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     attack->spriteSheet = Sprite::SpriteSheet(2, 7);
     attack->spriteSheet.isSpriteSheet = true;
 
-    idleAnim = new Animation(s);
-    idleAnim->loopAnimation = true;
-    idleAnim->animationFPS = 10.f;
-    walkAnim = new Animation(walk);
-    walkAnim->loopAnimation = true;
-    walkAnim->animationFPS = 10.f;
+    patrolAnim = new Animation(s);
+    patrolAnim->loopAnimation = true;
+    patrolAnim->animationFPS = 10.f;
+
+    chaseAnim = new Animation(walk);
+    chaseAnim->loopAnimation = true;
+    chaseAnim->animationFPS = 10.f;
+
     attackAnim = new Animation(attack);
     attackAnim->loopAnimation = true;
     attackAnim->animationFPS = 10.f;
 
-    // Add Rigidbody first
     rb = AddComponent(new RigidBody());
     rb->type = RIGIDBODY_TYPE::KINEMATIC;
 
-    // Add Animator after Rigidbody
-    animator = AddComponent(new Animator(idleAnim));
-
-    // Collider
-    Collider* c = AddComponent(new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0, 0, 1, 1));
+    animator = AddComponent(new Animator(patrolAnim));
+    AddComponent(new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0, 0, 1, 1));
 
     base.isAlive = true;
-
-    // Register enemy last
-    //EnemyManager::RegisterEnemy(this);
-
-    //std::cout << "[EnemyGameObject] Initialized at (" << pos.x << ", " << pos.y << ")\n";
     GameObject::Init();
 }
 
 void EnemyGameObject::Update() {
     float dt = AEFrameRateControllerGetFrameTime();
 
-    if (EnemyManager::GetInstance().player)
-    {
+    if (!EnemyManager::GetInstance().player) {
+        UpdateAnimation();
+        GameObject::Update();
+        if (base.projectile) base.projectile->Update(); // Update arrow
+        return;
+    }
+
+    AEVec2 playerPos = EnemyManager::GetInstance().GetPlayerPos();
+    float dx = playerPos.x - pos.x;
+    float dy = playerPos.y - pos.y;
+    float distSq = dx * dx + dy * dy;
+    float attackRangeSq = base.stats.attackRange * base.stats.attackRange;
+    float detectionRangeSq = 500.f * 500.f;
+
+    bool isMelee = (base.type == EnemyType::BASIC_MELEE || base.type == EnemyType::MINI_BOSS_MELEE);
+    bool isRanged = (base.type == EnemyType::BASIC_RANGED || base.type == EnemyType::MINI_BOSS_RANGED);
+
+    // State machine: ATTACK > CHASE > PATROL
+    if (distSq <= attackRangeSq) {
+        if (rb) rb->velocity.x = 0.f;
+        base.currentState = EnemyState::ATTACK;
         EnemyAttackPlayer(base, *EnemyManager::GetInstance().player, pos, dt);
     }
-
-    if (base.canMove)
-    {
-        AEVec2 playerPos = EnemyManager::GetInstance().GetPlayerPos();
-
-        float dx = playerPos.x - pos.x;
-        float dy = playerPos.y - pos.y;
-        float dist = sqrtf(dx * dx + dy * dy);
-
-        if (dist < 500.f)
-            FollowPlayer(playerPos, dt);
-        else
-            Patrol(dt);
+    else if (distSq < detectionRangeSq && base.canMove) {
+        if (isMelee) FollowPlayer(playerPos, dt);
+        else if (isRanged) {
+            const float tooClose = 150.f;
+            if (distSq < tooClose * tooClose) rb->velocity.x = (dx > 0 ? -1 : 1) * base.stats.movementSpeed;
+            else rb->velocity.x = 0.f;
+            base.currentState = (distSq < tooClose * tooClose) ? EnemyState::CHASE : EnemyState::PATROL;
+        }
     }
-    else
-    {
-        if (rb) rb->velocity.x = 0;
+    else {
+        if (rb) rb->velocity.x = 0.f;
+        base.currentState = EnemyState::PATROL;
+        if (base.canMove) Patrol(dt);
     }
 
     UpdateAnimation();
@@ -130,82 +118,51 @@ void EnemyGameObject::Update() {
 }
 
 void EnemyGameObject::Patrol(f64 dt) {
-    if (currentState == EnemyState::IDLE || currentState == EnemyState::WALK) {
-        EnemyMovement::UpdateEnemyPatrol(this, dt);
-        currentState = EnemyState::WALK;
-    }
+    if (!base.canMove) return;
+    EnemyMovement::UpdateEnemyPatrol(this, dt);
+    base.currentState = EnemyState::PATROL;
 }
 
 void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
-    // Call A* pathfinding to update velocity
-    std::vector<AEVec2> path = EnemyMovement::FindPath(pos, playerPos);
-    //std::cout << "[Enemy] Following Player, Path size: " << path.size() << "\n";
+    if (!base.canMove) return;
 
-    if (!path.empty()) {
-        // Find the first node that is far enough to move towards
-        AEVec2 next;
-        bool found = false;
+    if (!EnemyMovement::allNodes.empty()) {
+        std::vector<AEVec2> path = EnemyMovement::FindPath(pos, playerPos);
         for (AEVec2& node : path) {
             float dx = node.x - pos.x;
             float dy = node.y - pos.y;
-            float dist = sqrtf(dx * dx + dy * dy);
-            if (dist > 5.f) { // skip tiny nodes
-                next = node;
-                found = true;
-                break;
+            float distSq = dx * dx + dy * dy;
+            if (distSq > 25.f) { // 5 units squared
+                float dist = sqrtf(distSq);
+                rb->velocity.x = dx / dist * base.stats.movementSpeed;
+                if (dy > 20.f) Jump(300.f);
+                base.currentState = EnemyState::CHASE;
+                return;
             }
         }
-
-        if (!found) {
-            rb->velocity.x = 0.f;
-            currentState = EnemyState::IDLE;
-            //std::cout << "[Enemy] All path nodes too close\n";
-            return;
-        }
-
-        // Direction
-        AEVec2 dir = { next.x - pos.x, next.y - pos.y };
-        float dist = sqrtf(dir.x * dir.x + dir.y * dir.y);
-        if (dist > 0.01f) {
-            dir.x /= dist;
-            dir.y /= dist;
-
-            // Horizontal movement
-            rb->velocity.x = dir.x * base.stats.speed;
-
-            // Jump if next node is higher
-            float heightDiff = next.y - pos.y;
-            if (heightDiff > 20.f) Jump(300.f);
-
-            currentState = EnemyState::WALK;
-            //std::cout << "[Enemy] Moving towards: (" << next.x << ", " << next.y << ")\n";
-        }
-        else {
-            rb->velocity.x = 0.f;
-            currentState = EnemyState::IDLE;
-            //std::cout << "[Enemy] Reached node, stopping\n";
-        }
     }
-    else {
-        rb->velocity.x = 0.f;
-        currentState = EnemyState::IDLE;
-        //std::cout << "[Enemy] Path empty, cannot follow player\n";
+
+    float dx = playerPos.x - pos.x;
+    float dy = playerPos.y - pos.y;
+    float distSq = dx * dx + dy * dy;
+    if (distSq > 0.0001f) {
+        float dist = sqrtf(distSq);
+        rb->velocity.x = dx / dist * base.stats.movementSpeed;
+        if (dy > 20.f) Jump(300.f);
+        base.currentState = EnemyState::CHASE;
     }
+    else rb->velocity.x = 0.f;
 }
 
 void EnemyGameObject::UpdateAnimation() {
     if (!animator) return;
-
-    Animation* anim = idleAnim;
-    switch (currentState) {
-    case EnemyState::IDLE: anim = idleAnim; break;
-    case EnemyState::WALK: anim = walkAnim; break;
-    case EnemyState::ATTACK: anim = attackAnim; break; // Can add attack later
-    }
-
+    Animation* anim = (base.currentState == EnemyState::PATROL) ? patrolAnim :
+        (base.currentState == EnemyState::CHASE) ? chaseAnim :
+        attackAnim;
     animator->PlayAnimation(anim);
 }
 
 void EnemyGameObject::Render() {
     GameObject::Render();
+    if (base.projectile) base.projectile->Render();
 }

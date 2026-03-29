@@ -680,8 +680,6 @@ void Arrow::Init()
 	rb->type = RIGIDBODY_TYPE::KINEMATIC;
 	rb->hasGravity = false;
 	isActive = false;
-	isEnemyProjectile = false;
-	damage = 1;
 	GameObject::Init();
 }
 

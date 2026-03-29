@@ -1,6 +1,5 @@
 ﻿#include "EnemyCombat.h"
 #include "PlayerGameObject.h"
-#include "EnemyGameObject.h"
 #include <iostream>
 #include <cmath>
 
@@ -8,50 +7,73 @@ void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float
 {
     if (!enemy.isAlive) return;
 
-    if (enemy.attackTimer > 0.f)
-        enemy.attackTimer -= dt;
+    // Update attack cooldown timer
+    if (enemy.timeSinceLastAttack > 0.f)
+        enemy.timeSinceLastAttack -= dt;
 
+    // Compute squared distance to avoid sqrt
     float dx = player.pos.x - enemyPos.x;
     float dy = player.pos.y - enemyPos.y;
-    float distance = sqrtf(dx * dx + dy * dy);
+    float distanceSq = dx * dx + dy * dy;
+    float attackRangeSq = enemy.stats.attackRange * enemy.stats.attackRange;
 
-    if (distance <= enemy.stats.attackRange) {
-        if (enemy.attackTimer <= 0.f) {
-            if (enemy.type == EnemyType::BASIC_RANGED ||
-                enemy.type == EnemyType::MINI_BOSS_RANGED) {
+    // Debug info
+    //std::cout << "[EnemyCombat] dist^2=" << distanceSq
+    //    << "  range^2=" << attackRangeSq
+    //    << "  timer=" << enemy.timeSinceLastAttack << "\n";
 
-                if (enemy.projectile) {
-                    AEVec2 dir;
-                    AEVec2Sub(&dir, &player.pos, &enemyPos);
-                    AEVec2Normalize(&dir, &dir);
+    // Out of range or still on cooldown
+    if (distanceSq > attackRangeSq)
+    {
+        if (enemy.canMove) enemy.currentState = EnemyState::PATROL; // Return to patrol
+        return;
+    }
+    if (enemy.timeSinceLastAttack > 0.f) return;
 
-                    enemy.projectile->damage = enemy.stats.attack;
-                    enemy.projectile->isEnemyProjectile = true;
-                    enemy.projectile->ShootArrow(enemyPos, dir);
+    // Determine attack type
+    bool isRangedType = (enemy.type == EnemyType::BASIC_RANGED ||
+        enemy.type == EnemyType::MINI_BOSS_RANGED);
 
-                    //std::cout << "[EnemyCombat] Ranged enemy shot projectile\n";
-                }
-            }
-            else {
-                // Melee attack
-                player.TakeDamage(enemy.stats.attack);
-                //std::cout << "[EnemyCombat] Enemy hit player for "
-                    //<< enemy.stats.attack << " dmg\n";
-            }
+    enemy.currentState = EnemyState::ATTACK;
 
-            enemy.attackTimer = enemy.stats.attackCooldown;
+    if (isRangedType)
+    {
+        if (enemy.projectile && distanceSq > 0.0001f)
+        {
+            float distance = sqrtf(distanceSq);
+            AEVec2 dir = { dx / distance, dy / distance };
+            AEVec2Normalize(&dir, &dir);
 
-            // Set state to attack for animation / debug
-            EnemyGameObject* go = dynamic_cast<EnemyGameObject*>(&enemy);
-            if (go) go->currentState = EnemyState::ATTACK;
+            enemy.projectile->damage = enemy.stats.damage;
+            enemy.projectile->isEnemyProjectile = true;
+            enemy.projectile->isActive = true;
+            enemy.projectile->ShootArrow(enemyPos, dir);
+
+            std::cout << "[EnemyCombat]["
+                << (enemy.type == EnemyType::BASIC_RANGED ? "BASIC_RANGED" : "MINI_BOSS_RANGED")
+                << "] Fired arrow dir=(" << dir.x << "," << dir.y
+                << ") dmg=" << enemy.stats.damage << "\n";
         }
     }
-    else {
-        //std::cout << "[EnemyCombat] Player not in range. Distance: " << distance << "\n";
+    else
+    {
+        player.TakeDamage(enemy.stats.damage);
+
+        std::cout << "[EnemyCombat]["
+            << (enemy.type == EnemyType::BASIC_MELEE ? "BASIC_MELEE" : "MINI_BOSS_MELEE")
+            << "] Hit player for " << enemy.stats.damage << " dmg\n";
     }
+
+    enemy.timeSinceLastAttack = enemy.stats.attackCooldown;
 }
 
-bool IsEnemyDead(const EnemyBase& enemy)
+bool IsEnemyDead(EnemyBase& enemy)
 {
-    return enemy.stats.health <= 0;
+    if (enemy.stats.health <= 0)
+    {
+        enemy.isAlive = false;
+        enemy.currentState = EnemyState::IDLE;
+        return true;
+    }
+    return false;
 }

@@ -1,22 +1,24 @@
 ﻿#include "EnemyBase.h"
-#include <iostream>
 
+// Initialize enemy with proper stats
 void InitEnemyBase(EnemyBase& enemy, EnemyType type)
 {
     enemy.type = type;
     enemy.isAlive = true;
-    enemy.attackTimer = 0.f;
+    enemy.timeSinceLastAttack = 0.f;
 
     switch (type)
     {
     case EnemyType::BASIC_MELEE:
         enemy.stats = { 80.f, 50, 50, 2, 150.f, 5.f };
         enemy.canMove = true;
+        enemy.currentState = EnemyState::PATROL;
         break;
 
     case EnemyType::BASIC_RANGED:
-        enemy.stats = { 60.f, 40, 40, 1, 600.f, 2.0f };
+        enemy.stats = { 60.f, 40, 40, 1, 600.f, 2.f };
         enemy.canMove = true;
+        enemy.currentState = EnemyState::PATROL;
         enemy.projectile = new Arrow();
         enemy.projectile->Init();
         break;
@@ -24,22 +26,33 @@ void InitEnemyBase(EnemyBase& enemy, EnemyType type)
     case EnemyType::MINI_BOSS_MELEE:
         enemy.stats = { 0.f, 200, 200, 3, 200.f, 1.5f };
         enemy.canMove = false;
+        enemy.currentState = EnemyState::IDLE;
         break;
 
     case EnemyType::MINI_BOSS_RANGED:
         enemy.stats = { 0.f, 150, 150, 2, 700.f, 2.5f };
         enemy.canMove = false;
+        enemy.currentState = EnemyState::IDLE;
         enemy.projectile = new Arrow();
         enemy.projectile->Init();
         break;
     }
 
+    // Initial patrol target
+    enemy.currentTarget = enemy.patrolStart;
+
     PrintEnemyStats(enemy);
 }
 
+// Print enemy stats for debugging
 void PrintEnemyStats(const EnemyBase& enemy)
 {
-    std::cout << "Speed: " << enemy.stats.speed
-        << " Health: " << enemy.stats.health
-        << " Attack: " << enemy.stats.attack << std::endl;
+    std::cout << "Enemy Type: " << static_cast<int>(enemy.type)
+        << " | State: " << static_cast<int>(enemy.currentState)
+        << " | Speed: " << enemy.stats.movementSpeed
+        << " | Health: " << enemy.stats.health << "/" << enemy.stats.maxHealth
+        << " | Damage: " << enemy.stats.damage
+        << " | Range: " << enemy.stats.attackRange
+        << " | Cooldown: " << enemy.stats.attackCooldown
+        << std::endl;
 }

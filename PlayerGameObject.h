@@ -107,7 +107,7 @@ struct Arrow : GameObject {
 	f32 speed = 600.f;
 	f32 timer = 0.0f;
 	f32 lifetime = 5.f;
-	int damage = 10;
+	int damage = 1;
 	bool isEnemyProjectile = false;
 	void Init() override;
 	void Update() override;

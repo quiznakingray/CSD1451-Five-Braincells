@@ -76,7 +76,6 @@ void ParkourLevel::Update()
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
 	HUD::GetInstance().Update(dt);
-	EnemyManager::GetInstance().UpdateAllEnemies(dt);
 }
 
 void ParkourLevel::Render()
