@@ -108,9 +108,30 @@ struct PlayerStats
     }
 
     void SetPlayerHealth(int h) {
-        health = h;
+        health += h;
+        if (h < 0) {
+            if (health > 0) {
+                AudioManager::GetInstance().PlaySFX("playerHurt");
+            }
+            else
+            {
+                AudioManager::GetInstance().PlaySFX("playerDie");
+                PlayerStats::Get().IncreaseDeathCounter();
+                SaveManager::GetInstance().toContinue = true;
+                GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
+                current = GAME_STATE_TYPE::MENU;  // force inner loop to exit
+                next = respawnLevel;           // reload the saved level
+            }
+        }
+        else {
+            if (health > maxHealth)
+            {
+                health = maxHealth;
+            }
+        }
+       /* health = h;
         if (health > maxHealth) health = maxHealth;
-        if (health < 0) health = 0;
+        if (health < 0) health = 0;*/
     }
 
     void SetPlayerMaxHealth(int mh) {
@@ -157,6 +178,11 @@ struct PlayerStats
 
     float GetPlayerProficiency() const {
         return proficiency;
+    }
+
+    void IncreaseDeathCounter() {
+        deathCount++;
+        SaveManager::GetInstance().SaveDeathCount(deathCount);
     }
 
     // singleton access 

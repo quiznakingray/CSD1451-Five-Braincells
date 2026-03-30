@@ -56,16 +56,25 @@ struct EnemySaveData {
     EnemyBase enemyBase{};
 };
 
+struct StatsSaveData {
+    float elaspedTime;
+    int deathCount;
+    int killCount;
+};
+
 struct SaveManager : public Singleton<SaveManager>
 {
     PlayerSaveData playerSaveData;
     MapSaveData    mapSaveData;
     std::vector<EnemySaveData> enemySaveData;
+    StatsSaveData  statsSaveData;
+
     bool toContinue = false;
 
     void SavePlayerData();
     void LoadPlayerData();
     void SetPreservePlayerOnLoad(bool preserve);
+    void SaveDeathCount(int count);
     void SaveMapData();
     void LoadMapData();
     void SaveEnemyData();

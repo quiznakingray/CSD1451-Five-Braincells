@@ -65,6 +65,10 @@ enum class TILE_ID {
 	HEALTHPICKUPTILE = 170,
 	DAMAGEPICKUPTILE = 171,
 	PROFPICKUPTILE = 172,
+	MOVINGTILEMID = 180,
+	MOVINGTILELEFT = 181,
+	MOVINGTILERIGHT = 182,
+	MOVINGTILETARGET = 183,
 	PLAYER = 200,
 	ENEMY = 250,
 	CHECKPOINT = 300,
@@ -175,7 +179,7 @@ struct SpikeTile : Tile {
 
 		currSprite->textureFileName = "Assets/Environment/spike.png";
 	}
-
+	int damage = 1;
 	void Init() override;
 };
 
@@ -1058,7 +1062,93 @@ struct ButtonTile : Tile {
 			}
 			};
 	}
-
-
 };
+struct MovingTileTarget : Tile {
+	 MovingTileTarget (TILE_ID currID_, TILE_ID bgID_, int currTag_,
+		bool bgActive, bool currActive, size_t row_, size_t col_, float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+		isActive = false;
+	}
+	void Init() override {
+		Tile::Init();
+	}
+};
+
+struct MovingTile : Tile {
+	AEVec2 originPos{};
+	AEVec2 targetPos{};
+	float speed = 100.0f;
+	bool movingToTarget = true;
+	bool hasTarget = false;
+	bool isWaiting = false;
+	CooldownTimer waitTimer;
+	float waitDuration = 2.0f;
+	RigidBody* rb = nullptr;
+
+	MovingTile(TILE_ID currID_, TILE_ID bgID_, int currTag_,
+		bool bgActive, bool currActive, size_t row_, size_t col_, float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+		switch (currID) {
+		case TILE_ID::MOVINGTILEMID:
+			currSprite->textureFileName = "Assets/Environment/shroomMid.png";
+			break;
+		case TILE_ID::MOVINGTILELEFT:
+			currSprite->textureFileName = "Assets/Environment/shroomLeft.png";
+			break;
+		case TILE_ID::MOVINGTILERIGHT:
+			currSprite->textureFileName = "Assets/Environment/shroomRight.png";
+			break;
+		}
+		rb = AddComponent(new RigidBody());
+		rb->type = RIGIDBODY_TYPE::KINEMATIC;
+		rb->hasGravity = false;
+		rb->invMass = 0.0f;
+	}
+
+	void Init() override {
+		Tile::Init();
+		originPos = pos;
+		std::vector<Tile*> targets = MapManager::GetTaggedTiles(currTag, TILE_ID::MOVINGTILETARGET);
+		if (!targets.empty()) {
+			targetPos = targets[0]->pos;
+			hasTarget = true;
+		}
+	}
+
+	void Update() override {
+		Tile::Update();
+		if (!hasTarget) return;
+		float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
+		// waiting at destination
+		if (isWaiting) {
+			rb->velocity.x = 0;
+			rb->velocity.y = 0;
+			if (waitTimer.Update(dt)) {
+				isWaiting = false;
+				movingToTarget = !movingToTarget;  // flip direction after wait
+			}
+			return;
+		}
+
+		AEVec2 destination = movingToTarget ? targetPos : originPos;
+		float dx = destination.x - pos.x;
+		float dy = destination.y - pos.y;
+		float dist = sqrtf(dx * dx + dy * dy);
+
+		if (dist < 2.0f) {
+			// snap and start waiting
+			pos.x = destination.x;
+			pos.y = destination.y;
+			rb->velocity.x = 0;
+			rb->velocity.y = 0;
+			isWaiting = true;
+			waitTimer.Start(waitDuration);
+		}
+		else {
+			rb->velocity.x = (dx / dist) * speed;
+			rb->velocity.y = (dy / dist) * speed;
+		}
+	}
+};
+
 #endif // !MAP_MANAGER

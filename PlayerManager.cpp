@@ -127,6 +127,7 @@ void PlayerManager::Load()
 
 	// restore stats into PlayerStats singleton
 	PlayerStats& stats = PlayerStats::Get();
+	
 	stats.health = data.health;
 	stats.maxHealth = data.maxHealth;
 	stats.damage = data.damage;

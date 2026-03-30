@@ -469,7 +469,14 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
     case TILE_ID::PROFPICKUPTILE:
         newTile = new ProficiencyPickupTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
-
+    case TILE_ID::MOVINGTILEMID:
+    case TILE_ID::MOVINGTILELEFT:
+    case TILE_ID::MOVINGTILERIGHT:
+        newTile = new MovingTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::MOVINGTILETARGET:
+        newTile = new MovingTileTarget(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
     default:
         newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
         //newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
@@ -917,7 +924,7 @@ void SpikeTile::Init() {
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
-            PlayerStats::Get().ReducePlayerHealth();
+            PlayerStats::Get().SetPlayerHealth(-(abs(damage)));
             std::cout << PlayerStats::Get().GetPlayerHealth() << '\n';
             // knockback based on collision side
             RigidBody* playerRb = player->GetComponent<RigidBody>();

@@ -310,19 +310,18 @@ void Player::Render()
 void Player::TakeDamage(int amount)
 {
 	gotHurt = true;
-	PlayerStats::Get().health -= amount;
+	//if (PlayerStats::Get().health <= 0)
+	//{
+	//	// inc death counter
+	//	
 
-	if (PlayerStats::Get().health <= 0)
-	{
-		// inc death counter
-		PlayerStats::Get().deathCount++;
+	//	//// respawn: reset health and jump stamina
+	//	//PlayerStats::Get().health = PlayerStats::Get().maxHealth;
+	//	//PlayerStats::Get().jumpStamina = PlayerStats::Get().maxJumpStamina;
 
-		// respawn: reset health and jump stamina
-		PlayerStats::Get().health = PlayerStats::Get().maxHealth;
-		PlayerStats::Get().jumpStamina =PlayerStats::Get().maxJumpStamina;
-
-		std::cout << "[Player] Total deaths: " << PlayerStats::Get().deathCount << "\n";
-	}
+	//	std::cout << "[Player] Total deaths: " << PlayerStats::Get().deathCount << "\n";
+	//}
+	PlayerStats::Get().SetPlayerHealth(-(abs(amount)));
 }
 
 void Player::IncrementKills()

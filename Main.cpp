@@ -81,7 +81,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	printf("Hello LEVEL1\n");
 
-	GameStateManager::GetInstance().Initialize(GAME_STATE_TYPE::MENU);
+	GameStateManager::GetInstance().Initialize(GAME_STATE_TYPE::LEVEL1);
 	CameraSystem::Init();
 
 	// Game Loop
