@@ -28,7 +28,7 @@ public:
     void RenderEnemies();
 
     AEVec2 GetPlayerPos();
-
+    void SetTarget(Player* p);
     void SaveEnemyStates();
     void LoadEnemyStates();
 

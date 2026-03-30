@@ -10,6 +10,8 @@
 #include "GameObjectManager.h"
 //#include "TextComponent.h"
 #include "GameStateManager.h"
+#include "TextManager.h"
+#include "PauseMenu.h"
 #include "MainMenu.h"
 #include <filesystem>
 #include "EnemyGameObject.h"
@@ -22,8 +24,7 @@ int gGameRunning = 1;
 //AEGfxTexture* pTex = 0;
 
 MapManager mapManager;
-TextManager textManager;
-s8 TextManager::pFont = 0;
+//TextManager textManager;
 
 
 //std::vector<GameObject*> gameObjects{};
@@ -66,7 +67,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	//_CrtSetBreakAlloc(87012);
+	//_CrtSetBreakAlloc(136607);
 	//int gGameRunning = 1;
 
 	// Initialization of your own variables go here
@@ -77,24 +78,34 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// Changing the window title
 	AESysSetWindowTitle("My New Demo!");
 
-	// reset the system modules
-	AESysReset();
 
 	printf("Hello LEVEL1\n");
 
-	GameStateManager::GetInstance().Initialize(GAME_STATE_TYPE::LEVEL2);
+	GameStateManager::GetInstance().Initialize(GAME_STATE_TYPE::MENU);
 	CameraSystem::Init();
 
 	// Game Loop
 	while (gGameRunning)
 	{
+		// reset the system modules
+		AESysReset();
 		AudioManager::GetInstance().GetInstance().Init();
 		// Informing the system about the loop's start
-		GameStateManager::GetInstance().Update();
 
-		//// Initialize the current game state
-		fpLoad();
+		if (current != GAME_STATE_TYPE::RESTART)
+		{
+			GameStateManager::GetInstance().Update();
+
+			// Initialize the current game state
+			fpLoad();
+
+		}
+		else {
+			next = current = previous;
+		}
+
 		fpInitialize();
+
 		while (next == current && gGameRunning)
 		{
 			AESysFrameStart();
@@ -106,9 +117,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			// Render graphics for the current frame
 			fpRender();
 			// check if forcing the application to quit
-			//if (AEInputCheckCurr(AEVK_ESCAPE)) {
-			//	next = GAME_STATE_TYPE::MENU;
-			//}
+			if (AEInputCheckCurr(AEVK_RETURN)) {
+				next = GAME_STATE_TYPE::RESTART;
+			}
 			if (0 == AESysDoesWindowExist())
 				gGameRunning = 0;
 
@@ -139,7 +150,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		//GameUpdate();
 
 		fpFree();
-		fpUnload();
+		if (next != GAME_STATE_TYPE::RESTART)
+		{
+			fpUnload();	
+
+		}
+		previous = current;
 		current = next;
 	}
 	//mapManager.FreeMap();

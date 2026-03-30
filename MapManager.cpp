@@ -1064,10 +1064,6 @@ void CheckpointTile::Init() {
             this->interactionTextBox->isActive = true;
             interactionTextBox->SetText("Saved!");
             SaveManager::GetInstance().SaveAll();
-           /* SaveManager::GetInstance().SavePlayerData(
-            );
-            MapManager::GetInstance().SaveMapState(current);
-            EnemyManager::GetInstance().SaveEnemyStates();*/
         }
         };
     collider->OnTriggerExit = [this](Collider* other, int sides) {
@@ -1093,6 +1089,8 @@ void CrateTile::Init()
             AudioManager::GetInstance().PlaySFX("crateLanding");
         }
         Player* player = dynamic_cast<Player*>(other->owner);
+        if (PlayerManager::GetInstance().currentPlayer != player)
+            return;
         if (player && !pushState)
             interactionTextBox->isActive = true;
 
@@ -1112,6 +1110,8 @@ void CrateTile::Init()
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player)
         {
+            if (PlayerManager::GetInstance().currentPlayer != player)
+                return;
             if (AEInputCheckTriggered(AEVK_F)) {
                 pushState = !pushState;
                 if (pushState) {

@@ -4,6 +4,9 @@
 #include "PlayerManager.h"
 #include "SaveManager.h"
 #include "PlayerStats.h"
+#include "ParticleEffects.h"
+#include "EnemyGameObject.h""
+#include "EnemyCombat.h""
 
 #include <iostream>
 #include <vector>
@@ -263,12 +266,13 @@ void Player::Init()
 	//showColliders = true;
 	speed = static_cast<f32>(200.0);
 	//AEVec2Set(&velocity, 0.f, 0.f);
+	ParticleSystem::Init(5, hurtParticles);
 
 	GameObject::Init();
 }
 
 void Player::Update(){
-	//float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
+	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
 	//PlayerStats::Get().RegenStamina(dt); // passive stamina regen
 
 	PlayerAction();
@@ -279,12 +283,33 @@ void Player::Update(){
 		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
 	jumpAnim->sprite->size.x =
 		fabs(runningAnim->sprite->size.x) * (rb->velocity.x < 0 ? -1 : 1);
+
+	if (gotHurt)
+	{
+		hurtDuration -= dt;
+		if (hurtDuration <= 0.f)
+		{
+			gotHurt = false;
+			hurtDuration = 2.0f;
+		}
+	}
+	ParticleSystem::CreateHitEffect(pos.x, pos.y, hurtParticles);
+	ParticleSystem::Update(dt, hurtParticles);
+
 	GameObject::Update();
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
 }
 
+void Player::Render()
+{
+	GameObject::Render();
+	if(gotHurt)
+		ParticleSystem::Draw(hurtParticles);
+}
+
 void Player::TakeDamage(int amount)
 {
+	gotHurt = true;
 	PlayerStats::Get().health -= amount;
 
 	if (PlayerStats::Get().health <= 0)
@@ -485,6 +510,16 @@ Animation* MeleePlayer::PlayerAnimation()
 	return anim;
 }
 
+void MeleePlayer::TakeDamage(int amount)
+{
+	if(shieldActive)
+	{
+		std::cout << "[Shield] blocked incoming damage!\n";
+		return;
+	}
+	Player::TakeDamage(amount);
+}
+
 RangePlayer::~RangePlayer()
 {
 	if (aimingAnim) {
@@ -553,6 +588,9 @@ void RangePlayer::Init()
 	line->linePoints.push_back(playerLinePos);
 	line->linePoints.push_back(aimLinePos);
 
+	// init particle pool
+	//ParticleSystem::Init(5, particlePool);
+
 	Player::Init();
 }
 
@@ -576,8 +614,17 @@ void RangePlayer::Update()
 	aimLinePos->pos.y = worldPosY;
 	aimingAnim->sprite->size.x =
 		fabs(runningAnim->sprite->size.x) * (worldPosX < pos.x ? -1 : 1);
+
+	//ParticleSystem::CreateBloodEffect(pos.x, pos.y + 100, particlePool);
+	//ParticleSystem::Update(dt, particlePool);
 	Player::Update();
 }
+
+//void RangePlayer::Render()
+//{
+//	ParticleSystem::Draw(particlePool); // paticles
+//	Player::Render(); // parent function
+//}
 
 void RangePlayer::PlayerInput()
 {
@@ -657,18 +704,26 @@ void Arrow::Init()
 	);
 	c->OnTriggerEnter = [this](Collider* other, int sides)
 		{
-			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
+			if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) ||
+				((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
 			{
-				// crate will deactivate arrow on its own ontrigger
-				if (dynamic_cast<CrateTile*>(other->owner)) return;
-				if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) ||
-					((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
+				if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 				{
+					// crate will deactivate arrow on its own ontrigger
+					if (dynamic_cast<CrateTile*>(other->owner)) return;
+
 					isActive = false;
 					timer = 0.0f;
 
 				}
 
+				if (EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(other->owner))
+				{
+					std::cout << "Hit enemy for " << damage << " damage!\n";
+
+					isActive = false;
+					EnemyTakeDamage(enemy->base, damage);
+				}
 			}
 		};
 	c->isTrigger = true;
@@ -680,6 +735,11 @@ void Arrow::Init()
 	rb->type = RIGIDBODY_TYPE::KINEMATIC;
 	rb->hasGravity = false;
 	isActive = false;
+
+	ParticleSystem::Init(5, particlePool);
+
+	isEnemyProjectile = false;
+	damage = 1;
 	GameObject::Init();
 }
 
@@ -688,6 +748,7 @@ void Arrow::Update()
 	GameObject::Update();
 	if (isActive)
 	{
+		
 		double dt = AEFrameRateControllerGetFrameTime();
 		timer += static_cast<f32>(dt);
 		if (timer >= lifetime)
@@ -695,7 +756,27 @@ void Arrow::Update()
 			isActive = false;
 			timer = 0.0f;
 		}
+
+		AEVec2 dir;
+		AEVec2Normalize(&dir, &rb->velocity);
+
+		// Offset behind arrow (negative direction)
+		float tailOffsetX = -dir.x * scale.x / 2.f;
+		float tailOffsetY = -dir.y * scale.y / 2.f;
+
+		ParticleSystem::CreateArrowTrail(
+			pos.x + tailOffsetX,
+			pos.y + tailOffsetY,
+			rb->velocity, particlePool);
+
+		ParticleSystem::Update(dt, particlePool);
 	}
+}
+
+void Arrow::Render()
+{
+	if (isActive) ParticleSystem::Draw(particlePool);
+	GameObject::Render();
 }
 
 void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir)

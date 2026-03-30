@@ -1,4 +1,5 @@
 #include "TextComponent.h"
+#include "TextManager.h"
 #include "GameObjectManager.h"
 
 void Text::Render()

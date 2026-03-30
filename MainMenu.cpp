@@ -3,7 +3,7 @@
 #include "AudioMenu.h"
 #include <vector>
 #include <string> // For strcmp
-//#include <iostream>
+#include <cstdio> // For sprintf
 
 // If AEEngine.h isn't already included via mainmenu.hpp, 
 // you might need it here for the functions like AEGfxPrint
@@ -14,6 +14,8 @@ static s8 menuFont;
 static AEGfxVertexList* pRectMesh;
 
 static AudioMenu audioMenu;
+static AEGfxTexture* pBackgroundTex; // Background variable
+static int highScore = 1500;         // Example high score
 
 struct Button {
     const char* text;
@@ -39,10 +41,10 @@ void MainMenu_Init() {
 
     // Initialize button list
     buttons = {
-        {"PLAY", 0.0f, 0, 0, false},
-        {"CONTINUE", -0.15f, 0, 0, false},
-        {"TUTORIAL", -0.30f, 0, 0, false},
-        {"SETTINGS", -0.45f, 0, 0, false},
+        {"NEW GAME", 0.0f, 0, 0, false},
+        {"LOAD GAME", -0.15f, 0, 0, false},
+        {"INSTRUCTIONS", -0.30f, 0, 0, false},
+        {"SETTING", -0.45f, 0, 0, false},
         {"CREDITS", -0.60f, 0, 0, false},
         {"EXIT", -0.75f, 0, 0, false}
     };
@@ -98,11 +100,11 @@ void MainMenu_Update() {
             normY > btn.yPos - 0.05f && normY < btn.yPos + 0.05f);
 
         if (btn.isHovered && AEInputCheckTriggered(AEVK_LBUTTON)) {
-            if (strcmp(btn.text, "PLAY") == 0) {
+            if (strcmp(btn.text, "NEW GAME") == 0) {
                 SaveManager::GetInstance().ResetSave();  // clears everything including preserveOnLoad
                 next = GAME_STATE_TYPE::LEVEL1;
             }
-            if (strcmp(btn.text, "CONTINUE") == 0) {
+            if (strcmp(btn.text, "LOAD GAME") == 0) {
                 if (SaveManager::GetInstance().HasSaveData()) {
                     SaveManager::GetInstance().LoadPlayerData();
                     SaveManager::GetInstance().LoadMapData();
@@ -111,10 +113,12 @@ void MainMenu_Update() {
                     next = SaveManager::GetInstance().mapSaveData.savedLevel;
                 }
             }
-            if (strcmp(btn.text, "EXIT") == 0) gGameRunning = 0;
 
+            if (strcmp(btn.text, "INSTRUCTIONS") == 0) next = GAME_STATE_TYPE::INSTRUCTIONS;
+            if (strcmp(btn.text, "CREDITS") == 0) next = GAME_STATE_TYPE::CREDITS;
+            if (strcmp(btn.text, "EXIT") == 0) gGameRunning = 0;
             // Checks if settings button is clicked
-            if (strcmp(btn.text, "SETTINGS") == 0 && !audioMenu.IsOpen())
+            if (strcmp(btn.text, "SETTING") == 0 && !audioMenu.IsOpen())
             {
                 audioMenu.Toggle(); // open audio panel
             }
@@ -127,7 +131,7 @@ void MainMenu_Draw() {
 
     // Draw Title: Separated at the top
     // AEGfxPrint takes 9 arguments: font, text, x, y, scale, r, g, b, a
-    AEGfxPrint(menuFont, "DUNGEON AND PUZZLE", -0.55f, 0.6f, 1.5f, 1.0f, 0.8f, 0.0f, 1.0f);
+    AEGfxPrint(menuFont, "DUNGEON & PUZZLE", -0.4f, 0.6f, 1.1f, 1.0f, 0.8f, 0.0f, 1.0f);
 
     // Checks if audio panel is open
     if (audioMenu.IsOpen())
@@ -137,27 +141,21 @@ void MainMenu_Draw() {
     }
 
     // Draw Buttons: Centralized and equally separated
+    // 2. Draw Highest Score (Added this part)
+    char scoreBuffer[32];
+    // This converts the integer highScore into a "HIGHEST SCORE: 1500" string
+    sprintf_s(scoreBuffer, "HIGHEST SCORE: %d", highScore);
+
+    // Positioned at y = 0.2f (above NEW GAME) with a white/cyan color
+    AEGfxPrint(menuFont, scoreBuffer, -0.35f, 0.2f, 0.8f, 0.5f, 1.0f, 1.0f, 1.0f);
+
+    // 3. Draw Buttons
     for (const auto& btn : buttons) {
         f32 r = btn.isHovered ? 1.0f : 0.7f;
         f32 g = btn.isHovered ? 1.0f : 0.7f;
         f32 b = btn.isHovered ? 0.0f : 0.7f;
 
-        // 2. Transform the mesh to fit the button dimensions
-        //AEMtx33 transform;
-        //AEMtx33Scale(&transform, btn.w + 0.1f, btn.h + 0.08f);
-        //AEMtx33Trans(&transform, 0.0f, btn.yPos + 0.02f);
-        //AEGfxSetTransform(transform.m);
-
-        //// 3. Render using color mode (no texture)
-        //AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-        //AEGfxSetColorToMultiply(r, g, b, 1.0f);
-        //AEGfxMeshDraw(pRectMesh, AE_GFX_MDM_TRIANGLES);
-
-        //// Reset transform for text
-        //AEMtx33 identity;
-        //AEMtx33Identity(&identity);
-        //AEGfxSetTransform(identity.m);
-
+        // Using your original centering logic (-btn.w / 2.0f)
         AEGfxPrint(menuFont, btn.text, -btn.w / 2.0f, btn.yPos, 1.0f, r, g, b, 1.0f);
     }
 }

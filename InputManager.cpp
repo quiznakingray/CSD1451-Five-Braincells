@@ -21,13 +21,21 @@ void InputManager::Update()
 	//pause key
 	if (AEInputCheckTriggered(pauseKey))
 	{
-		GameStateManager::GetInstance().isGamePause = !GameStateManager::GetInstance().isGamePause;
+		GameStateManager::GetInstance().showPauseMenu = true;
 
 	}
 }
 
 std::string InputManager::VkCodeToString(DWORD vkCode)
 {
+	switch (vkCode)
+	{
+	case VK_LBUTTON:  return "LMB";
+	case VK_RBUTTON:  return "RMB";
+	case VK_MBUTTON:  return "MMB";
+	case VK_XBUTTON1: return "MB4";
+	case VK_XBUTTON2: return "MB5";
+	}
 
 	// 1. Map Virtual Key to Scan Code
 	UINT scanCode = MapVirtualKey(vkCode, MAPVK_VK_TO_VSC);

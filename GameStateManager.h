@@ -7,13 +7,20 @@ extern FP fpLoad , fpInitialize , fpUpdate , fpRender , fpFree , fpUnload ;
 
 enum class GAME_STATE_TYPE {
 	MENU,
+	INSTRUCTIONS,
 	LEVEL1,
 	LEVEL1BOSS,
 	LEVEL2,
 	LEVEL2BOSS,
 	LEVEL3,
+	SETTING,
+	//PAUSE,
+	//CONFIRMATION,
+	RESTART,
+	CREDITS
 };
-extern GAME_STATE_TYPE current, next;
+extern GAME_STATE_TYPE current, next, previous; // To remember where to "Resume" to
+extern GAME_STATE_TYPE pendingAction; // To remember if we are confirming "Restart" or "Main Menu"
 
 
 struct GameState {
@@ -28,7 +35,7 @@ struct GameState {
 
 struct GameStateManager :Singleton<GameStateManager>{
 
-	bool isGamePause = false;
+	bool showPauseMenu = false;
 	void Initialize(GAME_STATE_TYPE type);
 
 	GAME_STATE_TYPE GetCurrentState();

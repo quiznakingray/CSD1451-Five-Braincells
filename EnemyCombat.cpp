@@ -1,5 +1,6 @@
 ﻿#include "EnemyCombat.h"
 #include "PlayerGameObject.h"
+#include "PlayerStats.h"
 #include <iostream>
 #include <cmath>
 
@@ -76,4 +77,16 @@ bool IsEnemyDead(EnemyBase& enemy)
         return true;
     }
     return false;
+}
+
+void EnemyTakeDamage(EnemyBase& enemy, int damage)
+{
+    if (!enemy.isAlive) return;
+    enemy.stats.health -= damage;
+    std::cout << "[EnemyCombat] Enemy took " << damage << " dmg, health now " << enemy.stats.health << "\n";
+    if (IsEnemyDead(enemy))
+    {
+        std::cout << "[EnemyCombat] Enemy died!\n";
+        PlayerStats::Get().killCount++;
+    }
 }

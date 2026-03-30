@@ -21,11 +21,11 @@ struct Text : ComponentBase {
 	void Free() override;
 };
 #endif // !TEXT_COMPONENT
-struct TextManager {
-	static s8 pFont;
-	
-	static void Init()
-	{
-		pFont = AEGfxCreateFont("Assets/liberation-mono.ttf", 40);
-	}
-};
+//struct TextManager {
+//	static s8 pFont;
+//	
+//	static void Init()
+//	{
+//		pFont = AEGfxCreateFont("Assets/liberation-mono.ttf", 40);
+//	}
+//};

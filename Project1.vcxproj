@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -105,6 +105,8 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="AudioMenu.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="ComponentBase.cpp" />
+    <ClCompile Include="Credits.cpp" />
+    <ClCompile Include="EndMenu.cpp" />
     <ClCompile Include="EnemyBase.cpp" />
     <ClCompile Include="EnemyCombat.cpp" />
     <ClCompile Include="EnemyGameObject.cpp" />
@@ -115,10 +117,13 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="HUD.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="Instructions.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="MapManager.cpp" />
     <ClCompile Include="ParkourLevel.cpp" />
+    <ClCompile Include="ParticleEffects.cpp" />
+    <ClCompile Include="PauseMenu.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="PlayerGameObject.cpp" />
     <ClCompile Include="PlayerManager.cpp" />
@@ -128,6 +133,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="TextComponent.cpp" />
+    <ClCompile Include="TextManager.cpp" />
     <ClCompile Include="TileData.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="UiButton.cpp" />
@@ -141,6 +147,8 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="AudioMenu.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="ComponentBase.h" />
+    <ClInclude Include="Credits.h" />
+    <ClInclude Include="EndMenu.h" />
     <ClInclude Include="EnemyBase.h" />
     <ClInclude Include="EnemyCombat.h" />
     <ClInclude Include="EnemyGameObject.h" />
@@ -151,11 +159,14 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="Helper.h" />
     <ClInclude Include="HUD.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="Instructions.h" />
     <ClInclude Include="Library\rapidcsv.h" />
     <ClInclude Include="MainMenu.h" />
     <ClInclude Include="MapManager.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="ParkourLevel.h" />
+    <ClInclude Include="ParticleEffects.h" />
+    <ClInclude Include="PauseMenu.h" />
     <ClInclude Include="PhysicsManager.h" />
     <ClInclude Include="PlayerGameObject.h" />
     <ClInclude Include="PlayerManager.h" />
@@ -167,6 +178,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="SingletonTemplate.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="TextComponent.h" />
+    <ClInclude Include="TextManager.h" />
     <ClInclude Include="TileData.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="UiButton.h" />

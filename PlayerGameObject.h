@@ -4,6 +4,7 @@
 #include "GameObjectManager.h"
 #include "PhysicsManager.h"
 #include "AnimatorComponent.h"
+#include "ParticleEffects.h"
 
 enum class PLAYER_ACTION {
 	IDLE,
@@ -38,16 +39,21 @@ struct Player : GameObject {
 	PLAYER_ACTION currentAction = PLAYER_ACTION::IDLE;
 	PLAYER_ACTION prevAction = PLAYER_ACTION::IDLE;
 
+	std::vector<Particle> hurtParticles;
+	bool gotHurt = false;
+	float hurtTimer = 0.0f;
+	float hurtDuration = 2.0f;
 	~Player();
 	void Init() override;
 	void Update() override;
+	void Render() override;
 
 	virtual void PlayerInput();
 	void ReducePlayerHealth();
 	virtual void PlayerAction();
 	void ApplyDeceleration();
 
-	void TakeDamage(int amount);
+	virtual void TakeDamage(int amount);
 	static void IncrementKills();
 	virtual Animation* PlayerAnimation();
 private:
@@ -78,6 +84,7 @@ struct MeleePlayer : Player {
 	void PlayerInput() override;
 	void PlayerAction() override;
 	Animation* PlayerAnimation() override;
+	void TakeDamage(int amount) override;
 
 };
 
@@ -92,10 +99,13 @@ struct RangePlayer : Player {
 
 	float arrowTimer = 0.0f; // no. of seconds since last shot
 	bool aiming = false;
+
+	std::vector<Particle> particlePool;
 	void Init() override;
 	void Update() override;
 
 	void PlayerInput() override;
+	//void Render() override;
 	void PlayerAction() override;
 	Animation* PlayerAnimation() override;
 
@@ -109,8 +119,11 @@ struct Arrow : GameObject {
 	f32 lifetime = 5.f;
 	int damage = 1;
 	bool isEnemyProjectile = false;
+
+	std::vector<Particle> particlePool;
 	void Init() override;
 	void Update() override;
+	void Render() override;
 	void ShootArrow(AEVec2 startPos, AEVec2 dir);
 };
 

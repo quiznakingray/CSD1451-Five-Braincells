@@ -1,4 +1,5 @@
 #include "PlayerManager.h"
+#include "EnemyManager.h"
 #include "MapManager.h"
 #include "SaveManager.h"
 #include "CameraSystem.h"
@@ -31,11 +32,11 @@ void PlayerManager::Update(){
 	if (currentPlayer != meleePlayer) meleePlayer->ApplyDeceleration();
 	if (currentPlayer != rangedPlayer) rangedPlayer->ApplyDeceleration();
 
-	if (AEInputCheckCurr(AEVK_COMMA) && currentPlayer != meleePlayer)
+	if (AEInputCheckCurr(AEVK_E) && currentPlayer != meleePlayer)
 	{
 		ChangePlayer(PLAYER_TYPE::MELEE);
 	}
-	else if (AEInputCheckCurr(AEVK_PERIOD) && currentPlayer != rangedPlayer)
+	else if (AEInputCheckCurr(AEVK_R) && currentPlayer != rangedPlayer)
 	{
 		ChangePlayer(PLAYER_TYPE::RANGE);
 
@@ -148,6 +149,7 @@ void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
 	canChangePlayer = false;
+	EnemyManager::GetInstance().SetTarget(currentPlayer);
 }
 
 

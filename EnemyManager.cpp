@@ -30,6 +30,10 @@ void EnemyManager::RegisterEnemy(EnemyGameObject* enemy) {
 AEVec2 EnemyManager::GetPlayerPos() {
     return player ? player->pos : AEVec2{ 0, 0 };
 }
+void EnemyManager::SetTarget(Player* p)
+{
+    player = p;
+}
 
 void EnemyManager::SaveEnemyStates() {
     SaveManager::GetInstance().enemySaveData.clear();

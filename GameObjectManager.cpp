@@ -342,3 +342,9 @@ void FreeGameObjects(std::vector<GameObject*>& gos)
 		go->Free();
 	}
 }
+
+void SetActiveGameObjects(std::vector<GameObject*>& vec, bool active)
+{
+	for (GameObject* obj : vec)
+		obj->isActive = active;
+}
