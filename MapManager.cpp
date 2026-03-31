@@ -472,7 +472,10 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
     case TILE_ID::MOVINGTILEMID:
     case TILE_ID::MOVINGTILELEFT:
     case TILE_ID::MOVINGTILERIGHT:
-        newTile = new MovingTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+    case TILE_ID::MOVINGTILEBUTTONMID:
+    case TILE_ID::MOVINGTILEBUTTONLEFT:
+    case TILE_ID::MOVINGTILEBUTTONRIGHT:
+        newTile = new MovingTile(currID, bgID, currTag, altTag, bgActive, currActive, row, col, tileSize);
         break;
     case TILE_ID::MOVINGTILETARGET:
         newTile = new MovingTileTarget(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
@@ -804,7 +807,26 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
     }
     return taggedTiles;
 }
+std::vector<Tile*> MapManager::GetAltTaggedTiles(int altTag, TILE_ID id)
+{
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    std::vector<Tile*> taggedTiles;
 
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        {
+            Tile* currTile = arrMapInfo[uiRow][uiCol];
+            if (currTile->altTag == altTag &&
+                currTile->currID == id)
+            {
+                taggedTiles.push_back(currTile);
+            }
+        }
+    }
+    return taggedTiles;
+}
 
 #pragma endregion
 
@@ -928,8 +950,8 @@ void SpikeTile::Init() {
             std::cout << PlayerStats::Get().GetPlayerHealth() << '\n';
             // knockback based on collision side
             RigidBody* playerRb = player->GetComponent<RigidBody>();
-            float knockbackX = 1000.0f;
-            float knockbackY = 500.0f;
+            float knockbackX = 200.0f;
+            float knockbackY = 400.0f;
 
             switch (static_cast<int>(currID))
             {

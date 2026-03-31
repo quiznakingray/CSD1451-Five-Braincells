@@ -267,8 +267,8 @@ void HUD::Update(f64 dt)
 	UpdateGameObjects(HUDGameObjects);
 
 	// --- TOP STATS ---
-	elapsedTime += static_cast<float>(dt);
-	int totalSeconds = static_cast<int>(elapsedTime);
+	PlayerStats::Get().SetTotalSeconds(PlayerStats::Get().GetTotalSeconds() + dt);
+	int totalSeconds = static_cast<int>(PlayerStats::Get().GetTotalSeconds());
 	int minutes = totalSeconds / 60;
 	int seconds = totalSeconds % 60;
 	char timerBuf[16];

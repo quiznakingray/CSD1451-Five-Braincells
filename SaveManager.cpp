@@ -50,6 +50,10 @@ void SaveManager::SaveDeathCount(int count)
     playerSaveData.deathCount = count;
 }
 
+void SaveManager::SavePlayerTime(int seconds) {
+    playerSaveData.totalSeconds = seconds;
+}
+
 void SaveManager::SaveMapData()
 {
     std::ofstream file("Assets/Saves/mapSave.dat", std::ios::binary);
@@ -148,7 +152,7 @@ void SaveManager::LoadAll()
 
 void SaveManager::ResetSave()
 {
-    playerSaveData = PlayerSaveData{};
+    playerSaveData = PlayerSaveData();
     mapSaveData = MapSaveData{};
     enemySaveData.clear();
     toContinue = false;

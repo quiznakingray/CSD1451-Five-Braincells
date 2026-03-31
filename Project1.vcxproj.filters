@@ -1,269 +1,91 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Library">
-      <UniqueIdentifier>{79be6bbe-56a1-477e-b115-9703e30d1a0a}</UniqueIdentifier>
-    </Filter>
+    <ClCompile Include="AnimatorComponent.cpp" />
+    <ClCompile Include="CameraSystem.cpp" />
+    <ClCompile Include="AudioManager.cpp" />
+    <ClCompile Include="AudioMenu.cpp" />
+    <ClCompile Include="CollisionManager.cpp" />
+    <ClCompile Include="ComponentBase.cpp" />
+    <ClCompile Include="Credits.cpp" />
+    <ClCompile Include="EndMenu.cpp" />
+    <ClCompile Include="EnemyBase.cpp" />
+    <ClCompile Include="EnemyCombat.cpp" />
+    <ClCompile Include="EnemyGameObject.cpp" />
+    <ClCompile Include="EnemyManager.cpp" />
+    <ClCompile Include="EnemyMovement.cpp" />
+    <ClCompile Include="GameObjectManager.cpp" />
+    <ClCompile Include="GameStateManager.cpp" />
+    <ClCompile Include="Helper.cpp" />
+    <ClCompile Include="HUD.cpp" />
+    <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="Instructions.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
+    <ClCompile Include="MapManager.cpp" />
+    <ClCompile Include="ParkourLevel.cpp" />
+    <ClCompile Include="ParticleEffects.cpp" />
+    <ClCompile Include="PauseMenu.cpp" />
+    <ClCompile Include="PhysicsManager.cpp" />
+    <ClCompile Include="PlayerGameObject.cpp" />
+    <ClCompile Include="PlayerManager.cpp" />
+    <ClCompile Include="PowerUps.cpp" />
+    <ClCompile Include="RigidBodyComponent.cpp" />
+    <ClCompile Include="SaveManager.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="SpriteManager.cpp" />
+    <ClCompile Include="TextComponent.cpp" />
+    <ClCompile Include="TextManager.cpp" />
+    <ClCompile Include="TileData.cpp" />
+    <ClCompile Include="UI.cpp" />
+    <ClCompile Include="UiButton.cpp" />
+    <ClCompile Include="UiSlider.cpp" />
+    <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="PlayerStats.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MapManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SpriteManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CollisionManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ComponentBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObjectManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerGameObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TileData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RigidBodyComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PhysicsManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameStateManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ParkourLevel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EnemyBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EnemyCombat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EnemyGameObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EnemyMovement.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PowerUps.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MainMenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Settings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimatorComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SaveManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EnemyManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HUD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AudioManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AudioMenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UiButton.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UiSlider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UI.cpp">
-    <ClCompile Include="PauseMenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Instructions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EndMenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Credits.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleEffects.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="MapManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Library\rapidcsv.h">
-      <Filter>Library</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ComponentBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObjectManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerGameObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SingletonTemplate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TileData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RigidBodyComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicsManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameStateManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ParkourLevel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EnemyBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EnemyCombat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EnemyGameObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EnemyMovement.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PowerUps.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MainMenu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Settings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimatorComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Helper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SaveManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EnemyManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HUD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioMenu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UiButton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UiSlider.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerStats.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UI.h">
-    <ClInclude Include="PauseMenu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Instructions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EndMenu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Credits.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleEffects.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClInclude Include="AnimatorComponent.h" />
+    <ClInclude Include="CameraSystem.h" />
+    <ClInclude Include="AudioManager.h" />
+    <ClInclude Include="AudioMenu.h" />
+    <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="ComponentBase.h" />
+    <ClInclude Include="Credits.h" />
+    <ClInclude Include="EndMenu.h" />
+    <ClInclude Include="EnemyBase.h" />
+    <ClInclude Include="EnemyCombat.h" />
+    <ClInclude Include="EnemyGameObject.h" />
+    <ClInclude Include="EnemyManager.h" />
+    <ClInclude Include="EnemyMovement.h" />
+    <ClInclude Include="GameObjectManager.h" />
+    <ClInclude Include="GameStateManager.h" />
+    <ClInclude Include="Helper.h" />
+    <ClInclude Include="HUD.h" />
+    <ClInclude Include="InputManager.h" />
+    <ClInclude Include="Instructions.h" />
+    <ClInclude Include="Library\rapidcsv.h" />
+    <ClInclude Include="MainMenu.h" />
+    <ClInclude Include="MapManager.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="ParkourLevel.h" />
+    <ClInclude Include="ParticleEffects.h" />
+    <ClInclude Include="PauseMenu.h" />
+    <ClInclude Include="PhysicsManager.h" />
+    <ClInclude Include="PlayerGameObject.h" />
+    <ClInclude Include="PlayerManager.h" />
+    <ClInclude Include="PlayerStats.h" />
+    <ClInclude Include="PowerUps.h" />
+    <ClInclude Include="RigidBodyComponent.h" />
+    <ClInclude Include="SaveManager.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="SingletonTemplate.h" />
+    <ClInclude Include="SpriteManager.h" />
+    <ClInclude Include="TextComponent.h" />
+    <ClInclude Include="TextManager.h" />
+    <ClInclude Include="TileData.h" />
+    <ClInclude Include="UI.h" />
+    <ClInclude Include="UiButton.h" />
+    <ClInclude Include="UiSlider.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
 </Project>

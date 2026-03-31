@@ -19,7 +19,9 @@ void PlayerManager::Init()
 	rangePlayerArrow = new Arrow;
 	AEVec2Set(&rangePlayerArrow->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
 
-	currentPlayer = meleePlayer;
+	currentPlayer = PlayerStats::Get().GetPlayerType() == PLAYER_TYPE::MELEE
+		? static_cast<Player*>(meleePlayer)
+		: static_cast<Player*>(rangedPlayer);
 	CameraSystem::SetCameraPos(meleePlayer->pos);
 }
 
@@ -39,7 +41,6 @@ void PlayerManager::Update(){
 	else if (AEInputCheckCurr(AEVK_R) && currentPlayer != rangedPlayer)
 	{
 		ChangePlayer(PLAYER_TYPE::RANGE);
-
 	}
 	if (AEInputCheckTriggered(AEVK_L) && PlayerStats::Get().health != 0)
 	{
@@ -108,6 +109,9 @@ void PlayerManager::SavePlayerData()
 
 	save.playerSaveData.deathCount = stats.deathCount;
 	save.playerSaveData.killCount = stats.killCount;
+	save.playerSaveData.totalSeconds = stats.totalSeconds;
+
+	save.playerSaveData.currentPlayerType = stats.playerType;
 
 	save.playerSaveData.hasSavedData = true;
 }
@@ -139,6 +143,9 @@ void PlayerManager::Load()
 
 	stats.deathCount = data.deathCount;
 	stats.killCount = data.killCount;
+	stats.totalSeconds = data.totalSeconds;
+
+	stats.playerType = data.currentPlayerType;
 }
 
 
@@ -150,6 +157,7 @@ void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
 	canChangePlayer = false;
+	PlayerStats::Get().SetPlayerType(currentPlayerType);
 	EnemyManager::GetInstance().SetTarget(currentPlayer);
 }
 

@@ -3,10 +3,7 @@
 
 #include "SingletonTemplate.h"
 #include "PlayerGameObject.h"
-enum class PLAYER_TYPE {
-	MELEE,
-	RANGE
-};
+#include "PlayerStats.h"
 
 //struct PlayerSaveData {
 //	AEVec2 meleePos{};
