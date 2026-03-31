@@ -84,6 +84,7 @@ struct Tile : GameObject {
 	bool isTrigger{};
 	bool isCollidable{};
 	bool isCenter{};
+	bool canArrowPass{ false };
 	bool isCurrActive{ true };
 	bool isBGActive{ true };
 
@@ -789,7 +790,7 @@ struct LeverTile : Tile {
 			{
 				this->interactionTextBox->isActive = true;
 				// prevent triggering from melee shield collider
-				if (AEInputCheckTriggered(AEVK_F) && other->size.x >= 0.99 && 
+				if (AEInputCheckTriggered(AEVK_F) && !other->isTrigger && 
 					PlayerManager::GetInstance().currentPlayer == player)
 				{
 					TriggerLever();

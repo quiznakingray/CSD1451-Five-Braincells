@@ -10,13 +10,15 @@
 
 struct EnemyGameObject : GameObject {
     bool isGrounded = false;
-
+    float damageTextDuration = 1.f;
     void Jump(float force);
     bool CheckGrounded();
 
     EnemyBase base;
     EnemyMovement movement;
     RigidBody* rb = nullptr;
+    Text* healthText = nullptr;
+    std::vector<std::pair<Text*, float>> hurtTexts;
 
     Animator* animator = nullptr;
     Animation* patrolAnim = nullptr;

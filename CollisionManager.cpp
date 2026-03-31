@@ -228,6 +228,9 @@ void Collider::Render()
 	s.spriteShape = (type == COLLIDER_TYPE::CIRCLE_COLLIDER)
 		? SPRITE_SHAPE::SHAPE_CIRCLE
 		: SPRITE_SHAPE::SHAPE_RECT;
+	s.size = size;       // scale the visual to match collider bounds
+	s.offset = center;
+
 	s.Init();
 	s.Render();
 	s.Free();
