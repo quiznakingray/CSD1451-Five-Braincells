@@ -20,6 +20,7 @@ enum class EnemyState
     PATROL,
     CHASE,
     ATTACK,
+	ATTACKING, 
     IDLE // For mini-bosses that don't move
 };
 

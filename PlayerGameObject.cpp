@@ -20,7 +20,6 @@ void Player::PlayerInput()
 
 	bool isGrabbing = currentAction == PLAYER_ACTION::CRATEINTERACT;
 	float accel = isGrabbing ? 200.0f : 300.0f;
-	float maxSpeed = isGrabbing ? 200.0f : 300.0f;
 	float jumpHeight = 300.0f;  // lower jump when grabbing
 
 	//AEVec2Set(&velocity, 0.f, 0.f);
@@ -56,11 +55,7 @@ void Player::PlayerInput()
 
 	}
 
-	if (rb->velocity.x > maxSpeed)
-		rb->velocity.x = maxSpeed;
 
-	if (rb->velocity.x < -maxSpeed)
-		rb->velocity.x = -maxSpeed;
 
 }
 
@@ -110,7 +105,6 @@ void Player::ApplyDeceleration()
 	f64 dt = AEFrameRateControllerGetFrameTime();
 	bool isGrabbing = currentAction == PLAYER_ACTION::CRATEINTERACT;
 	float decel = isGrabbing ? 300.0f : 400.0f;
-	float maxSpeed = isGrabbing ? 200.0f : 300.0f;
 
 	if (rb->velocity.x > 0)
 	{
@@ -200,7 +194,7 @@ void Player::Init()
 	);
 	showColliders = true;
 	Collider* c = AddComponent(
-		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.f, 0.6f, 1.f)
+		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.f, 0.8f, 1.f)
 	);
 	c->OnClick = [] {
 		std::cout << "Clicking" << std::endl;
@@ -267,12 +261,12 @@ void Player::Init()
 			}
 
 		};
-
 	rb = AddComponent(
 		new RigidBody()
 	);
 	rb->type = RIGIDBODY_TYPE::DYNAMIC;
 	rb->mass = 10.f;
+
 
 
 	//showColliders = true;
@@ -288,7 +282,13 @@ void Player::Update(){
 	//PlayerStats::Get().RegenStamina(dt); // passive stamina regen
 
 	PlayerAction();
+	bool isGrabbing = currentAction == PLAYER_ACTION::CRATEINTERACT;
+	float maxSpeed = isGrabbing ? 200.0f : 250.0f;
+	if (rb->velocity.x > maxSpeed)
+		rb->velocity.x = maxSpeed;
 
+	if (rb->velocity.x < -maxSpeed)
+		rb->velocity.x = -maxSpeed;
 	animator->PlayAnimation(PlayerAnimation());
 
 	runningAnim->sprite->size.x =
@@ -328,7 +328,7 @@ void Player::Free()
 void Player::TakeDamage(int amount)
 {
 	gotHurt = true;
-	PlayerStats::Get().ReducePlayerHealth();
+	PlayerStats::GetInstance().ReducePlayerHealth(amount);
 
 }
 
@@ -440,7 +440,7 @@ void MeleePlayer::Update()
 	
 	shieldCollider->isActive = shieldActive;
 	shieldBubbleAnimation->isActive = shieldActive;
-	
+	std::cout << "Shield Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x << "  " << rb->velocity.y << std::endl;
 	Player::Update();
 }
 

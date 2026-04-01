@@ -24,6 +24,7 @@ struct EnemyGameObject : GameObject {
     Animation* patrolAnim = nullptr;
     Animation* chaseAnim = nullptr;
     Animation* attackAnim = nullptr;
+    Animation* attackingAnim = nullptr;
 
     GameObject* healthBarBG = nullptr;
     GameObject* healthBarFG = nullptr;

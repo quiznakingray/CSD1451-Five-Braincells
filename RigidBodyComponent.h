@@ -27,7 +27,7 @@ struct RigidBody : ComponentBase {
 	bool onCollider = false;
 
 	bool hasGravity = true;
-	f32 gravity = -500.f;
+	f32 gravity = -400.f;
 	//AEVec2 FreePosition;
 
 

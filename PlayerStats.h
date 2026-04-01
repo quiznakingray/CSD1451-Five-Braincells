@@ -54,7 +54,7 @@ struct PlayerStats : public Singleton<PlayerStats>
 
     bool ConsumeJumpStamina();
 
-    void ReducePlayerHealth();
+    void ReducePlayerHealth(int amount = 1);
 
     void IncreasePlayerHealth(int amount = 1);
 

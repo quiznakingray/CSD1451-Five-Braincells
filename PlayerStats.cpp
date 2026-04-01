@@ -43,9 +43,9 @@ bool PlayerStats::ConsumeJumpStamina()
     return true;
 }
 
-void PlayerStats::ReducePlayerHealth()
+void PlayerStats::ReducePlayerHealth(int amount)
 {
-    health--;
+    health-= amount;
     if (health > 0) {
         AudioManager::GetInstance().PlaySFX("playerHurt");
     }

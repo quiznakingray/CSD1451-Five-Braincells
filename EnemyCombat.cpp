@@ -35,7 +35,7 @@ void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float
     bool isRangedType = (enemy.type == EnemyType::BASIC_RANGED ||
         enemy.type == EnemyType::MINI_BOSS_RANGED);
 
-    enemy.currentState = EnemyState::ATTACK;
+    enemy.currentState = EnemyState::ATTACKING;
 
     if (isRangedType)
     {

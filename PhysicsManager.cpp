@@ -14,7 +14,7 @@ void PhysicsManager::UpdateRigidBody(RigidBody* rb, f64 dt)
     // Apply gravity
     if (rb->hasGravity ) rb->velocity.y += rb->gravity * static_cast<f32>(dt);
 
-    constexpr float MAX_FALL_SPEED = -600.0f; // tune this, keep fabs < 80 * fps
+    constexpr float MAX_FALL_SPEED = -400.0f; // tune this, keep fabs < 80 * fps
     if (rb->velocity.y < MAX_FALL_SPEED)
         rb->velocity.y = MAX_FALL_SPEED;
 
@@ -80,7 +80,7 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     bool aIsDynamic = ra && ra->type == RIGIDBODY_TYPE::DYNAMIC;
     bool bIsDynamic = rb && rb->type == RIGIDBODY_TYPE::DYNAMIC;
 
-    constexpr float GROUND_BIAS = 12.0f;
+    constexpr float GROUND_BIAS = 10.0f;
     constexpr float WALL_HIT_THRESHOLD = 8.0f;
 
     if (!aIsDynamic && !bIsDynamic)
