@@ -934,6 +934,7 @@ void Tile::Update()
 
 void SpikeTile::Init() {
     Tile::Init();
+    collider->isTrigger = true;
     collider->size.x = 0.7f;
     collider->size.y = 0.7f;
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
@@ -1088,6 +1089,7 @@ void GoalTile::Init() {
 
 void CheckpointTile::Init() {
     Tile::Init();
+    canArrowPass = true;
     collider->isTrigger = true;
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);

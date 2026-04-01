@@ -18,7 +18,7 @@
 #include "AudioManager.h"
 #include "PlayerManager.h"
 
-#include "Helper.h"
+#include "CooldownTimer.h"
 
 #define MAX_XAXIS 100
 #define MAX_YAXIS 100
@@ -91,6 +91,7 @@ struct Tile : GameObject {
 	bool isTrigger{};
 	bool isCollidable{};
 	bool isCenter{};
+	bool canArrowPass{ false };
 	bool isCurrActive{ true };
 	bool isBGActive{ true };
 
@@ -820,7 +821,8 @@ struct LeverTile : Tile {
 			{
 				this->interactionTextBox->isActive = true;
 				// prevent triggering from melee shield collider
-				if (AEInputCheckTriggered(AEVK_F) && !other->isTrigger &&
+
+				if (AEInputCheckTriggered(AEVK_F) && !other->isTrigger && 
 					PlayerManager::GetInstance().currentPlayer == player)
 				{
 					TriggerLever();

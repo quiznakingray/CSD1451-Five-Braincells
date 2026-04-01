@@ -6,7 +6,7 @@
 #include <string>
 struct Text : ComponentBase {
 	AEVec2 center{};
-	AEVec2 size{};
+	f32 size = 1.f;
 
 	bool inWorldSpace = true;
 	std::string textStr{};

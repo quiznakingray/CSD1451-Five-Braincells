@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "AEEngine.h"
-#include "Utils.h"
+#include "AEVec3.h"
 #include "CollisionManager.h"
 #include "GameObjectManager.h"
 #include "ComponentBase.h"

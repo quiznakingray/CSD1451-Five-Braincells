@@ -14,9 +14,9 @@ void EnemyManager::Init(Player* p) {
 }
 
 void EnemyManager::FreeEnemies() {
-    for (EnemyGameObject* enemy : enemies) {
-        delete enemy;
-    }
+    //for (EnemyGameObject* enemy : enemies) {
+    //    delete enemy;
+    //}
     enemies.clear();
     registeredEnemies.clear();
 }

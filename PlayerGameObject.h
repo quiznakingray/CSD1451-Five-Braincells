@@ -37,7 +37,7 @@ struct Player : GameObject {
 	PLAYER_ACTION currentAction = PLAYER_ACTION::IDLE;
 	PLAYER_ACTION prevAction = PLAYER_ACTION::IDLE;
 
-	std::vector<Particle> hurtParticles;
+	ParticleSystem hurtParticles;
 	bool gotHurt = false;
 	bool canJump = true;
 	float hurtTimer = 0.0f;
@@ -46,6 +46,7 @@ struct Player : GameObject {
 	void Init() override;
 	void Update() override;
 	void Render() override;
+	void Free() override;
 
 	virtual void PlayerInput();
 	void ReducePlayerHealth();
@@ -119,7 +120,7 @@ struct Arrow : GameObject {
 	int damage = 1;
 	bool isEnemyProjectile = false;
 
-	std::vector<Particle> particlePool;
+	ParticleSystem particlePool;
 	void Init() override;
 	void Update() override;
 	void Render() override;
