@@ -29,8 +29,15 @@ void PlayerManager::Update(){
 	currentPlayer->PlayerInput();
 	//currentPlayer->PlayerAction();
 	
-	if (currentPlayer != meleePlayer) meleePlayer->ApplyDeceleration();
-	if (currentPlayer != rangedPlayer) rangedPlayer->ApplyDeceleration();
+	if (currentPlayer != meleePlayer) {
+		meleePlayer->ApplyDeceleration();
+		meleePlayer->shieldActive = false;
+		meleePlayer->inShieldAction = false;
+	}
+	if (currentPlayer != rangedPlayer) {
+		rangedPlayer->ApplyDeceleration();
+		rangedPlayer->aiming = false;
+	}
 
 	if (AEInputCheckCurr(AEVK_E) && currentPlayer != meleePlayer)
 	{
@@ -40,10 +47,6 @@ void PlayerManager::Update(){
 	{
 		ChangePlayer(PLAYER_TYPE::RANGE);
 
-	}
-	if (AEInputCheckTriggered(AEVK_L) && PlayerStats::Get().health != 0)
-	{
-		--PlayerStats::Get().health;
 	}
 	rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PLAYER_ACTION::AIMING;
 

@@ -62,7 +62,21 @@ struct GameObject {
 		}
 		return nullptr;
 	}
-
+	template<typename T>
+	bool RemoveComponent(T*& component)
+	{
+		for (auto it = components.begin(); it != components.end(); ++it)
+		{
+			if (*it == component)
+			{
+				delete* it;
+				it = components.erase(it);
+				component = nullptr;
+				return true;
+			}
+		}
+		return false;
+	}
 	virtual void Init();
 	virtual void Update();
 	virtual void Render();

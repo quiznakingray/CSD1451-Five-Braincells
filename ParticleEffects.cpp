@@ -2,10 +2,9 @@
 #include "PlayerManager.h"
 #include "CameraSystem.h"
 
-//std::vector<Particle> ParticleSystem::particlePool;
-AEGfxVertexList* ParticleSystem::pParticleMesh = nullptr;
 
-void ParticleSystem::Init(u32 maxParticles, std::vector<Particle>&particlePool) {
+
+void ParticleSystem::Init(u32 maxParticles) {
     particlePool.resize(maxParticles);
 
     // Create a simple square mesh for particles
@@ -19,7 +18,7 @@ void ParticleSystem::Init(u32 maxParticles, std::vector<Particle>&particlePool) 
     pParticleMesh = AEGfxMeshEnd();
 }
 
-void ParticleSystem::CreateHitEffect(f32 x, f32 y, std::vector<Particle>& particlePool) {
+void ParticleSystem::CreateHitEffect(f32 x, f32 y) {
 
     u32 colors[] = { 0xFFFFFF00, 0xFFFF8800, 0xFFFFFFFF, 0xFF88FFFF, 0xFFFF4400 };
 
@@ -47,7 +46,7 @@ void ParticleSystem::CreateHitEffect(f32 x, f32 y, std::vector<Particle>& partic
     }
 }
 
-void ParticleSystem::CreateArrowTrail(f32 x, f32 y, AEVec2 direction, std::vector<Particle>& particlePool) {
+void ParticleSystem::CreateArrowTrail(f32 x, f32 y, AEVec2 direction) {
     for (auto& p : particlePool) {
         if (!p.active) {
             p.active = true;
@@ -64,7 +63,7 @@ void ParticleSystem::CreateArrowTrail(f32 x, f32 y, AEVec2 direction, std::vecto
     }
 }
 
-void ParticleSystem::Update(f32 dt,std::vector<Particle>& particlePool) {
+void ParticleSystem::Update(f32 dt) {
     for (auto& p : particlePool) {
         if (p.active) {
             p.pos.x += p.vel.x * dt;
@@ -76,7 +75,7 @@ void ParticleSystem::Update(f32 dt,std::vector<Particle>& particlePool) {
     }
 }
 
-void ParticleSystem::Draw(std::vector<Particle>& particlePool) {
+void ParticleSystem::Draw() {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
     // Get the camera position so particles stay in the game world

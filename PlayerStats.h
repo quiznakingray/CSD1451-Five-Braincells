@@ -83,6 +83,9 @@ struct PlayerStats
         }
         else
         {
+            deathCount++;
+            health =maxHealth;
+            jumpStamina = maxJumpStamina;
             AudioManager::GetInstance().PlaySFX("playerDie");
             health = maxHealth;
             SaveManager::GetInstance().toContinue = true;

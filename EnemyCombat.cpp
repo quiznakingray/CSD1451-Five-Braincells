@@ -79,12 +79,19 @@ bool IsEnemyDead(EnemyBase& enemy)
     return false;
 }
 
-void EnemyTakeDamage(EnemyBase& enemy, int damage)
+void EnemyTakeDamage(EnemyGameObject& enemy, int damage)
 {
-    if (!enemy.isAlive) return;
-    enemy.stats.health -= damage;
-    std::cout << "[EnemyCombat] Enemy took " << damage << " dmg, health now " << enemy.stats.health << "\n";
-    if (IsEnemyDead(enemy))
+    if (!enemy.base.isAlive) return;
+    enemy.base.stats.health -= damage;
+    
+    // show damage number
+    Text* t = enemy.AddComponent(new Text());
+    t->SetText("-" + std::to_string(damage));
+    t->center = { (-0.5f + AERandFloat() ) * enemy.scale.x  , 0};
+    enemy.hurtTexts.push_back({ t, 0.f });
+
+    std::cout << "[EnemyCombat] Enemy took " << damage << " dmg, health now " << enemy.base.stats.health << "\n";
+    if (IsEnemyDead(enemy.base))
     {
         std::cout << "[EnemyCombat] Enemy died!\n";
         PlayerStats::Get().killCount++;

@@ -76,6 +76,9 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     animator = AddComponent(new Animator(patrolAnim));
     AddComponent(new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0, 0, 1, 1));
 
+    healthText = AddComponent(new Text());
+    healthText->SetText(std::to_string(base.stats.health));
+    healthText->center.y = 100.f;
     base.isAlive = true;
     InitHealthBar();
     GameObject::Init();
@@ -91,7 +94,7 @@ void EnemyGameObject::Update() {
         if (base.projectile) base.projectile->Update(); // Update arrow
         return;
     }
-
+    healthText->SetText(std::to_string(base.stats.health));
     AEVec2 playerPos = EnemyManager::GetInstance().GetPlayerPos();
     float dx = playerPos.x - pos.x;
     float dy = playerPos.y - pos.y;
@@ -121,6 +124,24 @@ void EnemyGameObject::Update() {
         if (rb) rb->velocity.x = 0.f;
         base.currentState = EnemyState::PATROL;
         if (base.canMove) Patrol(dt);
+    }
+
+    //damage number 
+
+    for (auto it = hurtTexts.begin(); it != hurtTexts.end();)
+    {
+        float dt = AEFrameRateControllerGetFrameTime();
+        it->second += dt;
+
+        float offsetY = 80.f * it->second;
+        it->first->center = { it->first->center.x, offsetY };
+
+        if (it->second >= damageTextDuration)
+        {
+            RemoveComponent(it->first); // nulled out
+            it = hurtTexts.erase(it);
+        }
+        else ++it;
     }
 
     UpdateAnimation();

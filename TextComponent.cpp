@@ -5,7 +5,7 @@
 void Text::Render()
 {
     f32 textW, textH;
-    AEGfxGetPrintSize(TextManager::pFont, text, 1.f, &textW, &textH);
+    AEGfxGetPrintSize(TextManager::pFont, text, size * 1.f, &textW, &textH);
 	//f32 width, height;
 	//AEGfxGetPrintSize(TextManager::pFont, text, 1.f, &width, &height);
     f32 x, y;

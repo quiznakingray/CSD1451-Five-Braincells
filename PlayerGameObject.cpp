@@ -196,9 +196,9 @@ void Player::Init()
 	animator = AddComponent(
 		new Animator(idleAnim)
 	);
-
+	showColliders = true;
 	Collider* c = AddComponent(
-		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.f, 1.f, 1.f)
+		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.f, 0.6f, 1.f)
 	);
 	c->OnClick = [] {
 		std::cout << "Clicking" << std::endl;
@@ -266,7 +266,7 @@ void Player::Init()
 	//showColliders = true;
 	speed = static_cast<f32>(200.0);
 	//AEVec2Set(&velocity, 0.f, 0.f);
-	ParticleSystem::Init(5, hurtParticles);
+	hurtParticles.Init(5);
 
 	GameObject::Init();
 }
@@ -293,8 +293,8 @@ void Player::Update(){
 			hurtDuration = 2.0f;
 		}
 	}
-	ParticleSystem::CreateHitEffect(pos.x, pos.y, hurtParticles);
-	ParticleSystem::Update(dt, hurtParticles);
+	hurtParticles.CreateHitEffect(pos.x, pos.y);
+	hurtParticles.Update(dt);
 
 	GameObject::Update();
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
@@ -303,26 +303,21 @@ void Player::Update(){
 void Player::Render()
 {
 	GameObject::Render();
-	if(gotHurt)
-		ParticleSystem::Draw(hurtParticles);
+	if (gotHurt)
+		hurtParticles.Draw();
+}
+
+void Player::Free()
+{
+	GameObject::Free();
+	hurtParticles.Exit();
 }
 
 void Player::TakeDamage(int amount)
 {
 	gotHurt = true;
-	PlayerStats::Get().health -= amount;
+	PlayerStats::Get().ReducePlayerHealth();
 
-	if (PlayerStats::Get().health <= 0)
-	{
-		// inc death counter
-		PlayerStats::Get().deathCount++;
-
-		// respawn: reset health and jump stamina
-		PlayerStats::Get().health = PlayerStats::Get().maxHealth;
-		PlayerStats::Get().jumpStamina =PlayerStats::Get().maxJumpStamina;
-
-		std::cout << "[Player] Total deaths: " << PlayerStats::Get().deathCount << "\n";
-	}
 }
 
 void Player::IncrementKills()
@@ -704,13 +699,13 @@ void Arrow::Init()
 	);
 	c->OnTriggerEnter = [this](Collider* other, int sides)
 		{
-			if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) ||
-				((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
-			{
+			//if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) ||
+			//	((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
+			//{
 				if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 				{
 					// crate will deactivate arrow on its own ontrigger
-					if (dynamic_cast<CrateTile*>(other->owner)) return;
+					if (dynamic_cast<CrateTile*>(other->owner) || tile->canArrowPass) return;
 
 					isActive = false;
 					timer = 0.0f;
@@ -722,9 +717,9 @@ void Arrow::Init()
 					std::cout << "Hit enemy for " << damage << " damage!\n";
 
 					isActive = false;
-					EnemyTakeDamage(enemy->base, damage);
+					EnemyTakeDamage(*enemy, damage);
 				}
-			}
+			//}
 		};
 	c->isTrigger = true;
 	//showColliders = true;
@@ -736,7 +731,7 @@ void Arrow::Init()
 	rb->hasGravity = false;
 	isActive = false;
 
-	ParticleSystem::Init(5, particlePool);
+	particlePool.Init(5);
 
 	isEnemyProjectile = false;
 	damage = 1;
@@ -748,7 +743,7 @@ void Arrow::Update()
 	GameObject::Update();
 	if (isActive)
 	{
-		
+
 		double dt = AEFrameRateControllerGetFrameTime();
 		timer += static_cast<f32>(dt);
 		if (timer >= lifetime)
@@ -764,18 +759,18 @@ void Arrow::Update()
 		float tailOffsetX = -dir.x * scale.x / 2.f;
 		float tailOffsetY = -dir.y * scale.y / 2.f;
 
-		ParticleSystem::CreateArrowTrail(
+		particlePool.CreateArrowTrail(
 			pos.x + tailOffsetX,
 			pos.y + tailOffsetY,
-			rb->velocity, particlePool);
+			rb->velocity);
 
-		ParticleSystem::Update(dt, particlePool);
+		particlePool.Update(dt);
 	}
 }
 
 void Arrow::Render()
 {
-	if (isActive) ParticleSystem::Draw(particlePool);
+	if (isActive) particlePool.Draw();
 	GameObject::Render();
 }
 
