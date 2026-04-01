@@ -18,7 +18,7 @@
 #include "AudioManager.h"
 #include "PlayerManager.h"
 
-#include "Helper.h"
+#include "CooldownTimer.h"
 
 #define MAX_XAXIS 100
 #define MAX_YAXIS 100
