@@ -820,7 +820,7 @@ struct LeverTile : Tile {
 			{
 				this->interactionTextBox->isActive = true;
 				// prevent triggering from melee shield collider
-				if (AEInputCheckTriggered(AEVK_F) && other->size.x >= 0.99 && 
+				if (AEInputCheckTriggered(AEVK_F) && 
 					PlayerManager::GetInstance().currentPlayer == player)
 				{
 					TriggerLever();

@@ -125,6 +125,23 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     // Dynamic vs Dynamic split resolution by mass (unchanged)
     if (aIsDynamic && bIsDynamic)
     {
+        if (pyOverlap < pxOverlap)  // more vertical overlap → resolve Y
+        {
+            if (dy > 0)  // A is above B
+            {
+                move(A, 0, pyOverlap, ra, false);   // push A up
+                ra->velocity.y = 0.f;
+                ra->onCollider = true;
+            }
+            else
+            {
+                move(B, 0, pyOverlap, rb, false);   // push B up
+                rb->velocity.y = 0.f;
+                rb->onCollider = true;
+            }
+            return;
+        }
+
         // A can only push B if A's mass >= B's mass AND A is moving toward B
         float relVelX = ra->velocity.x - rb->velocity.x;
         float relVelY = ra->velocity.y - rb->velocity.y;
@@ -214,14 +231,6 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
             // If the platform is moving horizontally, carry the rider along
             if (passiveRb && passiveRb->type == RIGIDBODY_TYPE::KINEMATIC)
                 dynamicObj->pos.x += passiveRb->velocity.x * static_cast<f32>(AEFrameRateControllerGetFrameTime());
-            
-            //// If the platform is moving vertically, carry the rider along
-            //if (passiveRb && passiveRb->type == RIGIDBODY_TYPE::KINEMATIC)
-            //{
-            //    float fdt = static_cast<f32>(AEFrameRateControllerGetFrameTime());
-            //    dynamicObj->pos.x += passiveRb->velocity.x * fdt;
-            //    dynamicObj->pos.y += passiveRb->velocity.y * fdt;
-            //}
         }
         else
         {

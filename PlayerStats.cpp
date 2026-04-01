@@ -175,13 +175,13 @@ PLAYER_TYPE PlayerStats::GetPlayerType()
     return playerType;
 }
 
-PlayerStats& PlayerStats::Get()
-{
-    static PlayerStats instance;
-    return instance;
-}
+//PlayerStats& PlayerStats::Get()
+//{
+//    static PlayerStats instance;
+//    return instance;
+//}
 
-void PlayerStats::Reset()
+void PlayerStats::ResetAll()
 {
     health = 5;
     maxHealth = 5;
@@ -193,6 +193,12 @@ void PlayerStats::Reset()
     deathCount = 0;
     killCount = 0;
     totalSeconds = 0;
+}
+
+void PlayerStats::ResetHealthStamina() {
+    health = maxHealth;
+    maxJumpStamina = BASE_MAX_STAMINA;
+    jumpStamina = BASE_MAX_STAMINA;
 }
 
 void PlayerStats::ResetCounters()

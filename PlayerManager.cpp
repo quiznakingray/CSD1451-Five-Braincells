@@ -19,10 +19,14 @@ void PlayerManager::Init()
 	rangePlayerArrow = new Arrow;
 	AEVec2Set(&rangePlayerArrow->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
 
-	currentPlayer = PlayerStats::Get().GetPlayerType() == PLAYER_TYPE::MELEE
+	currentPlayer = PlayerStats::GetInstance().GetPlayerType() == PLAYER_TYPE::MELEE
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
 	CameraSystem::SetCameraPos(meleePlayer->pos);
+
+	if (!SaveManager::GetInstance().HasSaveData()) {
+		PlayerStats::GetInstance().ResetHealthStamina();
+	}
 }
 
 void PlayerManager::Update(){
@@ -42,15 +46,15 @@ void PlayerManager::Update(){
 	{
 		ChangePlayer(PLAYER_TYPE::RANGE);
 	}
-	if (AEInputCheckTriggered(AEVK_L) && PlayerStats::Get().health != 0)
+	if (AEInputCheckTriggered(AEVK_L) && PlayerStats::GetInstance().health != 0)
 	{
-		--PlayerStats::Get().health;
+		--PlayerStats::GetInstance().health;
 	}
 	rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PLAYER_ACTION::AIMING;
 
 	//regen stamina
 
-	PlayerStats::Get().RegenStamina(dt); 
+	PlayerStats::GetInstance().RegenStamina(dt);
 	
 
 	if (!canChangePlayer)
@@ -97,7 +101,7 @@ void PlayerManager::SavePlayerData()
 	if (rangedPlayer) save.playerSaveData.rangedPos = rangedPlayer->pos;
 
 	// copy persistent stats from PlayerStats singleton
-	PlayerStats& stats = PlayerStats::Get();
+	PlayerStats& stats = PlayerStats::GetInstance();
 	save.playerSaveData.health = stats.health;
 	save.playerSaveData.maxHealth = stats.maxHealth;
 	save.playerSaveData.damage = stats.damage;
@@ -130,7 +134,7 @@ void PlayerManager::Load()
 	}
 
 	// restore stats into PlayerStats singleton
-	PlayerStats& stats = PlayerStats::Get();
+	PlayerStats& stats = PlayerStats::GetInstance();
 	
 	stats.health = data.health;
 	stats.maxHealth = data.maxHealth;
@@ -157,7 +161,7 @@ void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
 	canChangePlayer = false;
-	PlayerStats::Get().SetPlayerType(currentPlayerType);
+	PlayerStats::GetInstance().SetPlayerType(currentPlayerType);
 	EnemyManager::GetInstance().SetTarget(currentPlayer);
 }
 

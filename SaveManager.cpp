@@ -152,7 +152,7 @@ void SaveManager::LoadAll()
 
 void SaveManager::ResetSave()
 {
-    playerSaveData = PlayerSaveData();
+    playerSaveData = PlayerSaveData{};
     mapSaveData = MapSaveData{};
     enemySaveData.clear();
     toContinue = false;

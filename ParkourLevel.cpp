@@ -151,7 +151,7 @@ void ParkourLevel::Free()
 	//AEGfxSetCamPosition(0.f, 0.f);
 	//FreeGameObjects(levelGameObjectVector);
 	for (auto* obj : levelGameObjectVector) {
-		// skip players � PlayerManager owns and deletes them
+		// skip players PlayerManager owns and deletes them
 		if (obj == PlayerManager::GetInstance().meleePlayer) continue;
 		if (obj == PlayerManager::GetInstance().rangedPlayer) continue;
 		if (obj == PlayerManager::GetInstance().rangePlayerArrow) continue;
@@ -172,7 +172,7 @@ void ParkourLevel::Free()
 	PauseMenu::GetInstance().Free();
 
 	//EndMenu::GetInstance().Free();
-	//EndMenu::GetInstance().isActive = false; // Reset for the next time the level loads
+	//EndMenu::GetInstance().isActive = false; // ResetAll for the next time the level loads
 }
 
 void ParkourLevel::Unload()

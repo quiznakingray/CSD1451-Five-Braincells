@@ -9,7 +9,7 @@ enum class PLAYER_TYPE {
     RANGE
 };
 
-struct PlayerStats
+struct PlayerStats : public Singleton<PlayerStats>
 {
 
     // base constants
@@ -93,18 +93,20 @@ struct PlayerStats
     PLAYER_TYPE GetPlayerType();
 
     // singleton access 
-    static PlayerStats& Get();
+    //static PlayerStats& Get();
 
     // reset (call at game start / new run)
-    void Reset();
+    void ResetAll();
+
+    void ResetHealthStamina();
 
     void ResetCounters();
 
-private:
-    // prevent external construction / copying
-    PlayerStats() = default;
-    PlayerStats(const PlayerStats&) = delete;
-    PlayerStats& operator=(const PlayerStats&) = delete;
+//private:
+//    // prevent external construction / copying
+//    PlayerStats() = default;
+//    PlayerStats(const PlayerStats&) = delete;
+//    PlayerStats& operator=(const PlayerStats&) = delete;
 };
 
 #endif // PLAYER_STATS_H

@@ -87,6 +87,6 @@ void EnemyTakeDamage(EnemyBase& enemy, int damage)
     if (IsEnemyDead(enemy))
     {
         std::cout << "[EnemyCombat] Enemy died!\n";
-        PlayerStats::Get().killCount++;
+        PlayerStats::GetInstance().killCount++;
     }
 }
