@@ -87,6 +87,7 @@ void EnemyTakeDamage(EnemyGameObject& enemy, int damage)
     // show damage number
     Text* t = enemy.AddComponent(new Text());
     t->SetText("-" + std::to_string(damage));
+    t->SetColor(Color{1.f, 0.f, 0.f, 1.f}); // red color
     t->center = { (-0.5f + AERandFloat() ) * enemy.scale.x  , 0};
     enemy.hurtTexts.push_back({ t, 0.f });
 

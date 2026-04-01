@@ -146,6 +146,7 @@ void EnemyGameObject::Update() {
 
         float offsetY = 80.f * it->second;
         it->first->center = { it->first->center.x, offsetY };
+		it->first->SetColor({ 1.f, 0.f, 0.f, 1.f - (it->second / damageTextDuration) }); // fade out
 
         if (it->second >= damageTextDuration)
         {
