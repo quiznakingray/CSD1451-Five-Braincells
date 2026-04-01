@@ -50,7 +50,7 @@ void SaveManager::SaveDeathCount(int count)
     playerSaveData.deathCount = count;
 }
 
-void SaveManager::SavePlayerTime(int seconds) {
+void SaveManager::SavePlayerTime(float seconds) {
     playerSaveData.totalSeconds = seconds;
 }
 

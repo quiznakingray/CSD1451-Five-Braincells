@@ -150,6 +150,9 @@ void PlayerManager::Load()
 	stats.totalSeconds = data.totalSeconds;
 
 	stats.playerType = data.currentPlayerType;
+	currentPlayer = PlayerStats::GetInstance().GetPlayerType() == PLAYER_TYPE::MELEE
+		? static_cast<Player*>(meleePlayer)
+		: static_cast<Player*>(rangedPlayer);
 }
 
 

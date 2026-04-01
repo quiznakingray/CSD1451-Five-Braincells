@@ -234,17 +234,8 @@ void MapManager::SaveMapState()
         {
             Tile* tile = arrMapInfo[uiRow][uiCol];
             if (!tile) continue;
-
-            bool isInteractable =
-                dynamic_cast<LeverTile*>(tile) ||
-                dynamic_cast<ButtonTile*>(tile) ||
-                dynamic_cast<CrateTile*>(tile) ||
-                dynamic_cast<LaserTile*>(tile) ||
-                dynamic_cast<GateTile*>(tile) ||
-                dynamic_cast<CloudTile*>(tile) ||
-                dynamic_cast<HealthPickupTile*>(tile);
-
-            if (!isInteractable) continue;
+            if (!tile->canInteract && !dynamic_cast<LaserTile*>(tile) && !dynamic_cast<GateTile*>(tile)) continue;
+            if (dynamic_cast<CloudTile*>(tile)) continue;
 
             TileStateData data;
             data.row = uiRow;
@@ -269,6 +260,7 @@ void MapManager::LoadMapState()
     {
         Tile* tile = arrMapInfo[data.row][data.col];
         if (!tile) continue;
+        if (!tile->canInteract && !dynamic_cast<LaserTile*>(tile) && !dynamic_cast<GateTile*>(tile)) continue;
         tile->currID = data.currID;
         tile->isActive = data.isActive;
         tile->isCurrActive = data.isCurrActive;
@@ -279,6 +271,7 @@ void MapManager::LoadMapState()
             lever->SetTexture();
         else if (ButtonTile* button = dynamic_cast<ButtonTile*>(tile))
             button->SetTexture();
+
     }
 }
 #pragma endregion

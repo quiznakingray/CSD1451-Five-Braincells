@@ -439,7 +439,7 @@ void MeleePlayer::Update()
 
 void MeleePlayer::PlayerInput()
 {
-	double dt = AEFrameRateControllerGetFrameTime();
+	f64 dt = AEFrameRateControllerGetFrameTime();
 
 	bool qHeld = AEInputCheckCurr(AEVK_Q);
 	if (qHeld)

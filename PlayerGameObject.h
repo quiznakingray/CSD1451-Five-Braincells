@@ -5,9 +5,6 @@
 #include "PhysicsManager.h"
 #include "AnimatorComponent.h"
 #include "ParticleEffects.h"
-
-
-
 enum class PLAYER_ACTION {
 	IDLE,
 	RUNNING,
@@ -17,9 +14,6 @@ enum class PLAYER_ACTION {
 	AIMING,
 	SHIELDING,
 };
-
-
-
 struct Player : GameObject {
 
 	Player() :GameObject()
