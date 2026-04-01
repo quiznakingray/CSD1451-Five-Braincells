@@ -45,6 +45,15 @@ void SaveManager::SetPreservePlayerOnLoad(bool preserve)
     playerSaveData.preserveOnLoad = preserve;
 }
 
+void SaveManager::SaveDeathCount(int count)
+{
+    playerSaveData.deathCount = count;
+}
+
+void SaveManager::SavePlayerTime(float seconds) {
+    playerSaveData.totalSeconds = seconds;
+}
+
 void SaveManager::SaveMapData()
 {
     std::ofstream file("Assets/Saves/mapSave.dat", std::ios::binary);
@@ -108,12 +117,14 @@ void SaveManager::LoadEnemyData()
     }
     else std::cout << "No enemy save found\n";
 }
+
 void SaveManager::SaveAll()
 {
     // Ask each system to populate save data
     PlayerManager::GetInstance().SavePlayerData();
     EnemyManager::GetInstance().SaveEnemyStates();
     MapManager::GetInstance().SaveMapState();
+    
 
     // Write everything to disk
     SavePlayerData();

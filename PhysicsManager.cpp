@@ -85,7 +85,7 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 
     if (!aIsDynamic && !bIsDynamic)
     {
-        // Kinematic vs Static � resolve the kinematic body
+        // Kinematic vs Static resolve the kinematic body
         if (aIsKinematic || bIsKinematic)
         {
             RigidBody* kinRb = aIsKinematic ? ra : rb;
@@ -122,9 +122,26 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
         return;  // static vs static still skips
     }
 
-    // Dynamic vs Dynamic � split resolution by mass (unchanged)
+    // Dynamic vs Dynamic split resolution by mass (unchanged)
     if (aIsDynamic && bIsDynamic)
     {
+        if (pyOverlap < pxOverlap)  // more vertical overlap → resolve Y
+        {
+            if (dy > 0)  // A is above B
+            {
+                move(A, 0, pyOverlap, ra, false);   // push A up
+                ra->velocity.y = 0.f;
+                ra->onCollider = true;
+            }
+            else
+            {
+                move(B, 0, pyOverlap, rb, false);   // push B up
+                rb->velocity.y = 0.f;
+                rb->onCollider = true;
+            }
+            return;
+        }
+
         // A can only push B if A's mass >= B's mass AND A is moving toward B
         float relVelX = ra->velocity.x - rb->velocity.x;
         float relVelY = ra->velocity.y - rb->velocity.y;
@@ -172,7 +189,7 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 
     }
 
-    // One side is dynamic; the other is static or kinematic � push the dynamic body
+    // One side is dynamic; the other is static or kinematic push the dynamic body
     RigidBody* dynamicRb = aIsDynamic ? ra : rb;
     RigidBody* passiveRb = aIsDynamic ? rb : ra;  // static or kinematic
     GameObject* dynamicObj = dynamicRb->owner;

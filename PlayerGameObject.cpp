@@ -11,6 +11,8 @@
 #include <iostream>
 #include <vector>
 
+static std::array<TILE_ID, 4> noJumpTiles = { TILE_ID::SPIKEDOWN, TILE_ID::SPIKEUP, TILE_ID::SPIKELEFT, TILE_ID::SPIKERIGHT };
+
 void Player::PlayerInput()
 {
 	f64 dt = AEFrameRateControllerGetFrameTime();
@@ -23,10 +25,10 @@ void Player::PlayerInput()
 
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	//std::cout << "On GRASSCENTER: " << (onGround ? "--" : "___________________________ ") << std::endl;
-	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing 
-		&& PlayerStats::Get().jumpStamina != 0)
+	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing && canJump
+		&& PlayerStats::GetInstance().jumpStamina != 0)
 	{
-		if (PlayerStats::Get().ConsumeJumpStamina())
+		if (PlayerStats::GetInstance().ConsumeJumpStamina())
 		{
 			float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 350.0f);
 			rb->velocity.y = jumpVelocity;
@@ -224,8 +226,13 @@ void Player::Init()
 		{
 			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 			{
-				if (sides & COLLISION_SIDE::BOTTOM)
+				if ((sides & COLLISION_SIDE::BOTTOM))
 					this->rb->onCollider = true;
+				
+				if (std::find(noJumpTiles.begin(), noJumpTiles.end(), tile->currID) != noJumpTiles.end()) {
+					canJump = false;
+					std::cout << "cannot jump\n";
+				}
 			}
 			if (CrateTile* crate = dynamic_cast<CrateTile*>(other->owner))
 			{
@@ -252,8 +259,13 @@ void Player::Init()
 		{
 			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 			{
-				this->rb->onCollider = false;
+				this->rb->onCollider = false;  
+				if (std::find(noJumpTiles.begin(), noJumpTiles.end(), tile->currID) != noJumpTiles.end()) {
+					canJump = true;
+					std::cout << "can jump\n";
+				}
 			}
+
 		};
 
 	rb = AddComponent(
@@ -322,8 +334,8 @@ void Player::TakeDamage(int amount)
 
 void Player::IncrementKills()
 {
-	PlayerStats::Get().killCount++;
-	std::cout << "[Player] Total kills: " << PlayerStats::Get().killCount << "\n";
+	PlayerStats::GetInstance().killCount++;
+	std::cout << "[Player] Total kills: " << PlayerStats::GetInstance().killCount << "\n";
 }
 
 void MeleePlayer::Init()
@@ -359,7 +371,7 @@ void MeleePlayer::Init()
 	jumpAnim->loopAnimation = true;
 	jumpAnim->animationFPS = 30.f;
 
-	// shield collider
+	 //shield collider
 	shieldCollider = AddComponent(
 		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.6f, 0.0f, 0.3f, 0.8f)
 		);
@@ -383,7 +395,7 @@ void MeleePlayer::Init()
 	
 	Player::Init();
 
-	// shielding
+	 //shielding
 	Sprite* shielding = new Sprite();
 	shielding->meshColor = 0xFF0000FF;
 	shielding->textureFileName = "Assets/SpriteSheets/Player_Melee_Shielding.png";
@@ -404,9 +416,9 @@ void MeleePlayer::Init()
 	shieldAmin->loopAnimation = true;
 	shieldAmin->animationFPS = 15.f;
 
-	// shield animation 
+	 //shield animation 
 	shieldBubbleAnimation = AddComponent(new Animator(shieldAmin));
-	shieldBubbleAnimation->Init();;
+	shieldBubbleAnimation->Init();
 }
 MeleePlayer::~MeleePlayer()
 {
@@ -434,7 +446,7 @@ void MeleePlayer::Update()
 
 void MeleePlayer::PlayerInput()
 {
-	double dt = AEFrameRateControllerGetFrameTime();
+	f64 dt = AEFrameRateControllerGetFrameTime();
 
 	bool qHeld = AEInputCheckCurr(AEVK_Q);
 	if (qHeld)
@@ -444,7 +456,7 @@ void MeleePlayer::PlayerInput()
 		{
 			shieldTimer += dt;
 			//currentAction = PLAYER_ACTION::SHIELDING;
-			float maxDuration = PlayerStats::Get().GetMaxShieldDuration();
+			float maxDuration = PlayerStats::GetInstance().GetMaxShieldDuration();
 			if (shieldTimer >= maxDuration)
 			{
 				// stamina exhausted
@@ -630,7 +642,7 @@ void RangePlayer::PlayerInput()
 		if (AEInputCheckTriggered(AEVK_LBUTTON))
 		{
 			// shoot if cooldown has passed
-			float cooldown = PlayerStats::Get().GetAttackCooldown();
+			float cooldown = PlayerStats::GetInstance().GetAttackCooldown();
 
 			if (arrowTimer >= cooldown)
 			{

@@ -11,11 +11,16 @@
 enum class TILE_ID;          // MapManager defines TILE_ID
 #include "GameStateManager.h"
 #include "EnemyBase.h"
+#include "PlayerStats.h"
+#include "PlayerManager.h"
 
 struct PlayerSaveData {
     AEVec2 meleePos{};
     AEVec2 rangedPos{};
-    // persisted stats
+
+    //PlayerStats playerStats;
+    PLAYER_TYPE currentPlayerType = PLAYER_TYPE::MELEE;
+    // persisted playerStats
     int health = 3;
     int maxHealth = 3;
     int damage = 1;
@@ -29,6 +34,9 @@ struct PlayerSaveData {
     // counters
     int deathCount = 0;
     int killCount = 0;
+
+    // timers
+    float totalSeconds = 0;
 
     bool preserveOnLoad = false;
     bool hasSavedData = false;
@@ -56,16 +64,26 @@ struct EnemySaveData {
     EnemyBase enemyBase{};
 };
 
+struct StatsSaveData {
+    float elaspedTime;
+    int deathCount;
+    int killCount;
+};
+
 struct SaveManager : public Singleton<SaveManager>
 {
     PlayerSaveData playerSaveData;
     MapSaveData    mapSaveData;
     std::vector<EnemySaveData> enemySaveData;
+    StatsSaveData  statsSaveData;
+
     bool toContinue = false;
 
     void SavePlayerData();
     void LoadPlayerData();
     void SetPreservePlayerOnLoad(bool preserve);
+    void SaveDeathCount(int count);
+    void SavePlayerTime(float seconds);
     void SaveMapData();
     void LoadMapData();
     void SaveEnemyData();

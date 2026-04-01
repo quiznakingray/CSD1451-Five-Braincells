@@ -135,7 +135,7 @@ void HUD::Init()
 	AEVec2 staminaBarStartPos, staminaBarScale;
 	AEVec2Set(&staminaBarStartPos, -AEGfxGetWindowWidth() / 2.0f + 600, -AEGfxGetWindowHeight() / 2.0f + 80);
 	AEVec2Set(&staminaBarScale, 100, 50);
-	for (int i = 0; i < PlayerStats::Get().maxJumpStamina; i++)
+	for (int i = 0; i < PlayerStats::GetInstance().maxJumpStamina; i++)
 	{
 		f32 posX = staminaBarStartPos.x + i * (staminaBarScale.x + 30);
 		//bar bg
@@ -157,7 +157,7 @@ void HUD::Init()
 	AEVec2 healthBarStartPos, healthBarScale;
 	AEVec2Set(&healthBarStartPos, -AEGfxGetWindowWidth() / 2.0f + 588, -AEGfxGetWindowHeight() / 2.0f + 160);
 	AEVec2Set(&healthBarScale, 75, 75);
-	for (int i = 0; i < PlayerStats::Get().maxHealth; i++)
+	for (int i = 0; i < PlayerStats::GetInstance().maxHealth; i++)
 	{
 		f32 posX = healthBarStartPos.x + i * 100;
 		//bar bg
@@ -251,14 +251,14 @@ void HUD::Update(f64 dt)
 	//update stamina
 	for (int i = 0; i < staminaBars.size(); i++)
 	{
-		staminaBars[i]->isActive = (PlayerStats::Get().jumpStamina >= i + 1);
-		staminaBarsBG[i]->isActive = (PlayerStats::Get().maxJumpStamina >= i + 1);
+		staminaBars[i]->isActive = (PlayerStats::GetInstance().jumpStamina >= i + 1);
+		staminaBarsBG[i]->isActive = (PlayerStats::GetInstance().maxJumpStamina >= i + 1);
 	}
 
 	//update health
 	for (int i = 0; i < healthBars.size(); i++)
 	{
-		healthBars[i]->isActive = (PlayerStats::Get().health >= i + 1);
+		healthBars[i]->isActive = (PlayerStats::GetInstance().health >= i + 1);
 	}
 
 	sHintQ->isActive = isMelee;
@@ -267,8 +267,8 @@ void HUD::Update(f64 dt)
 	UpdateGameObjects(HUDGameObjects);
 
 	// --- TOP STATS ---
-	elapsedTime += static_cast<float>(dt);
-	int totalSeconds = static_cast<int>(elapsedTime);
+	PlayerStats::GetInstance().SetTotalSeconds(PlayerStats::GetInstance().GetTotalSeconds() + dt);
+	int totalSeconds = static_cast<int>(PlayerStats::GetInstance().GetTotalSeconds());
 	int minutes = totalSeconds / 60;
 	int seconds = totalSeconds % 60;
 	char timerBuf[16];
@@ -280,8 +280,8 @@ void HUD::Update(f64 dt)
 		};
 
 	setText(timerObj, timerBuf);
-	setText(deathCountObj, "Deaths: " + std::to_string(PlayerStats::Get().deathCount));
-	setText(killCountObj, "Kills: " + std::to_string(PlayerStats::Get().killCount));
+	setText(deathCountObj, "Deaths: " + std::to_string(PlayerStats::GetInstance().deathCount));
+	setText(killCountObj, "Kills: " + std::to_string(PlayerStats::GetInstance().killCount));
 
 }
 

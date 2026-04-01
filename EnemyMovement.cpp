@@ -64,8 +64,8 @@ std::vector<AEVec2> EnemyMovement::FindPath(AEVec2 start, AEVec2 target) {
 
     if (!startNode || !endNode || startNode == endNode) return path;
 
-    // Reset all nodes using Node's Reset()
-    for (Node* n : allNodes) n->Reset();
+    // ResetAll all nodes using Node's ResetAll()
+    for (Node* n : allNodes) n->ResetAll();
 
     startNode->actualCost = 0.f;
     startNode->estimatedCost = sqrtf(pow(startNode->position.x - endNode->position.x, 2) +

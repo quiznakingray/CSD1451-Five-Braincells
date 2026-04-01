@@ -5,7 +5,6 @@
 #include "PhysicsManager.h"
 #include "AnimatorComponent.h"
 #include "ParticleEffects.h"
-
 enum class PLAYER_ACTION {
 	IDLE,
 	RUNNING,
@@ -15,14 +14,13 @@ enum class PLAYER_ACTION {
 	AIMING,
 	SHIELDING,
 };
-
 struct Player : GameObject {
 
 	Player() :GameObject()
 	{
 	}
 
-
+	
 	//STATE playerState = STATE::IDLE;
 	f32 speed{};
 	RigidBody* rb = nullptr;
@@ -41,6 +39,7 @@ struct Player : GameObject {
 
 	ParticleSystem hurtParticles;
 	bool gotHurt = false;
+	bool canJump = true;
 	float hurtTimer = 0.0f;
 	float hurtDuration = 2.0f;
 	~Player();
