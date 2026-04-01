@@ -3,7 +3,9 @@
 #include "GameStateManager.h"
 #include "AEEngine.h"
 #include "ParkourLevel.h"
-#include "BossLevel.h"
+#include "SpriteManager.h"
+#include "TextComponent.h"
+#include "CollisionManager.h"
 #include <string>
 
 // Logic flags
@@ -45,97 +47,181 @@ bool IsButtonClicked(float btnX, float btnY, float btnWidth, float btnHeight) {
     return false;
 
 }
+GameObject* PauseButton(float w, float h, float x, float y,
+    const char* label, std::vector<GameObject*>& vec, std::function<void()> onClick)
+{
+    GameObject* btn = new GameObject(w, h, x, y, 1, 0, true);
+    btn->AddComponent(new Sprite())->meshColor = 0xFF757575;
 
-void PauseMenu::Init() {
-    // 1. Set background (optional, as the level is still behind it)
-    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
+    Collider* col = btn->AddComponent(new Collider());
+    col->canInteract = true;
+    col->OnMouseUp = onClick;
 
-    if (pButtonMesh) return; // Prevent double initialization
+    Text* text = btn->AddComponent(new Text());
+    text->inWorldSpace = false;
+    text->SetText(label);
 
-    // 2. Create a generic rectangle mesh for all buttons
-    // Based on your screenshot, buttons are wide rectangles
-    AEGfxMeshStart();
-
-    // Creating a 1x1 unit square to scale easily later
-    // White color so we can tint it if needed
-    AEGfxTriAdd(
-        -0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
-        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-    AEGfxTriAdd(
-        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-
-    pButtonMesh = AEGfxMeshEnd();
+    AddGameObjectToVector(btn, vec);
+    return btn;
 }
+void PauseMenu::Init()
+{
+    showConfirmation = false;
+    // Background overlay
+    GameObject* bg = new GameObject(AEGfxGetWindowWidth(), AEGfxGetWindowHeight(), 0, 0, 0, 0, true);
+    Sprite* bgSprite = bg->AddComponent(new Sprite());
+    bgSprite->meshColor = 0x77000000;
+    AddGameObjectToVector(bg, gameObjectVector);
 
+    // Panel
+    GameObject* panel = new GameObject(AEGfxGetWindowWidth() / 2.f, AEGfxGetWindowHeight() - 100.f, 0, 0, 0, 0, true);
+    Sprite* panelSprite = panel->AddComponent(new Sprite());
+    panelSprite->meshColor = 0xFF000000;
+    AddGameObjectToVector(panel, gameObjectVector);
+
+    PauseButton(300, 60, 0, 100, "RESUME", gameObjectVector, [] {
+        GameStateManager::GetInstance().showPauseMenu = false;
+        });
+    PauseButton(300, 60, 0, 0, "RESTART", gameObjectVector, [] {
+        isRestartConfirm = true;
+        PauseMenu::GetInstance().showConfirmation = true;
+        ConfirmationMenu::GetInstance().Init();
+        });
+    PauseButton(300, 60, 0, -100, "AUDIO", gameObjectVector, [] {
+        // audio logic
+        });
+    PauseButton(300, 60, 0, -200, "MAIN MENU", gameObjectVector, [] {
+        isRestartConfirm = false;
+        PauseMenu::GetInstance().showConfirmation = true;
+        ConfirmationMenu::GetInstance().Init();
+        });
+
+    InitGameObjects(gameObjectVector);
+    ConfirmationMenu::GetInstance().Init();
+    ConfirmationMenu::GetInstance().Hide();
+}
 
 void PauseMenu::Update() {
     // 1. RESUME Logic
-    if (IsButtonClicked(0, 100, 300, 60)) {
-        next = previousState;
-    }
+    //if (IsButtonClicked(0, 100, 300, 60)) {
+    //    //next = previous;
+    //    //next = previous;
+    //    GameStateManager::GetInstance().isGamePause = false;
+    //}
 
-    // 2. RESTART Logic
-    if (IsButtonClicked(0, 0, 300, 60)) {
-        pendingAction = GAME_STATE_TYPE::WORLD; 
-        isRestartConfirm = true;
-        next = GAME_STATE_TYPE::CONFIRMATION;
-    }
+    //// 2. RESTART Logic
+    //if (IsButtonClicked(0, 0, 300, 60)) {
+    //    //pendingAction = GAME_STATE_TYPE::WORLD; 
+    //    isRestartConfirm = true;
+    //    //next = GAME_STATE_TYPE::CONFIRMATION;
+    //}
 
-    // 3. MAIN MENU Logic
-    if (IsButtonClicked(0, -200, 300, 60)) {
-        isRestartConfirm = false;
-        next = GAME_STATE_TYPE::CONFIRMATION;
-    }
+    //// 3. MAIN MENU Logic
+    //if (IsButtonClicked(0, -200, 300, 60)) {
+    //    isRestartConfirm = false;
+    //    //next = GAME_STATE_TYPE::CONFIRMATION;
+    //}
+    if (!showConfirmation)
+        UpdateGameObjects(gameObjectVector);
+    else
+        ConfirmationMenu::GetInstance().Update();
 }
 
 void PauseMenu::Render() {
-    
-    // 1. Draw Title
+    RenderGameObjects(gameObjectVector);
+    //AEGfxPrint(TextManager::pFont, "help", -1, 0, 1, 1, 1, 1, 1);
+    //AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    //AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    //AEGfxSetTransparency(1.0f);
+    //// 1. Draw Title
     TextManager::DrawText("GAME PAUSED", -100.0f, 300.0f, 1.5f);
 
-    // Helper to draw the rectangular button outline
-    auto DrawBtn = [](float x, float y, const char* label) {
-        AEMtx33 transform, scale, trans;
-        AEMtx33Scale(&scale, 300, 60);
-        AEMtx33Trans(&trans, x, y);
-        AEMtx33Concat(&transform, &trans, &scale);
-        AEGfxSetTransform(transform.m);
-        AEGfxMeshDraw(pButtonMesh, AE_GFX_MDM_LINES_STRIP);
+    //// Helper to draw the rectangular button outline
+    //auto DrawBtn = [](float x, float y, const char* label) {
+    //    /*AEMtx33 transform, scale, trans;
+    //    AEMtx33Scale(&scale, 300, 60);
+    //    AEMtx33Trans(&trans, x, y);
+    //    AEMtx33Concat(&transform, &trans, &scale);
+    //    AEGfxSetTransform(transform.m);
+    //    AEGfxMeshDraw(pButtonMesh, AE_GFX_MDM_LINES_STRIP);*/
 
-        TextManager::DrawText(label, x - 50.0f, y - 10.0f, 1.0f);
-        };
+    //    TextManager::DrawText(label, x - 50.0f, y - 10.0f, 1.0f);
+    //};
 
-        // Cast (s8*) to solve incompatibility
-        // Use offset coordinates for AEGfxPrint (-1 to 1)
-        //float xOffset = (x - (strlen(label) * 10.0f)) / (AEGfxGetWindowWidth() / 2.0f);
-        //float yOffset = (y - 10.0f) / (AEGfxGetWindowHeight() / 2.0f);
+    //    // Cast (s8*) to solve incompatibility
+    //    // Use offset coordinates for AEGfxPrint (-1 to 1)
+    //    //float xOffset = (x - (strlen(label) * 10.0f)) / (AEGfxGetWindowWidth() / 2.0f);
+    //    //float yOffset = (y - 10.0f) / (AEGfxGetWindowHeight() / 2.0f);
 
-    DrawBtn(0, 100, "RESUME");
-    DrawBtn(0, 0, "RESTART");
-    DrawBtn(0, -100, "AUDIO");
-    DrawBtn(0, -200, "MAIN MENU");
+    ////DrawBtn(0, 100, "RESUME");
+    //DrawBtn(0, 0, "RESTART");
+    //DrawBtn(0, -100, "AUDIO");
+    //DrawBtn(0, -200, "MAIN MENU");
+    if (showConfirmation)
+        ConfirmationMenu::GetInstance().Render();
 }
 
-// --- Confirmation Logic ---
-void ConfirmationMenu::Init() {
-    // empty for the confirmation popup
-}
-
-
-void ConfirmationMenu::Update() {
-    if (IsButtonClicked(-150, -100, 150, 60)) next = GAME_STATE_TYPE::PAUSE; // NO option
-    if (IsButtonClicked(150, -100, 150, 60)) { // YES option
-        next = isRestartConfirm ? previousState : GAME_STATE_TYPE::MENU;
+void PauseMenu::Free() {
+    ConfirmationMenu::GetInstance().Free();
+    FreeGameObjects(gameObjectVector);
+    for (GameObject* g : gameObjectVector) {
+        delete g;
+    }
+    gameObjectVector.clear();
+    if (pButtonMesh) {
+        AEGfxMeshFree(pButtonMesh);
+        pButtonMesh = nullptr;
     }
 }
 
-void ConfirmationMenu::Render() {
-    TextManager::DrawText("ARE YOU SURE?", -150.0f, 150.0f, 1.2f);
 
-    auto DrawConfirmBtn = [](float x, float y, const char* label) {
+void PauseMenu::Unload() {
+    // Usually empty unless loaded textures specifically for this menu
+}
+// --- Confirmation Logic ---
+void ConfirmationMenu::Init() {
+    if (!gameObjectVector.empty())
+    {
+        SetActiveGameObjects(gameObjectVector, true);
+        return;
+    }
+    GameObject* panel = new GameObject(AEGfxGetWindowWidth() / 2.f, AEGfxGetWindowHeight() - 100.f, 0, 0, 0, 0, true);
+    Sprite* panelSprite = panel->AddComponent(new Sprite());
+    panelSprite->meshColor = 0xFF000000;
+    AddGameObjectToVector(panel, gameObjectVector);
+
+    PauseButton(200, 60, -150, -100, "NO", gameObjectVector, [] {
+        PauseMenu::GetInstance().showConfirmation = false;
+        ConfirmationMenu::GetInstance().Hide();
+        });
+    PauseButton(200, 60, 150, -100, "YES", gameObjectVector, [] {
+        // handle yes — restart or main menu
+        next = isRestartConfirm
+            ? previous
+            : GAME_STATE_TYPE::MENU;
+        PauseMenu::GetInstance().showConfirmation = false;
+        });
+
+    InitGameObjects(gameObjectVector);
+}
+
+void ConfirmationMenu::Hide()
+{
+    SetActiveGameObjects(gameObjectVector, false);
+    PauseMenu::GetInstance().showConfirmation = false;
+}
+
+void ConfirmationMenu::Update() {
+    //if (IsButtonClicked(-150, -100, 150, 60)) next = GAME_STATE_TYPE::PAUSE; // NO option
+    //if (IsButtonClicked(150, -100, 150, 60)) { // YES option
+    //    next = isRestartConfirm ? previous : GAME_STATE_TYPE::MENU;
+    //}
+    UpdateGameObjects(gameObjectVector);
+}
+
+void ConfirmationMenu::Render() {
+
+   /* auto DrawConfirmBtn = [](float x, float y, const char* label) {
         AEMtx33 transform, scale, trans;
         AEMtx33Scale(&scale, 150, 60);
         AEMtx33Trans(&trans, x, y);
@@ -147,17 +233,16 @@ void ConfirmationMenu::Render() {
         };
 
     DrawConfirmBtn(-150, -100, "NO");
-    DrawConfirmBtn(150, -100, "YES");
+    DrawConfirmBtn(150, -100, "YES");*/
+    RenderGameObjects(gameObjectVector);
+    TextManager::DrawText("ARE YOU SURE?", -150.0f, 150.0f, 1.2f);
 }
 
-void PauseMenu::Free() {
-    // Unload the mesh from the GPU
-    if (pButtonMesh) {
-        AEGfxMeshFree(pButtonMesh);
-        pButtonMesh = nullptr;
+void ConfirmationMenu::Free()
+{
+    FreeGameObjects(gameObjectVector);
+    for (GameObject* g : gameObjectVector) {
+        delete g;
     }
-}
-
-void PauseMenu::Unload() {
-    // Usually empty unless loaded textures specifically for this menu
+    gameObjectVector.clear();
 }

@@ -12,21 +12,22 @@ struct Particle {
     f32      maxLifespan = 0.0f;
     u32      color = 0xFFFFFFFF; 
     bool     active = false; // Ensure particles start inactive
+	f32 size = 1.0f; // Default size
 };
 
 class ParticleSystem {
 public:
-    static void Init(u32 maxParticles, std::vector<Particle>& particlePool);
-    static void CreateBloodEffect(f32 x, f32 y, std::vector<Particle>& particlePool); // Orange blood
-    static void CreateArrowTrail(f32 x, f32 y, AEVec2 direction, std::vector<Particle>& particlePool);
+    void Init(u32 maxParticles);
+    void CreateHitEffect(f32 x, f32 y); // Orange blood
+    void CreateArrowTrail(f32 x, f32 y, AEVec2 direction);
 
-    static void Update(f32 dt, std::vector<Particle>& particlePool);
-    static void Draw(std::vector<Particle>& particlePool);
-    static void Exit();
+    void Update(f32 dt);
+    void Draw();
+    void Exit();
 
 private:
-    //static std::vector<Particle> particlePool;
-    static AEGfxVertexList* pParticleMesh;
+    std::vector<Particle> particlePool;
+    AEGfxVertexList* pParticleMesh = nullptr;
 };
 
 #endif

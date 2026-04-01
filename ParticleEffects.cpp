@@ -1,10 +1,10 @@
 #include "ParticleEffects.h"
 #include "PlayerManager.h"
+#include "CameraSystem.h"
 
-//std::vector<Particle> ParticleSystem::particlePool;
-AEGfxVertexList* ParticleSystem::pParticleMesh = nullptr;
 
-void ParticleSystem::Init(u32 maxParticles, std::vector<Particle>&particlePool) {
+
+void ParticleSystem::Init(u32 maxParticles) {
     particlePool.resize(maxParticles);
 
     // Create a simple square mesh for particles
@@ -18,28 +18,35 @@ void ParticleSystem::Init(u32 maxParticles, std::vector<Particle>&particlePool) 
     pParticleMesh = AEGfxMeshEnd();
 }
 
-void ParticleSystem::CreateBloodEffect(f32 x, f32 y, std::vector<Particle>& particlePool) {
+void ParticleSystem::CreateHitEffect(f32 x, f32 y) {
+
+    u32 colors[] = { 0xFFFFFF00, 0xFFFF8800, 0xFFFFFFFF, 0xFF88FFFF, 0xFFFF4400 };
+
     int count = 0;
-    for (auto& p : particlePool) {
-        if (!p.active) {
+    for (auto& p : particlePool)
+    {
+        if (!p.active)
+        {
             p.active = true;
             p.pos = { x, y };
 
-            // Random direction and speed for "splatter"
-            f32 angle = AERandFloat() * 2.0f * PI;
-            f32 speed = AERandFloat() * 100.0f + 50.0f;
-            p.vel = { AECos(angle) * speed, AESin(angle) * speed };
+            // Spread evenly in burst pattern
+            f32 angle = (360.0f / 8.0f) * count;
+            f32 speed = 80.0f + AERandFloat() * 120.0f; // 80-200
+            p.vel.x = AECosDeg(angle) * speed;
+            p.vel.y = AESinDeg(angle) * speed;
 
-            p.maxLifespan = p.lifespan = 0.5f; // Fast disappear
-            p.color = 0xFFFFA500; // Orange color (AABBGGRR or hex)
-
+            p.color = colors[rand() % 5];
+            p.maxLifespan = 0.3f + AERandFloat() * 0.2f; // 0.3-0.5s
+            p.lifespan = p.maxLifespan;
+            p.size = 8.0f + AERandFloat() * 50.0f;
             count++;
-            if (count > 10) break; // Spawn 10 particles per hit
+            if (count >= 8) break;
         }
     }
 }
 
-void ParticleSystem::CreateArrowTrail(f32 x, f32 y, AEVec2 direction, std::vector<Particle>& particlePool) {
+void ParticleSystem::CreateArrowTrail(f32 x, f32 y, AEVec2 direction) {
     for (auto& p : particlePool) {
         if (!p.active) {
             p.active = true;
@@ -56,7 +63,7 @@ void ParticleSystem::CreateArrowTrail(f32 x, f32 y, AEVec2 direction, std::vecto
     }
 }
 
-void ParticleSystem::Update(f32 dt,std::vector<Particle>& particlePool) {
+void ParticleSystem::Update(f32 dt) {
     for (auto& p : particlePool) {
         if (p.active) {
             p.pos.x += p.vel.x * dt;
@@ -68,15 +75,16 @@ void ParticleSystem::Update(f32 dt,std::vector<Particle>& particlePool) {
     }
 }
 
-void ParticleSystem::Draw(std::vector<Particle>& particlePool) {
+void ParticleSystem::Draw() {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-    
+    // Get the camera position so particles stay in the game world
+    //AEVec2 camPos = CameraSystem::GetCameraPos();
 
     for (auto& p : particlePool) {
         if (p.active) {
             AEMtx33 scale, trans, res;
-            f32 size = (p.lifespan / p.maxLifespan) * 100.0f;
+            f32 size = (p.lifespan / p.maxLifespan) * p.size;
 
             AEMtx33Scale(&scale, size, size);
 

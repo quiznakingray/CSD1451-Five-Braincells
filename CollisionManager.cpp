@@ -2,6 +2,7 @@
 #include "GameObjectManager.h"  
 #include "SpriteManager.h"  
 
+#include <iostream>
 //bool CheckBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size)
 //{
 //	// collision x-axis?
@@ -124,19 +125,19 @@ bool IsPosInRect(AEVec2 pos, AEVec2 rectPos, AEVec2 rectScale)
 
 bool IsCursorOverRect(f32 pos_x, f32 pos_y, f32 scale_x, f32 scale_y)
 {
-	s32 screenMouseX, screenMouseY;
-	AEInputGetCursorPosition(&screenMouseX, &screenMouseY);
-
-	s32 mouseX = screenMouseX - AEGfxGetWindowWidth() / 2.f, mouseY = -(screenMouseY - AEGfxGetWindowHeight() / 2.f);
-
+	s32 screenX, screenY;
+	f32 mouseInWorldX, mouseInWorldY;
+	AEInputGetCursorPosition(&screenX, &screenY);
+	mouseInWorldX = screenX + AEGfxGetWinMinX();
+	mouseInWorldY = -(screenY - AEGfxGetWinMaxY());
 	f32 minX = pos_x - scale_x / 2.f;
 	f32 maxX = pos_x + scale_x / 2.f;
 
 	f32 minY = pos_y - scale_y / 2.f;
 	f32 maxY = pos_y + scale_y / 2.f;
-
-	return mouseX >= minX && mouseX <= maxX
-		&& mouseY >= minY && mouseY <= maxY;
+	//std::cout << "mouse:" << mouseInWorldX << "  " << mouseInWorldY << std::endl;
+	return mouseInWorldX >= minX && mouseInWorldX <= maxX
+		&& mouseInWorldY >= minY && mouseInWorldY <= maxY;
 
 }
 
@@ -220,31 +221,19 @@ void Collider::Render()
 {
 	if (!owner->showColliders) return;
 
-	GameObject* c = new GameObject(	
-			owner->scale.x * size.x,
-			owner->scale.y * size.y,
-			owner->pos.x + center.x,
-			owner->pos.y + center.y,
-			owner->pos.z + 1, owner->rotation);
+	Sprite s;
+	s.owner = owner;
+	s.meshColor = isTrigger ? 0xFFFFFF00 : 0xFFFF0000;
+	s.opacity = 0.5f;
+	s.spriteShape = (type == COLLIDER_TYPE::CIRCLE_COLLIDER)
+		? SPRITE_SHAPE::SHAPE_CIRCLE
+		: SPRITE_SHAPE::SHAPE_RECT;
+	s.size = size;       // scale the visual to match collider bounds
+	s.offset = center;
 
-	Sprite* s = c->AddComponent(
-		new Sprite()
-	);
-
-	s->meshColor = isTrigger ? 0xFFFFFF00 : 0xFFFF0000;
-	s->opacity = 0.5f;
-
-	if (type == COLLIDER_TYPE::CIRCLE_COLLIDER)
-	{
-		s->spriteShape = SPRITE_SHAPE::SHAPE_CIRCLE;
-	}
-	else {
-		s->spriteShape = SPRITE_SHAPE::SHAPE_RECT;
-	}
-
-	c->Init();
-	c->Render();
-
+	s.Init();
+	s.Render();
+	s.Free();
 
 }
 
@@ -266,4 +255,18 @@ void Collider::Free()
 
 	collisionInfos.clear();
 	sides = COLLISION_SIDE::NONE;
+
+	OnTriggerEnter = nullptr;
+	OnTriggerOver = nullptr;
+	OnTriggerExit = nullptr;
+	OnCollisionEnter = nullptr;
+	OnCollisionOver = nullptr;
+	OnCollisionExit = nullptr;
+	OnClick = nullptr;
+	OnMouseDown = nullptr;
+	OnMouseUp = nullptr;
+	OnMouseOver = nullptr;
+	OnMouseEnter = nullptr;
+	OnMouseExit = nullptr;
+
 }

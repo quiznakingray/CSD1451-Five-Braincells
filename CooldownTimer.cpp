@@ -1,4 +1,4 @@
-#include "Helper.h"
+#include "CooldownTimer.h"
 
 #pragma region Timer
 void CooldownTimer::Start(double d)

@@ -1,32 +1,50 @@
 #include "PhysicsManager.h"
+#include "MapManager.h"
 #include "GameObjectManager.h"
 #include <iostream>
 
-void PhysicsManager::UpdateRigidBody(RigidBody* rb, f32 dt)
+void PhysicsManager::UpdateRigidBody(RigidBody* rb, f64 dt)
 {
     if (!rb) return;
 
+    if (rb->type == RIGIDBODY_TYPE::STATIC)
+        return;
+
     rb->onCollider = false;
     // Apply gravity
-    if (rb->hasGravity ) rb->velocity.y += rb->gravity * dt;
+    if (rb->hasGravity ) rb->velocity.y += rb->gravity * static_cast<f32>(dt);
 
-    //// Update velocity from acceleration
-    //rb->velocity.x += rb->acceleration.x * dt;
-    //rb->velocity.y += rb->acceleration.y * dt;
+    constexpr float MAX_FALL_SPEED = -600.0f; // tune this, keep fabs < 80 * fps
+    if (rb->velocity.y < MAX_FALL_SPEED)
+        rb->velocity.y = MAX_FALL_SPEED;
 
     // Update position from velocity
-    rb->owner->pos.x += rb->velocity.x * dt;
-    rb->owner->pos.y += rb->velocity.y * dt;
+    rb->owner->pos.x += rb->velocity.x * static_cast<f32>(dt);
+    rb->owner->pos.y += rb->velocity.y * static_cast<f32>(dt);
     //std::cout << "onCollider: " << rb->onCollider << '\n';
 }
 
 void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 {
     if (!a || !b) return;
-
     GameObject* A = a->owner;
     GameObject* B = b->owner;
     if (!A || !B) return;
+
+    if (!a->canCollide || !b->canCollide)
+        return;
+
+    CrateTile* crateA = dynamic_cast<CrateTile*>(A);
+    CrateTile* crateB = dynamic_cast<CrateTile*>(B);
+    Player* playerA = dynamic_cast<Player*>(A);
+    Player* playerB = dynamic_cast<Player*>(B);
+   
+    if (playerA && playerB)
+    {
+        if (playerA->currentAction == PLAYER_ACTION::CRATEINTERACT ||
+            playerB->currentAction == PLAYER_ACTION::CRATEINTERACT)
+            return;
+    }
 
     RigidBody* ra = A->GetComponent<RigidBody>();
     RigidBody* rb = B->GetComponent<RigidBody>();
@@ -35,89 +53,173 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 
     float dx = a->GetPos2D().x - b->GetPos2D().x;
     float dy = a->GetPos2D().y - b->GetPos2D().y;
-
     float pxOverlap = (a->GetScale().x * 0.5f + b->GetScale().x * 0.5f) - fabs(dx);
     float pyOverlap = (a->GetScale().y * 0.5f + b->GetScale().y * 0.5f) - fabs(dy);
-
     if (pxOverlap <= 0 || pyOverlap <= 0) return;
-
-    bool resolveX = pxOverlap < pyOverlap;
 
     auto move = [](GameObject* obj, float amountX, float amountY, RigidBody* r, bool zeroXForStatic = false) {
         obj->pos.x += amountX;
         obj->pos.y += amountY;
         if (!r) return;
-
-        // Only zero vertical velocity when resolving Y overlap
         if (amountY != 0) {
-            r->velocity.y = 0;
-            if (amountY > 0) r->onCollider = true; // landed on floor
+            // only zero velocity if not jumping
+            if (r->velocity.y <= 0.f)
+                r->velocity.y = 0;
+            if (amountY > 0) r->onCollider = true;
         }
-
-        // Zero horizontal velocity only for static collisions
         if (zeroXForStatic && amountX != 0) {
             r->velocity.x = 0;
         }
         };
 
-    if ((!ra || ra->type == RIGIDBODY_TYPE::STATIC) &&
-        (!rb || rb->type == RIGIDBODY_TYPE::STATIC))
-        return;
+    // Classify each body
+    bool aIsStatic = !ra || ra->type == RIGIDBODY_TYPE::STATIC;
+    bool bIsStatic = !rb || rb->type == RIGIDBODY_TYPE::STATIC;
+    bool aIsKinematic = ra && ra->type == RIGIDBODY_TYPE::KINEMATIC;
+    bool bIsKinematic = rb && rb->type == RIGIDBODY_TYPE::KINEMATIC;
+    bool aIsDynamic = ra && ra->type == RIGIDBODY_TYPE::DYNAMIC;
+    bool bIsDynamic = rb && rb->type == RIGIDBODY_TYPE::DYNAMIC;
 
-    if (ra && rb &&
-        ra->type == RIGIDBODY_TYPE::DYNAMIC &&
-        rb->type == RIGIDBODY_TYPE::DYNAMIC)
+    constexpr float GROUND_BIAS = 12.0f;
+    constexpr float WALL_HIT_THRESHOLD = 8.0f;
+
+    if (!aIsDynamic && !bIsDynamic)
     {
-        float totalMass = ra->mass + rb->mass;
-        float aRatio = rb->mass / totalMass;
-        float bRatio = ra->mass / totalMass;
+        // Kinematic vs Static � resolve the kinematic body
+        if (aIsKinematic || bIsKinematic)
+        {
+            RigidBody* kinRb = aIsKinematic ? ra : rb;
+            GameObject* kinObj = kinRb->owner;
+            if (!kinObj) return;
 
-        if (resolveX)
-        {
-            if (dx > 0) { move(A, pxOverlap * aRatio, 0, ra); move(B, -pxOverlap * bRatio, 0, rb); }
-            else { move(A, -pxOverlap * aRatio, 0, ra); move(B, pxOverlap * bRatio, 0, rb); }
+            bool resolveX;
+            if (kinRb->onCollider)
+                resolveX = pxOverlap + GROUND_BIAS < pyOverlap;
+            else
+                resolveX = pxOverlap < pyOverlap;
+
+            if (resolveX)
+            {
+                if (dx > 0) kinObj->pos.x += pxOverlap;
+                else        kinObj->pos.x -= pxOverlap;
+                kinRb->velocity.x = 0.f;
+            }
+            else
+            {
+                if (kinRb->velocity.y <= 0.f && dy > 0.f)
+                {
+                    kinObj->pos.y += pyOverlap;
+                    kinRb->velocity.y = 0.f;
+                    kinRb->onCollider = true;
+                }
+                else
+                {
+                    kinObj->pos.y -= pyOverlap;
+                    kinRb->velocity.y = 0.f;
+                }
+            }
         }
-        else
+        return;  // static vs static still skips
+    }
+
+    // Dynamic vs Dynamic � split resolution by mass (unchanged)
+    if (aIsDynamic && bIsDynamic)
+    {
+        // A can only push B if A's mass >= B's mass AND A is moving toward B
+        float relVelX = ra->velocity.x - rb->velocity.x;
+        float relVelY = ra->velocity.y - rb->velocity.y;
+
+        bool aMovingTowardB = (dx < 0 && relVelX > 0) || (dx > 0 && relVelX < 0);
+        bool bMovingTowardA = (dx > 0 && relVelX > 0) || (dx < 0 && relVelX < 0);
+
+        bool aCanPushB = (ra->mass > rb->mass) && aMovingTowardB;
+        bool bCanPushA = (rb->mass > ra->mass) && bMovingTowardA;
+
+        //if (!aCanPushB && !bCanPushA) return; // neither qualifies, no resolution
+
+        if (aCanPushB && !bCanPushA)
         {
-            if (dy > 0) { move(A, 0, pyOverlap * aRatio, ra); move(B, 0, -pyOverlap * bRatio, rb); }
-            else { move(A, 0, -pyOverlap * aRatio, ra); move(B, 0, pyOverlap * bRatio, rb); }
+            if (rb->mass < ra->mass)
+            {
+                // B is lighter — push B out of the way
+                if (dx > 0) move(B, -pxOverlap, 0, rb, true);
+                else        move(B, pxOverlap, 0, rb, true);
+            }
+            else
+            {
+                // Equal mass — A runs up against B like a wall, stop A
+                if (dx > 0) move(A, pxOverlap, 0, ra, true);
+                else        move(A, -pxOverlap, 0, ra, true);
+            }
+            return;
+        }
+        if (bCanPushA && !aCanPushB)
+        {
+            if (ra->mass < rb->mass)
+            {
+                // A is lighter — push A out of the way
+                if (dx > 0) move(A, pxOverlap, 0, ra, true);
+                else        move(A, -pxOverlap, 0, ra, true);
+            }
+            else
+            {
+                // Equal mass — B runs up against A like a wall, stop B
+                if (dx > 0) move(B, -pxOverlap, 0, rb, true);
+                else        move(B, pxOverlap, 0, rb, true);
+            }
+            return;
+        }
+
+    }
+
+    // One side is dynamic; the other is static or kinematic � push the dynamic body
+    RigidBody* dynamicRb = aIsDynamic ? ra : rb;
+    RigidBody* passiveRb = aIsDynamic ? rb : ra;  // static or kinematic
+    GameObject* dynamicObj = dynamicRb->owner;
+    if (!dynamicObj) return;
+
+
+    bool resolveX;
+    if (dynamicRb->onCollider)
+        resolveX = pxOverlap + GROUND_BIAS < pyOverlap;
+    else
+        resolveX = pxOverlap < pyOverlap;
+
+    if (resolveX)
+    {
+        // For kinematic bodies, factor in their lateral velocity so the
+        // dynamic body isn't launched sideways by a slow-moving platform.
+        float kinVelX = (passiveRb && passiveRb->type == RIGIDBODY_TYPE::KINEMATIC)
+            ? passiveRb->velocity.x : 0.f;
+
+        if (dx > 0) dynamicObj->pos.x += pxOverlap;
+        else        dynamicObj->pos.x -= pxOverlap;
+
+        if (pxOverlap > WALL_HIT_THRESHOLD)
+        {
+            // Match the kinematic's horizontal velocity instead of zeroing out,
+            // so the dynamic body rides a moving wall rather than stopping dead.
+            dynamicRb->velocity.x = kinVelX;
         }
     }
     else
     {
-        RigidBody* dynamicRb = (ra && ra->type == RIGIDBODY_TYPE::DYNAMIC) ? ra : rb;
-        if (!dynamicRb) return;
-        GameObject* dynamicObj = dynamicRb->owner;
-        if (!dynamicObj) return;
-
-        if (!dynamicObj) return;
-
-        if (resolveX)
+        if (dynamicRb->velocity.y <= 0.f && dy > 0.f)
         {
-            if (dx > 0)
-                dynamicObj->pos.x += pxOverlap;
-            else
-                dynamicObj->pos.x -= pxOverlap;
+            // Landed on top � also inherit kinematic's vertical push (rising platform)
+            dynamicObj->pos.y += pyOverlap;
+            dynamicRb->velocity.y = 0.f;
+            dynamicRb->onCollider = true;
 
-            dynamicRb->velocity.x = 0.f;
+            // If the platform is moving horizontally, carry the rider along
+            if (passiveRb && passiveRb->type == RIGIDBODY_TYPE::KINEMATIC)
+                dynamicObj->pos.x += passiveRb->velocity.x * static_cast<f32>(AEFrameRateControllerGetFrameTime());
         }
         else
         {
-            // Only snap if dynamic is falling onto static
-            if (dynamicRb->velocity.y <= 0.f && dy > 0.f) // going down
-            {
-                // landed on top
-                dynamicObj->pos.y += pyOverlap;
-                dynamicRb->velocity.y = 0.f;
-                dynamicRb->onCollider = true;
-            }
-            else
-            {
-                // hit ceiling
-                dynamicObj->pos.y -= pyOverlap;
-                dynamicRb->velocity.y = 0.f;
-            }
-
+            // Hit ceiling
+            dynamicObj->pos.y -= pyOverlap;
+            dynamicRb->velocity.y = 0.f;
         }
     }
 }

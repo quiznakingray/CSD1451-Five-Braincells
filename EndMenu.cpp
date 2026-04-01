@@ -60,7 +60,7 @@ void EndMenu::Render() {
     // Corrected: AEGfxPrint takes 7 arguments, removed the leading '1'
     if (isWin) {
         AEGfxPrint(TextManager::pFont, (char*)"Congrats, You Win!", -0.2f, 0.4f, 1.5f, 1.0f, 1.0f, 0.0f, 1.0f);
-        AEGfxPrint(TextManager::pFont, deathText, -0.15f, 0.2f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+        AEGfxPrint(TextManager::pFont,deathText, -0.15f, 0.2f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
     }
     else {
         AEGfxPrint(TextManager::pFont, (char*)"You Are Dead, Yikes!", -0.2f, 0.4f, 1.5f, 1.0f, 0.0f, 0.0f, 1.0f);

@@ -1,150 +1,250 @@
-#include "EnemyGameObject.h"
-#include "CollisionManager.h"
-#include "MapManager.h"
-#include "PlayerGameObject.h"
-#include "PhysicsManager.h"
-#include "GameStateManager.h"
-#include "ParticleEffects.h"
-
+﻿#include "EnemyGameObject.h"
+#include "EnemyManager.h"
+#include "EnemyCombat.h"
 #include <iostream>
+#include <cmath>
 
-void EnemyGameObject::Init()
-{
-	GameObject::Init();
-	InitEnemyBase(base, EnemyType::BASIC);
-	InitEnemyMovement(movement);
-
-	Tile* spawnTile = MapManager::GetTile(TILE_ID::ENEMY);
-	if (spawnTile == nullptr) {
-		return;
-	}
-	AEVec2Set(&pos, spawnTile->pos.x + 50, spawnTile->pos.y);
-	pos.z = 1.f;
-	AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
-
-	base.patrolStart = { spawnTile->pos.x - 100.f, spawnTile->pos.y - 100.f };
-	base.patrolEnd = { spawnTile->pos.x + 150.f, spawnTile->pos.y - 100.f };
-
-	Sprite* s = AddComponent(new Sprite());
-	s->meshColor = 0xFF0000FF;
-
-	Collider* c = AddComponent(new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0, 0, 1, 1));
-
-	c->OnCollisionEnter = [this](Collider* other, int sides)
-		{
-			// CHECK FOR ARROW COLLISION (Orange Blood)
-			if (Arrow* arrow = dynamic_cast<Arrow*>(other->owner))
-			{
-				// Trigger the effect at the enemy's current position
-				ParticleSystem::CreateBloodEffect(pos.x, pos.y, particlePool);
-
-				base.stats.health -= 10;
-				std::cout << "Enemy hit! Health: " << base.stats.health << std::endl;
-
-				// Optional: Deactivate the arrow so it doesn't pass through
-				arrow->isActive = false;
-			}
-			else if (Player* player = dynamic_cast<Player*>(other->owner))
-			{
-				std::cout << "[EnemyGameObj] Collided with PLAYER\n";
-				next = GAME_STATE_TYPE::COMBAT;
-			}
-			else if (Tile* tile = dynamic_cast<Tile*>(other->owner))
-			{
-				std::cout << "[EnemyGameObj] Collided with TILE\n";
-
-				// Only flip direction if hitting a wall on the left or right
-				// instead of always flipping (which caused flipping on ground too)
-				if (sides & COLLISION_SIDE::LEFT || sides & COLLISION_SIDE::RIGHT)
-					movement.movingRight = !movement.movingRight;
-			}
-			else
-			{
-				std::cout << "[EnemyGameObj] Collided with UNKNOWN\n";
-			}
-		};
-
-	c->OnCollisionOver = [this](Collider* other, int sides)
-		{
-			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
-			{
-				// Continuously correct direction if somehow pushed into a wall
-				if (sides & COLLISION_SIDE::RIGHT && movement.movingRight)
-					movement.movingRight = false;
-				else if (sides & COLLISION_SIDE::LEFT && !movement.movingRight)
-					movement.movingRight = true;
-			}
-		};
-
-	rb = AddComponent(new RigidBody());
-	showColliders = true;
+bool EnemyGameObject::CheckGrounded() {
+    return (fabs(rb->velocity.y) < 0.01f);
 }
 
-void EnemyGameObject::Update()
-{
-	GameObject::Update();
-	UpdateEnemyPatrol(this, AEFrameRateControllerGetFrameTime());
-
-//	std::vector<Collider*> colliders = GetComponents<Collider>();
-//
-//	for (Collider* pCol : colliders)
-//	{
-//\
-//		for (CollisionInfo& info : pCol->collisionInfos)
-//		{
-//			Collider* oCol = info.other; 
-//
-//			if (!oCol || !oCol->canCollide) continue;
-//
-//			if (BoxToBoxCollision(
-//				pCol->GetPos2D(), oCol->GetPos2D(),
-//				pCol->GetScale(), oCol->GetScale()))
-//			{
-//				PhysicsManager::HandleCollision(pCol, oCol);
-//			}
-//			else
-//			{
-//				pCol->RemoveFromOverlappingVector(oCol);
-//				oCol->RemoveFromOverlappingVector(pCol);
-//			}
-//		}
-//	}
+void EnemyGameObject::Jump(float force) {
+    if (CheckGrounded()) rb->velocity.y = force;
 }
 
-void EnemyGameObject::Render()
+EnemyGameObject::~EnemyGameObject() {
+    delete patrolAnim; patrolAnim = nullptr;
+    delete chaseAnim; chaseAnim = nullptr;
+    delete attackAnim; attackAnim = nullptr; 
+
+    FreeGameObjects(healthBarObjects);
+    for (GameObject* go : healthBarObjects)
+        delete go;
+    healthBarObjects.clear();
+    healthBarBG = nullptr;
+    healthBarFG = nullptr;
+}
+
+void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
+    InitEnemyBase(base, type);
+    EnemyMovement::InitEnemyMovement(movement);
+
+    if (!spawnTile) return;
+
+    AEVec2Set(&pos, spawnTile->pos.x + 50, spawnTile->pos.y);
+    pos.z = 1.f;
+    AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
+
+    base.patrolStart = { spawnTile->pos.x - 100.f, spawnTile->pos.y - 100.f };
+    base.patrolEnd = { spawnTile->pos.x + 150.f, spawnTile->pos.y - 100.f };
+
+    // Setup animations
+    Sprite* s = new Sprite();
+    s->meshColor = (type == EnemyType::BASIC_MELEE) ? 0xFF0000FF : 0xFFFF0000;
+    s->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Idle.png";
+    s->spriteSheet = Sprite::SpriteSheet(2, 7);
+    s->spriteSheet.isSpriteSheet = true;
+
+    Sprite* walk = new Sprite();
+    walk->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
+    walk->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Walk.png";
+    walk->spriteSheet = Sprite::SpriteSheet(2, 7);
+    walk->spriteSheet.isSpriteSheet = true;
+
+    Sprite* attack = new Sprite();
+    attack->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
+    attack->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Attack.png";
+    attack->spriteSheet = Sprite::SpriteSheet(2, 7);
+    attack->spriteSheet.isSpriteSheet = true;
+
+    patrolAnim = new Animation(s);
+    patrolAnim->loopAnimation = true;
+    patrolAnim->animationFPS = 10.f;
+
+    chaseAnim = new Animation(walk);
+    chaseAnim->loopAnimation = true;
+    chaseAnim->animationFPS = 10.f;
+
+    attackAnim = new Animation(attack);
+    attackAnim->loopAnimation = true;
+    attackAnim->animationFPS = 10.f;
+
+    rb = AddComponent(new RigidBody());
+    rb->type = RIGIDBODY_TYPE::DYNAMIC;
+    rb->mass = 10;
+
+    animator = AddComponent(new Animator(patrolAnim));
+    AddComponent(new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0, 0, 1, 1));
+
+    healthText = AddComponent(new Text());
+    healthText->SetText(std::to_string(base.stats.health));
+    healthText->center.y = 100.f;
+    base.isAlive = true;
+    InitHealthBar();
+    GameObject::Init();
+}
+
+void EnemyGameObject::Update() {
+    float dt = AEFrameRateControllerGetFrameTime();
+	isActive = base.isAlive;
+    //if (!base.isAlive) return;
+    if (!EnemyManager::GetInstance().player) {
+        UpdateAnimation();
+        GameObject::Update();
+        if (base.projectile) base.projectile->Update(); // Update arrow
+        return;
+    }
+    healthText->SetText(std::to_string(base.stats.health));
+    AEVec2 playerPos = EnemyManager::GetInstance().GetPlayerPos();
+    float dx = playerPos.x - pos.x;
+    float dy = playerPos.y - pos.y;
+    float distSq = dx * dx + dy * dy;
+    float attackRangeSq = base.stats.attackRange * base.stats.attackRange;
+    float detectionRangeSq = 500.f * 500.f;
+
+    bool isMelee = (base.type == EnemyType::BASIC_MELEE || base.type == EnemyType::MINI_BOSS_MELEE);
+    bool isRanged = (base.type == EnemyType::BASIC_RANGED || base.type == EnemyType::MINI_BOSS_RANGED);
+
+    // State machine: ATTACK > CHASE > PATROL
+    if (distSq <= attackRangeSq) {
+        if (rb) rb->velocity.x = 0.f;
+        base.currentState = EnemyState::ATTACK;
+        EnemyAttackPlayer(base, *EnemyManager::GetInstance().player, pos, dt);
+    }
+    else if (distSq < detectionRangeSq && base.canMove) {
+        if (isMelee) FollowPlayer(playerPos, dt);
+        else if (isRanged) {
+            const float tooClose = 150.f;
+            if (distSq < tooClose * tooClose) rb->velocity.x = (dx > 0 ? -1 : 1) * base.stats.movementSpeed;
+            else rb->velocity.x = 0.f;
+            base.currentState = (distSq < tooClose * tooClose) ? EnemyState::CHASE : EnemyState::PATROL;
+        }
+    }
+    else {
+        if (rb) rb->velocity.x = 0.f;
+        base.currentState = EnemyState::PATROL;
+        if (base.canMove) Patrol(dt);
+    }
+
+    //damage number 
+
+    for (auto it = hurtTexts.begin(); it != hurtTexts.end();)
+    {
+        float dt = AEFrameRateControllerGetFrameTime();
+        it->second += dt;
+
+        float offsetY = 80.f * it->second;
+        it->first->center = { it->first->center.x, offsetY };
+
+        if (it->second >= damageTextDuration)
+        {
+            RemoveComponent(it->first); // nulled out
+            it = hurtTexts.erase(it);
+        }
+        else ++it;
+    }
+
+    UpdateAnimation();
+    GameObject::Update();
+}
+
+void EnemyGameObject::Patrol(f64 dt) {
+    if (!base.canMove) return;
+    EnemyMovement::UpdateEnemyPatrol(this, dt);
+    base.currentState = EnemyState::PATROL;
+}
+
+void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
+    if (!base.canMove) return;
+
+    if (!EnemyMovement::allNodes.empty()) {
+        std::vector<AEVec2> path = EnemyMovement::FindPath(pos, playerPos);
+        for (AEVec2& node : path) {
+            float dx = node.x - pos.x;
+            float dy = node.y - pos.y;
+            float distSq = dx * dx + dy * dy;
+            if (distSq > 25.f) { // 5 units squared
+                float dist = sqrtf(distSq);
+                rb->velocity.x = dx / dist * base.stats.movementSpeed;
+                if (dy > 20.f) Jump(300.f);
+                base.currentState = EnemyState::CHASE;
+                return;
+            }
+        }
+    }
+
+    float dx = playerPos.x - pos.x;
+    float dy = playerPos.y - pos.y;
+    float distSq = dx * dx + dy * dy;
+    if (distSq > 0.0001f) {
+        float dist = sqrtf(distSq);
+        rb->velocity.x = dx / dist * base.stats.movementSpeed;
+        if (dy > 20.f) Jump(300.f);
+        base.currentState = EnemyState::CHASE;
+    }
+    else rb->velocity.x = 0.f;
+}
+
+void EnemyGameObject::UpdateAnimation() {
+    if (!animator) return;
+    Animation* anim = (base.currentState == EnemyState::PATROL) ? patrolAnim :
+        (base.currentState == EnemyState::CHASE) ? chaseAnim :
+        attackAnim;
+    animator->PlayAnimation(anim);
+    UpdateHealthBar();
+}
+
+void EnemyGameObject::InitHealthBar()
 {
-	GameObject::Render();
+    float barW = scale.x * 0.8f;
+    float barH = 10.f;
+    float offsetY = scale.y / 2.f + 20.f; // float above enemy
 
+    // Background (dark red)
+    healthBarBG = new GameObject(barW, barH, pos.x, pos.y + offsetY, pos.z + 0.1f, 0, false);
+    healthBarBG->AddComponent(new Sprite())->meshColor = 0xFF440000;
 
-	// render patrol points
+    // Foreground (bright green)
+    healthBarFG = new GameObject(barW, barH, pos.x, pos.y + offsetY, pos.z + 0.2f, 0, false);
+    healthBarFG->AddComponent(new Sprite())->meshColor = 0xFF00FF00;
 
-	GameObject* patrolStartGO = new GameObject(
-		60.f, 60.f,
-		base.patrolStart.x,
-		base.patrolStart.y,
-		1.f);
+    healthBarObjects.push_back(healthBarBG);
+    healthBarObjects.push_back(healthBarFG);
+    InitGameObjects(healthBarObjects);
+} 
+void EnemyGameObject::UpdateHealthBar()
+{
+    if (!healthBarBG || !healthBarFG) return;
 
-	Sprite* patrolStartSprite = patrolStartGO->AddComponent(
-		new Sprite()
-	);
+    float offsetY = scale.y / 2.f + 20.f;
+    float barW = scale.x * 0.8f;
+    float ratio = (float)base.stats.health / (float)base.stats.maxHealth;
+    ratio = ratio < 0.f ? 0.f : ratio > 1.f ? 1.f : ratio;
 
-	patrolStartSprite->meshColor = 0xFFFF0000;
+    // Follow enemy position
+    healthBarBG->pos.x = pos.x;
+    healthBarBG->pos.y = pos.y + offsetY;
 
-	patrolStartGO->Init();
-	patrolStartGO->Render();
+    // Shrink foreground based on health ratio
+    // Anchor left: offset x so it shrinks from right
+    healthBarFG->pos.x = pos.x - (barW * (1.f - ratio)) / 2.f;
+    healthBarFG->pos.y = pos.y + offsetY;
+    healthBarFG->scale.x = barW * ratio;
 
-	GameObject* patrolEndGO = new GameObject(
-		60.f, 60.f,
-		base.patrolEnd.x,
-		base.patrolEnd.y,
-		1.f);
+    // Hide when full health, show when damaged
+    healthBarBG->isActive = (base.stats.health <= base.stats.maxHealth);
+    healthBarFG->isActive = (base.stats.health <= base.stats.maxHealth);
 
-	Sprite* patrolEndSprite = patrolEndGO->AddComponent(
-		new Sprite()
-	);
+    // Color shifts green -> yellow -> red as health drops
+    if (ratio > 0.5f) healthBarFG->GetComponent<Sprite>()->meshColor = 0xFF00FF00;
+    else if (ratio > 0.25f) healthBarFG->GetComponent<Sprite>()->meshColor = 0xFF00FFFF;
+    else                    healthBarFG->GetComponent<Sprite>()->meshColor = 0xFF0000FF;
 
-	patrolEndSprite->meshColor = 0xFFFF0000;
-
-	patrolEndGO->Init();
-	patrolEndGO->Render();
+    UpdateGameObjects(healthBarObjects);
+}
+void EnemyGameObject::Render() {
+    if (!isActive) return;
+    if (base.projectile) base.projectile->Render();
+    RenderGameObjects(healthBarObjects);
+    GameObject::Render();
 }

@@ -152,7 +152,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		fpFree();
 		if (next != GAME_STATE_TYPE::RESTART)
 		{
-			fpUnload();
+			fpUnload();	
 
 		}
 		previous = current;

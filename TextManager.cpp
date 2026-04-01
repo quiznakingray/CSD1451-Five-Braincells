@@ -9,11 +9,11 @@ void TextManager::Init() {
     // Only load if it hasn't been loaded yet
     if (TextManager::pFont <= 0) {
         // Modern AE takes const char* - no cast needed
-        TextManager::pFont = AEGfxCreateFont("Assets/Fonts/Arial.ttf", 32);
+        TextManager::pFont = AEGfxCreateFont("Assets/liberation-mono.ttf", 32);
     }
-    if (TextManager::pFont <= 0) {
-        std::cout << "Font failed to load! Check path: Assets/Fonts/Arial.ttf" << std::endl;
-    }
+    //if (TextManager::pFont <= 0) {
+    //    std::cout << "Font failed to load! Check path: Assets/Fonts/Arial.ttf" << std::endl;
+    //}
 }
 
 void TextManager::DrawText(const char* text, float x, float y, float scale) {

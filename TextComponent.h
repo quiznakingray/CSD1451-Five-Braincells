@@ -6,7 +6,7 @@
 #include <string>
 struct Text : ComponentBase {
 	AEVec2 center{};
-	AEVec2 size{};
+	f32 size = 1.f;
 
 	bool inWorldSpace = false;
 	const char * text{};
@@ -15,11 +15,11 @@ struct Text : ComponentBase {
 
 };
 #endif // !TEXT_COMPONENT
-struct TextManager {
-	static s8 pFont;
-	
-	static void Init()
-	{
-		pFont = AEGfxCreateFont("Assets/liberation-mono.ttf", 40);
-	}
-};
+//struct TextManager {
+//	static s8 pFont;
+//	
+//	static void Init()
+//	{
+//		pFont = AEGfxCreateFont("Assets/liberation-mono.ttf", 40);
+//	}
+//};

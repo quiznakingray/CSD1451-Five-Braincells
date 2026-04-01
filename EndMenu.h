@@ -3,7 +3,7 @@
 
 #include "SingletonTemplate.h"
 
-struct EndMenu {
+struct EndMenu  {
     bool isActive = true;    // Is the pop-up currently showing?
     bool isWin = false;       // True for "Congrats", False for "You Are Dead"
 

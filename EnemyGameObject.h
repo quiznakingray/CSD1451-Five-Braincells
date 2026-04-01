@@ -5,20 +5,40 @@
 #include "EnemyBase.h"
 #include "EnemyMovement.h"
 #include "PhysicsManager.h"
-#include "ParticleEffects.h"
-struct EnemyGameObject : GameObject
-{
-	EnemyBase base{};
-	EnemyMovement movement{};
+#include "AnimatorComponent.h"
+#include "MapManager.h"
 
-	RigidBody* rb = nullptr;
+struct EnemyGameObject : GameObject {
+    bool isGrounded = false;
+    float damageTextDuration = 1.f;
+    void Jump(float force);
+    bool CheckGrounded();
 
-	std::vector<Particle> particlePool;
+    EnemyBase base;
+    EnemyMovement movement;
+    RigidBody* rb = nullptr;
+    Text* healthText = nullptr;
+    std::vector<std::pair<Text*, float>> hurtTexts;
 
-	void Init() override;
-	void Update() override;
+    Animator* animator = nullptr;
+    Animation* patrolAnim = nullptr;
+    Animation* chaseAnim = nullptr;
+    Animation* attackAnim = nullptr;
 
-	void Render() override;
+    GameObject* healthBarBG = nullptr;
+    GameObject* healthBarFG = nullptr;
+    std::vector<GameObject*> healthBarObjects;
+
+    ~EnemyGameObject();
+    void Init(EnemyType type, Tile* spawnTile);
+    void Update() override;
+    void Render() override;
+
+    void Patrol(f64 dt);
+    void FollowPlayer(AEVec2 playerPos, f64 dt);
+    void UpdateAnimation();
+    void InitHealthBar();
+    void UpdateHealthBar();
 };
 
 #endif
