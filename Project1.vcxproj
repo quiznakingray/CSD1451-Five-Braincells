@@ -127,6 +127,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="PlayerGameObject.cpp" />
     <ClCompile Include="PlayerManager.cpp" />
+    <ClCompile Include="PlayerStats.cpp" />
     <ClCompile Include="PowerUps.cpp" />
     <ClCompile Include="RigidBodyComponent.cpp" />
     <ClCompile Include="SaveManager.cpp" />

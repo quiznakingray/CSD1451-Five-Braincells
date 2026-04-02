@@ -35,7 +35,7 @@ void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float
     bool isRangedType = (enemy.type == EnemyType::BASIC_RANGED ||
         enemy.type == EnemyType::MINI_BOSS_RANGED);
 
-    enemy.currentState = EnemyState::ATTACK;
+    enemy.currentState = EnemyState::ATTACKING;
 
     if (isRangedType)
     {
@@ -87,6 +87,7 @@ void EnemyTakeDamage(EnemyGameObject& enemy, int damage)
     // show damage number
     Text* t = enemy.AddComponent(new Text());
     t->SetText("-" + std::to_string(damage));
+    t->SetColor(Color{1.f, 0.f, 0.f, 1.f}); // red color
     t->center = { (-0.5f + AERandFloat() ) * enemy.scale.x  , 0};
     enemy.hurtTexts.push_back({ t, 0.f });
 
@@ -94,6 +95,6 @@ void EnemyTakeDamage(EnemyGameObject& enemy, int damage)
     if (IsEnemyDead(enemy.base))
     {
         std::cout << "[EnemyCombat] Enemy died!\n";
-        PlayerStats::Get().killCount++;
+        PlayerStats::GetInstance().killCount++;
     }
 }

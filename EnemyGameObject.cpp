@@ -16,6 +16,7 @@ EnemyGameObject::~EnemyGameObject() {
     delete patrolAnim; patrolAnim = nullptr;
     delete chaseAnim; chaseAnim = nullptr;
     delete attackAnim; attackAnim = nullptr; 
+    delete attackingAnim; attackingAnim = nullptr; 
 
     FreeGameObjects(healthBarObjects);
     for (GameObject* go : healthBarObjects)
@@ -57,6 +58,12 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     attack->spriteSheet = Sprite::SpriteSheet(2, 7);
     attack->spriteSheet.isSpriteSheet = true;
 
+    Sprite* attacking = new Sprite();
+    attacking->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
+    attacking->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Attacking.png";
+    attacking->spriteSheet = Sprite::SpriteSheet(2, 7);
+    attacking->spriteSheet.isSpriteSheet = true;
+
     patrolAnim = new Animation(s);
     patrolAnim->loopAnimation = true;
     patrolAnim->animationFPS = 10.f;
@@ -68,6 +75,10 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     attackAnim = new Animation(attack);
     attackAnim->loopAnimation = true;
     attackAnim->animationFPS = 10.f;
+
+    attackingAnim = new Animation(attacking);
+    attackingAnim->loopAnimation = true;
+    attackingAnim->animationFPS = 10.f;
 
     rb = AddComponent(new RigidBody());
     rb->type = RIGIDBODY_TYPE::DYNAMIC;
@@ -135,6 +146,7 @@ void EnemyGameObject::Update() {
 
         float offsetY = 80.f * it->second;
         it->first->center = { it->first->center.x, offsetY };
+		it->first->SetColor({ 1.f, 0.f, 0.f, 1.f - (it->second / damageTextDuration) }); // fade out
 
         if (it->second >= damageTextDuration)
         {
@@ -144,6 +156,11 @@ void EnemyGameObject::Update() {
         else ++it;
     }
 
+	// sprite facing direction
+	patrolAnim->sprite->size.x = fabs(patrolAnim->sprite->size.x) * (movement.movingRight? -1 : 1);
+	chaseAnim->sprite->size.x = fabs(chaseAnim->sprite->size.x) * (movement.movingRight? -1 : 1);
+	attackAnim->sprite->size.x = fabs(attackAnim->sprite->size.x) * (movement.movingRight? -1 : 1);
+	attackingAnim->sprite->size.x = fabs(attackingAnim->sprite->size.x) * (movement.movingRight? -1 : 1);
     UpdateAnimation();
     GameObject::Update();
 }
@@ -183,14 +200,31 @@ void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
         base.currentState = EnemyState::CHASE;
     }
     else rb->velocity.x = 0.f;
+
+	//movement.movingRight = (dx > 0);
 }
 
 void EnemyGameObject::UpdateAnimation() {
     if (!animator) return;
-    Animation* anim = (base.currentState == EnemyState::PATROL) ? patrolAnim :
-        (base.currentState == EnemyState::CHASE) ? chaseAnim :
-        attackAnim;
-    animator->PlayAnimation(anim);
+    Animation* anim = patrolAnim;
+
+    switch (base.currentState)
+    {
+        case EnemyState::PATROL:
+            anim = patrolAnim;
+		    break;
+        case EnemyState::CHASE:
+            anim = chaseAnim;
+            break;
+        case EnemyState::ATTACK:
+            anim = attackAnim;
+		    break;
+        case EnemyState::ATTACKING:
+			anim = attackingAnim;
+            break;
+
+    }
+	animator->PlayAnimation(anim);
     UpdateHealthBar();
 }
 

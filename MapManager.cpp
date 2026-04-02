@@ -234,17 +234,8 @@ void MapManager::SaveMapState()
         {
             Tile* tile = arrMapInfo[uiRow][uiCol];
             if (!tile) continue;
-
-            bool isInteractable =
-                dynamic_cast<LeverTile*>(tile) ||
-                dynamic_cast<ButtonTile*>(tile) ||
-                dynamic_cast<CrateTile*>(tile) ||
-                dynamic_cast<LaserTile*>(tile) ||
-                dynamic_cast<GateTile*>(tile) ||
-                dynamic_cast<CloudTile*>(tile) ||
-                dynamic_cast<HealthPickupTile*>(tile);
-
-            if (!isInteractable) continue;
+            if (!tile->canInteract && !dynamic_cast<LaserTile*>(tile) && !dynamic_cast<GateTile*>(tile)) continue;
+            if (dynamic_cast<CloudTile*>(tile)) continue;
 
             TileStateData data;
             data.row = uiRow;
@@ -269,6 +260,7 @@ void MapManager::LoadMapState()
     {
         Tile* tile = arrMapInfo[data.row][data.col];
         if (!tile) continue;
+        if (!tile->canInteract && !dynamic_cast<LaserTile*>(tile) && !dynamic_cast<GateTile*>(tile)) continue;
         tile->currID = data.currID;
         tile->isActive = data.isActive;
         tile->isCurrActive = data.isCurrActive;
@@ -279,6 +271,7 @@ void MapManager::LoadMapState()
             lever->SetTexture();
         else if (ButtonTile* button = dynamic_cast<ButtonTile*>(tile))
             button->SetTexture();
+
     }
 }
 #pragma endregion
@@ -469,7 +462,17 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
     case TILE_ID::PROFPICKUPTILE:
         newTile = new ProficiencyPickupTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
-
+    case TILE_ID::MOVINGTILEMID:
+    case TILE_ID::MOVINGTILELEFT:
+    case TILE_ID::MOVINGTILERIGHT:
+    case TILE_ID::MOVINGTILEBUTTONMID:
+    case TILE_ID::MOVINGTILEBUTTONLEFT:
+    case TILE_ID::MOVINGTILEBUTTONRIGHT:
+        newTile = new MovingTile(currID, bgID, currTag, altTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::MOVINGTILETARGET:
+        newTile = new MovingTileTarget(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
     default:
         newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
         //newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
@@ -797,7 +800,26 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
     }
     return taggedTiles;
 }
+std::vector<Tile*> MapManager::GetAltTaggedTiles(int altTag, TILE_ID id)
+{
+    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    std::vector<Tile*> taggedTiles;
 
+    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        {
+            Tile* currTile = arrMapInfo[uiRow][uiCol];
+            if (currTile->altTag == altTag &&
+                currTile->currID == id)
+            {
+                taggedTiles.push_back(currTile);
+            }
+        }
+    }
+    return taggedTiles;
+}
 
 #pragma endregion
 
@@ -918,30 +940,32 @@ void SpikeTile::Init() {
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
-            PlayerStats::Get().ReducePlayerHealth();
-            std::cout << PlayerStats::Get().GetPlayerHealth() << '\n';
-            // knockback based on collision side
-            RigidBody* playerRb = player->GetComponent<RigidBody>();
-            float knockbackX = 1000.0f;
-            float knockbackY = 500.0f;
+            if (!other->isTrigger) {
+                player->TakeDamage(1);
+                // knockback based on collision side
+                RigidBody* playerRb = player->GetComponent<RigidBody>();
+                float knockbackX = 300.0f;
+                float knockbackY = 500.0f;
 
-            switch (static_cast<int>(currID))
-            {
-            case static_cast<int>(TILE_ID::SPIKEUP):
-                playerRb->velocity.y = -knockbackY;
-                break;
-            case static_cast<int>(TILE_ID::SPIKEDOWN):
-                playerRb->velocity.y = knockbackY;
-                break;
-            case static_cast<int>(TILE_ID::SPIKELEFT):
-                playerRb->velocity.x = knockbackX;
-                break;
-            case static_cast<int>(TILE_ID::SPIKERIGHT):
-                playerRb->velocity.x = -knockbackX;
-                break;
-            default:
-                break;
+                switch (static_cast<int>(currID))
+                {
+                case static_cast<int>(TILE_ID::SPIKEUP):
+                    playerRb->velocity.y = -knockbackY;
+                    break;
+                case static_cast<int>(TILE_ID::SPIKEDOWN):
+                    playerRb->velocity.y = knockbackY;
+                    break;
+                case static_cast<int>(TILE_ID::SPIKELEFT):
+                    playerRb->velocity.x = knockbackX;
+                    break;
+                case static_cast<int>(TILE_ID::SPIKERIGHT):
+                    playerRb->velocity.x = -knockbackX;
+                    break;
+                default:
+                    break;
+                }
             }
+            
         }
         };
 }
@@ -951,11 +975,19 @@ void HealthPickupTile::Init() {
     collider->isTrigger = true;
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player && PlayerStats::Get().GetPlayerHealth() < PlayerStats::Get().GetPlayerMaxHealth())
+        if (player && PlayerStats::GetInstance().GetPlayerHealth() < PlayerStats::GetInstance().GetPlayerMaxHealth())
         {
-            PlayerStats::Get().IncreasePlayerHealth();
+            PlayerStats::GetInstance().IncreasePlayerHealth();
             isCurrActive = false;
         }
+        else if (PlayerStats::GetInstance().GetPlayerHealth() >= PlayerStats::GetInstance().GetPlayerMaxHealth()) {
+            interactionTextBox->isActive = true;
+            interactionTextBox->SetText("Health at max!");
+        }
+        };
+    collider->OnTriggerExit = [this](Collider* other, int sides) {
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+            this->interactionTextBox->isActive = false;
         };
 }
 
@@ -966,7 +998,7 @@ void DamagePickupTile::Init() {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && isCurrActive) {
 
-            PlayerStats::Get().IncreasePlayerDamage();
+            PlayerStats::GetInstance().IncreasePlayerDamage();
             isCurrActive = false;
         }
         };
@@ -978,7 +1010,7 @@ void ProficiencyPickupTile::Init() {
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && isCurrActive) {
-            PlayerStats::Get().IncreasePlayerProficiency();
+            PlayerStats::GetInstance().IncreasePlayerProficiency();
             isCurrActive = false;
         }
         };
@@ -1086,9 +1118,17 @@ void CrateTile::Init()
     interactionTextBox->SetText("[F] Grab");
 
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
+
         int hitSides = collider->GetSidesForCollider(other);
         if (hitSides & COLLISION_SIDE::BOTTOM) {
             AudioManager::GetInstance().PlaySFX("crateLanding");
+
+            // Check if crate landed on an enemy while falling
+            EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(other->owner);
+            if (enemy && enemy->base.isAlive && rb->velocity.y < 0.f) {
+                enemy->base.stats.health = 0;
+                enemy->base.isAlive = false;
+            }
         }
         Player* player = dynamic_cast<Player*>(other->owner);
         if (PlayerManager::GetInstance().currentPlayer != player)
@@ -1241,6 +1281,13 @@ void CrateTile::Update() {
     }
     else
     {
+        bool wasOnCollider = rb->onCollider;
+        PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
+
+        // if crate just left the ground, bleed off any residual X nudge velocity
+        if (wasOnCollider && !rb->onCollider)
+            rb->velocity.x = 0.f;
+
         rb->onCollider = false;
         PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
 
@@ -1315,6 +1362,16 @@ void CrateTile::Update() {
                     pCol->RemoveFromOverlappingVector(oCol);
                     it = pCol->collisionInfos.begin();
                     continue;
+                }
+                if (oCol->owner)
+                {
+                    EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(oCol->owner);
+                    if (enemy && !enemy->base.isAlive)
+                    {
+                        pCol->RemoveFromOverlappingVector(oCol);
+                        it = pCol->collisionInfos.begin();
+                        continue;
+                    }
                 }
                 if (BoxToBoxCollision(
                     pCol->GetPos2D(), oCol->GetPos2D(),
