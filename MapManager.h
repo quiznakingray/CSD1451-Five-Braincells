@@ -72,6 +72,10 @@ enum class TILE_ID {
 	MOVINGTILEBUTTONMID = 184,
 	MOVINGTILEBUTTONLEFT = 185,
 	MOVINGTILEBUTTONRIGHT = 186,
+	SANDLEFT = 190,
+	SANDRIGHT = 191,
+	SANDTOP = 192,
+	SANDMID = 193,
 	PLAYER = 200,
 	ENEMY = 250,
 	CHECKPOINT = 300,
@@ -428,10 +432,8 @@ struct ProficiencyPickupTile : Tile {
 		bool currActive,
 		size_t row_,
 		size_t col_,
-		float tileSize,
-		float proficiencyAmount_ = 0.1f)
-		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true),
-		proficiencyAmount(proficiencyAmount_)
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true)
 	{
 		currSprite->textureFileName = "Assets/Environment/gemBlue.png";
 	}

@@ -7,6 +7,7 @@
 #include "PlayerStats.h"
 #include "Node.h"
 #include "EnemyMovement.h"
+#include "LoadingScreen.h"
 #include <array>
 #include <algorithm>
 #include <iostream>
@@ -226,9 +227,9 @@ void MapManager::FreeMap()
 void MapManager::SaveMapState()
 {
     SaveManager::GetInstance().mapSaveData.tileStates.clear();
-    SaveManager::GetInstance().mapSaveData.savedLevel = mapCurrLevel;
+    SaveManager::GetInstance().mapSaveData.savedLevel = current;
 
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+     for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
@@ -934,7 +935,7 @@ void Tile::Update()
 
 void SpikeTile::Init() {
     Tile::Init();
-    collider->isTrigger = true;
+    //collider->isTrigger = true;
     collider->size.x = 0.7f;
     collider->size.y = 0.7f;
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
@@ -975,10 +976,11 @@ void HealthPickupTile::Init() {
     collider->isTrigger = true;
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player && PlayerStats::GetInstance().GetPlayerHealth() < PlayerStats::GetInstance().GetPlayerMaxHealth())
+        if (player && !other->isTrigger && PlayerStats::GetInstance().GetPlayerHealth() < PlayerStats::GetInstance().GetPlayerMaxHealth())
         {
             PlayerStats::GetInstance().IncreasePlayerHealth();
             isCurrActive = false;
+            collider->canCollide = false;
         }
         else if (PlayerStats::GetInstance().GetPlayerHealth() >= PlayerStats::GetInstance().GetPlayerMaxHealth()) {
             interactionTextBox->isActive = true;
@@ -996,10 +998,11 @@ void DamagePickupTile::Init() {
     collider->isTrigger = true;
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player && isCurrActive) {
+        if (player && !other->isTrigger && isCurrActive) {
 
             PlayerStats::GetInstance().IncreasePlayerDamage();
             isCurrActive = false;
+            collider->canCollide = false;
         }
         };
 }
@@ -1009,9 +1012,10 @@ void ProficiencyPickupTile::Init() {
     collider->isTrigger = true;
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player && isCurrActive) {
-            PlayerStats::GetInstance().IncreasePlayerProficiency();
+        if (player && !other->isTrigger && isCurrActive) {
+            PlayerStats::GetInstance().IncreasePlayerProficiency(proficiencyAmount);
             isCurrActive = false;
+            collider->canCollide = false;
         }
         };
 }
@@ -1055,7 +1059,9 @@ void GoalTile::Init() {
                 {
                 case GAME_STATE_TYPE::LEVEL1:
                     SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-                    next = GAME_STATE_TYPE::LEVEL2;
+                    LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL2;
+                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+                    //next = GAME_STATE_TYPE::LEVEL2;
                     break;
                 case GAME_STATE_TYPE::LEVEL1BOSS:
                     SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
@@ -1076,7 +1082,7 @@ void GoalTile::Init() {
                 SaveManager::GetInstance().toContinue = false;
             }
         }
-                };
+    };
 
     collider->OnTriggerExit = [this](Collider* other, int sides) {
         if (Player* player = dynamic_cast<Player*>(other->owner))

@@ -7,6 +7,7 @@ extern FP fpLoad , fpInitialize , fpUpdate , fpRender , fpFree , fpUnload ;
 
 enum class GAME_STATE_TYPE {
 	MENU,
+	LOADING,
 	INSTRUCTIONS,
 	LEVEL1,
 	LEVEL1BOSS,

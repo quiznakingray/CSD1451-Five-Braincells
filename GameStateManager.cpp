@@ -2,6 +2,7 @@
 #include "ParkourLevel.h"
 #include "MainMenu.h"
 #include "PauseMenu.h"
+#include "LoadingScreen.h"
 
 
 FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpRender = nullptr, fpFree = nullptr, fpUnload = nullptr;
@@ -36,6 +37,14 @@ void GameStateManager::Update()
 		fpRender = MainMenu_Draw;
 		fpFree = MainMenu_Free;
 		fpUnload = []() {};
+		break;
+	case GAME_STATE_TYPE::LOADING:
+		fpLoad = LoadingScreen::Load;
+		fpInitialize = LoadingScreen::Init;
+		fpUpdate = LoadingScreen::Update;
+		fpRender = LoadingScreen::Render;
+		fpFree = LoadingScreen::Free;
+		fpUnload = LoadingScreen::Unload;
 		break;
 	case GAME_STATE_TYPE::LEVEL1:  
 	case GAME_STATE_TYPE::LEVEL1BOSS:

@@ -32,7 +32,9 @@ void PlayerManager::Init()
 void PlayerManager::Update(){
 	if (!currentPlayer) return;
 	double dt = AEFrameRateControllerGetFrameTime();
-	currentPlayer->PlayerInput();
+	if (PlayerStats::GetInstance().GetPlayerHealth() > 0) {
+		currentPlayer->PlayerInput();
+	}
 	//currentPlayer->PlayerAction();
 	
 	if (currentPlayer != meleePlayer) {
@@ -44,17 +46,17 @@ void PlayerManager::Update(){
 		rangedPlayer->ApplyDeceleration();
 		rangedPlayer->aiming = false;
 	}
-
-	if (AEInputCheckCurr(AEVK_E) && currentPlayer != meleePlayer)
-	{
-		ChangePlayer(PLAYER_TYPE::MELEE);
+	if (PlayerStats::GetInstance().GetPlayerHealth() > 0) {
+		if (AEInputCheckCurr(AEVK_E) && currentPlayer != meleePlayer)
+		{
+			ChangePlayer(PLAYER_TYPE::MELEE);
+		}
+		else if (AEInputCheckCurr(AEVK_R) && currentPlayer != rangedPlayer)
+		{
+			ChangePlayer(PLAYER_TYPE::RANGE);
+		}
+		rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PLAYER_ACTION::AIMING;
 	}
-	else if (AEInputCheckCurr(AEVK_R) && currentPlayer != rangedPlayer)
-	{
-		ChangePlayer(PLAYER_TYPE::RANGE);
-	}
-	rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PLAYER_ACTION::AIMING;
-
 	//regen stamina
 
 	PlayerStats::GetInstance().RegenStamina(dt);
@@ -156,6 +158,7 @@ void PlayerManager::Load()
 	currentPlayer = PlayerStats::GetInstance().GetPlayerType() == PLAYER_TYPE::MELEE
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
+	currentPlayerType = PlayerStats::GetInstance().GetPlayerType();
 }
 
 

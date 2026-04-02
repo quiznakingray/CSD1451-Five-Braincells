@@ -25,43 +25,43 @@ void Player::PlayerInput()
 
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	//std::cout << "On GRASSCENTER: " << (onGround ? "--" : "___________________________ ") << std::endl;
-	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing && canJump
-		&& PlayerStats::GetInstance().jumpStamina != 0)
-	{
-		if (PlayerStats::GetInstance().ConsumeJumpStamina())
+
+		if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing && canJump
+			&& PlayerStats::GetInstance().jumpStamina != 0)
 		{
-			float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 350.0f);
-			rb->velocity.y = jumpVelocity;
+			if (PlayerStats::GetInstance().ConsumeJumpStamina())
+			{
+				float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 350.0f);
+				rb->velocity.y = jumpVelocity;
+			}
+			else
+			{
+				std::cout << "[Jump] no stamina!\n";
+			}
+			//std::cout << "onCollider: " << rb->onCollider << std::endl;
+		}
+
+		if (AEInputCheckCurr(AEVK_A))
+		{
+			//moveDir.x -= 1.f;
+			rb->velocity.x -= static_cast<f32>(accel * dt);
+		}
+		else if (AEInputCheckCurr(AEVK_D))
+		{
+			//moveDir.x += 1.f;
+			rb->velocity.x += static_cast<f32>(accel * dt);
 		}
 		else
 		{
-			std::cout << "[Jump] no stamina!\n";
+			ApplyDeceleration();
+
 		}
-		//std::cout << "onCollider: " << rb->onCollider << std::endl;
-	}
 
-	if (AEInputCheckCurr(AEVK_A))
-	{
-		//moveDir.x -= 1.f;
-		rb->velocity.x -= static_cast<f32>(accel * dt);
-	}
-	else if (AEInputCheckCurr(AEVK_D))
-	{
-		//moveDir.x += 1.f;
-		rb->velocity.x += static_cast<f32>(accel * dt);
-	}
-	else
-	{
-		ApplyDeceleration();
+		if (rb->velocity.x > maxSpeed)
+			rb->velocity.x = maxSpeed;
 
-	}
-
-	if (rb->velocity.x > maxSpeed)
-		rb->velocity.x = maxSpeed;
-
-	if (rb->velocity.x < -maxSpeed)
-		rb->velocity.x = -maxSpeed;
-
+		if (rb->velocity.x < -maxSpeed)
+			rb->velocity.x = -maxSpeed;
 }
 
 void Player::PlayerAction()
@@ -327,6 +327,8 @@ void Player::Free()
 
 void Player::TakeDamage(int amount)
 {
+	if (gotHurt) return; // i frames
+
 	gotHurt = true;
 	PlayerStats::GetInstance().SetPlayerHealth(-(abs(amount)));
 }
@@ -446,7 +448,7 @@ void MeleePlayer::Update()
 void MeleePlayer::PlayerInput()
 {
 	f64 dt = AEFrameRateControllerGetFrameTime();
-
+	
 	bool qHeld = AEInputCheckCurr(AEVK_Q);
 	if (qHeld)
 	{
@@ -595,7 +597,7 @@ void RangePlayer::Init()
 	line->linePoints.push_back(aimLinePos);
 
 	// init particle pool
-	ParticleSystem::Init(5, particlePool);
+	//ParticleSystem::Init(5);
 
 	Player::Init();
 }
@@ -622,7 +624,7 @@ void RangePlayer::Update()
 		fabs(runningAnim->sprite->size.x) * (worldPosX < pos.x ? -1 : 1);
 
 	//ParticleSystem::CreateBloodEffect(pos.x, pos.y + 100, particlePool);
-	ParticleSystem::Update(dt, particlePool);
+	//ParticleSystem::Update(dt);
 	Player::Update();
 }
 
@@ -725,6 +727,7 @@ void Arrow::Init()
 
 				if (EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(other->owner))
 				{
+					damage = PlayerStats::GetInstance().GetPlayerDamage();
 					std::cout << "Hit enemy for " << damage << " damage!\n";
 
 					isActive = false;

@@ -38,6 +38,9 @@ struct PlayerSaveData {
     // timers
     float totalSeconds = 0;
 
+    // high score
+    int highScore = 0;
+
     bool preserveOnLoad = false;
     bool hasSavedData = false;
 };
@@ -84,6 +87,8 @@ struct SaveManager : public Singleton<SaveManager>
     void SetPreservePlayerOnLoad(bool preserve);
     void SaveDeathCount(int count);
     void SavePlayerTime(float seconds);
+    void SaveKillCount(int count);
+    void SaveHighScore(int score);
     void SaveMapData();
     void LoadMapData();
     void SaveEnemyData();

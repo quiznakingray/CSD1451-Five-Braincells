@@ -16,7 +16,6 @@
     <ClCompile Include="EnemyMovement.cpp" />
     <ClCompile Include="GameObjectManager.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
-    <ClCompile Include="Helper.cpp" />
     <ClCompile Include="HUD.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Instructions.cpp" />
@@ -40,8 +39,9 @@
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="UiButton.cpp" />
     <ClCompile Include="UiSlider.cpp" />
-    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="PlayerStats.cpp" />
+    <ClCompile Include="CooldownTimer.cpp" />
+    <ClCompile Include="LoadingScreen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimatorComponent.h" />
@@ -59,7 +59,6 @@
     <ClInclude Include="EnemyMovement.h" />
     <ClInclude Include="GameObjectManager.h" />
     <ClInclude Include="GameStateManager.h" />
-    <ClInclude Include="Helper.h" />
     <ClInclude Include="HUD.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Instructions.h" />
@@ -86,6 +85,8 @@
     <ClInclude Include="UI.h" />
     <ClInclude Include="UiButton.h" />
     <ClInclude Include="UiSlider.h" />
-    <ClInclude Include="Utils.h" />
+    <ClInclude Include="CooldownTimer.h" />
+    <ClInclude Include="AEVec3.h" />
+    <ClInclude Include="LoadingScreen.h" />
   </ItemGroup>
 </Project>
