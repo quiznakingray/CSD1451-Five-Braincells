@@ -809,6 +809,7 @@ void MapManager::SetLaserActive(Tile tile, bool active)
     std::vector<Tile*> lasers = GetTaggedTiles(tile.currTag, tile.currID);
     for (Tile* laser : lasers) {
         laser->isCurrActive = active;
+        AudioManager::GetInstance().PlaySFX("laserOn");
     }
 }
 #pragma endregion

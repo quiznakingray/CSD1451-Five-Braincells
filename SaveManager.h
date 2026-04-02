@@ -53,7 +53,23 @@ struct MapSaveData {
 
 struct EnemySaveData {
     AEVec3 pos{};
-    EnemyBase enemyBase{};
+    EnemyType type{}; // EnemyType as int
+    EnemyStats stats{};
+    EnemyState currentState = EnemyState::IDLE;
+    bool isAlive = true;
+    bool canMove = true;
+    AEVec2 patrolStart{};
+    AEVec2 patrolEnd{};
+    AEVec2 currentTarget{};
+    float timeSinceLastAttack = 0.f;
+};
+
+struct AudioStateData {
+    float masterVolume = 1.0f;
+    float musicVolume = 1.0f;
+    float sfxVolume = 1.0f;
+    bool preserveOnLoad = false;
+    bool hasSavedData = false;
 };
 
 struct SaveManager : public Singleton<SaveManager>
@@ -61,6 +77,7 @@ struct SaveManager : public Singleton<SaveManager>
     PlayerSaveData playerSaveData;
     MapSaveData    mapSaveData;
     std::vector<EnemySaveData> enemySaveData;
+    AudioStateData audioSaveData;
     bool toContinue = false;
 
     void SavePlayerData();
@@ -70,6 +87,8 @@ struct SaveManager : public Singleton<SaveManager>
     void LoadMapData();
     void SaveEnemyData();
     void LoadEnemyData();
+    void SaveAudioData();
+    void LoadAudioData();
     void SaveAll();
     void LoadAll();
     bool HasSaveData();

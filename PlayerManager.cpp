@@ -152,7 +152,6 @@ void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
 	canChangePlayer = false;
-	EnemyManager::GetInstance().SetTarget(currentPlayer);
 }
 
 

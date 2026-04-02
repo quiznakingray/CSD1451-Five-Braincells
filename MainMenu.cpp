@@ -1,5 +1,6 @@
 ﻿#include "MainMenu.h" // Ensure this file exists in your project folder
 #include "GameStateManager.h"
+#include "AudioManager.h"
 #include "AudioMenu.h"
 #include <vector>
 #include <string> // For strcmp
@@ -66,7 +67,7 @@ void MainMenu_Init() {
     audioMenu.Init(); // initialize audio panel
 
     // Play main menu bgm
-    //AudioManager::GetInstance().GetInstance().PlayMusic("menu_bgm");
+    AudioManager::GetInstance().PlayMusic("mainMenu");
 }
 
 void MainMenu_Update() {
