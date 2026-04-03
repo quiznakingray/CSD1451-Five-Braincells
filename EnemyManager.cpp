@@ -112,10 +112,10 @@ void EnemyManager::SpawnEnemies(std::vector<GameObject*>& goVec) {
     std::unordered_set<Tile*> occupied;
 
     // Get tiles for each enemy type
-    auto basicMeleeTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMY);
-    auto basicRangedTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMY);
-    auto miniBossMeleeTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMY);
-    auto miniBossRangedTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMY);
+    auto basicMeleeTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMYMELEE);
+    auto basicRangedTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMYRANGE);
+    auto miniBossMeleeTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::MINIBOSSMELEE);
+    auto miniBossRangedTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::MINIBOSSRANGE);
 
     // Spawn BASIC MELEE
     for (Tile* tile : basicMeleeTiles)

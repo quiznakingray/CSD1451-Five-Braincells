@@ -422,6 +422,11 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
     case TILE_ID::DIRTRIGHT:
     case TILE_ID::DIRTTOP:
     case TILE_ID::DIRTMID:
+    case TILE_ID::SANDCENTER:
+    case TILE_ID::SANDLEFT:
+    case TILE_ID::SANDRIGHT:
+    case TILE_ID::SANDTOP:
+    case TILE_ID::SANDMID:
         newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
     case TILE_ID::WALL:
@@ -480,7 +485,7 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
         break;
     }
 
-    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMY) {
+    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMYMELEE) {
         return newTile;
     }
 
@@ -506,7 +511,7 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     {
     case TILE_ID::EMPTY:
     case TILE_ID::PLAYER:
-    case TILE_ID::ENEMY:
+    case TILE_ID::ENEMYMELEE:
         tTex = nullptr;
         break;
     case TILE_ID::GRASSCENTER:
@@ -603,7 +608,7 @@ std::string MapManager::GetTileTexture(TILE_ID currID)
     {
     case TILE_ID::EMPTY:
     case TILE_ID::PLAYER:
-    case TILE_ID::ENEMY:
+    case TILE_ID::ENEMYMELEE:
         tTex = "";
         break;
     case TILE_ID::GRASSCENTER:
@@ -1064,17 +1069,15 @@ void GoalTile::Init() {
                     GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
                     //next = GAME_STATE_TYPE::LEVEL2;
                     break;
-                case GAME_STATE_TYPE::LEVEL1BOSS:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-                    next = GAME_STATE_TYPE::LEVEL2;
-                    break;
                 case GAME_STATE_TYPE::LEVEL2:
                     //SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
                     //next = GAME_STATE_TYPE::LEVEL2BOSS;
                     break;
-                case GAME_STATE_TYPE::LEVEL2BOSS:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-                    next = GAME_STATE_TYPE::LEVEL2;
+                case GAME_STATE_TYPE::LEVEL3:
+                    SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
+                    LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL2;
+                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+                    //next = GAME_STATE_TYPE::LEVEL2;
                     break;
                 default:
                     next = GAME_STATE_TYPE::LEVEL1;

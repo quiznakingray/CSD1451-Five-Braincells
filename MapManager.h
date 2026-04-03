@@ -76,8 +76,12 @@ enum class TILE_ID {
 	SANDRIGHT = 191,
 	SANDTOP = 192,
 	SANDMID = 193,
+	SANDCENTER = 194,
 	PLAYER = 200,
-	ENEMY = 250,
+	ENEMYMELEE = 250,
+	ENEMYRANGE = 251,
+	MINIBOSSMELEE = 252,
+	MINIBOSSRANGE = 253,
 	CHECKPOINT = 300,
 	GOAL = 500,
 };
@@ -227,8 +231,23 @@ struct GroundTile : Tile {
 
 		switch (currID_) {
 		case TILE_ID::NOCOLLISIONGROUND:
+			switch (current) {
+			case GAME_STATE_TYPE::LEVEL1:
+				currSprite->textureFileName = "Assets/Environment/grassCenter.png";
+				break;
+			case GAME_STATE_TYPE::LEVEL2:
+				currSprite->textureFileName = "Assets/Environment/dirtCenter.png";
+				break;
+			case GAME_STATE_TYPE::LEVEL3:
+				currSprite->textureFileName = "Assets/Environment/sandCenter.png";
+				break;
+			default:
+				currSprite->textureFileName = "Assets/Environment/grassCenter.png";
+				break;
+			}
+			
 		case TILE_ID::GRASSCENTER:
-			currSprite->textureFileName = "Assets/Environment/GRASSCENTER.png";
+			currSprite->textureFileName = "Assets/Environment/grassCenter.png";
 			break;
 		case TILE_ID::GRASSLEFT:
 			currSprite->textureFileName = "Assets/Environment/grassLeft.png";
@@ -257,6 +276,22 @@ struct GroundTile : Tile {
 		case TILE_ID::DIRTMID:
 			currSprite->textureFileName = "Assets/Environment/dirtMid.png";
 			break;
+		case TILE_ID::SANDCENTER:
+			currSprite->textureFileName = "Assets/Environment/sandCenter.png";
+			break;
+		case TILE_ID::SANDLEFT:
+			currSprite->textureFileName = "Assets/Environment/sandLeft.png";
+			break;
+		case TILE_ID::SANDRIGHT:
+			currSprite->textureFileName = "Assets/Environment/sandRight.png";
+			break;
+		case TILE_ID::SANDTOP:
+			currSprite->textureFileName = "Assets/Environment/sandTop.png";
+			break;
+		case TILE_ID::SANDMID:
+			currSprite->textureFileName = "Assets/Environment/sandMid.png";
+			break;
+
 		}
 		
 

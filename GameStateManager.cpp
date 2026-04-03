@@ -47,9 +47,8 @@ void GameStateManager::Update()
 		fpUnload = LoadingScreen::Unload;
 		break;
 	case GAME_STATE_TYPE::LEVEL1:  
-	case GAME_STATE_TYPE::LEVEL1BOSS:
 	case GAME_STATE_TYPE::LEVEL2:
-	case GAME_STATE_TYPE::LEVEL2BOSS:
+	case GAME_STATE_TYPE::LEVEL3:
 		fpLoad = ParkourLevel::Load;  
 		fpInitialize = ParkourLevel::Init;  
 		fpUpdate = ParkourLevel::Update;  
