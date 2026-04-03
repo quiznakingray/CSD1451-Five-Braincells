@@ -109,6 +109,8 @@ struct RangePlayer : Player {
 	void PlayerAction() override;
 	Animation* PlayerAnimation() override;
 
+	void ShootArrow();
+
 };
 
 struct Arrow : GameObject {

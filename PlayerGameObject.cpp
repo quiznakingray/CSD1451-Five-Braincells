@@ -653,7 +653,8 @@ void RangePlayer::PlayerInput()
 				// normalize so components are between -1 and 1
 				AEVec2Normalize(&dir, &dir);
 
-				PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir);
+				//PlayerManager::rangePlayerArrow->ShootArrow(playerLinePos->pos, dir);
+				ShootArrow();
 
 				// reset timer
 				arrowTimer = 0.0f;
@@ -699,11 +700,30 @@ Animation* RangePlayer::PlayerAnimation()
 	return anim;
 }
 
+void RangePlayer::ShootArrow()
+{
+	for (Arrow* arrow : PlayerManager::GetInstance().arrowGameObjectPool)
+	{
+		if (!arrow->isActive)
+		{
+			AEVec2 dir;
+			AEVec2Sub(&dir, &aimLinePos->pos, &playerLinePos->pos);
+			// normalize so components are between -1 and 1
+			AEVec2Normalize(&dir, &dir);
+			arrow->ShootArrow(playerLinePos->pos, dir);
+			return;
+		}
+	}
+
+	// else if no available arrows in pool
+	std::cout << "[Bow] no arrows available in pool!\n";
+}
+
 void Arrow::Init()
 {
 	AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
 	Sprite* s = AddComponent(new Sprite());
-	s->meshColor = 0xFF0000FF;
+	//s->meshColor = 0xFF0000FF;
 	s->textureFileName = "Assets/SpriteSheets/arrow.png";
 
 	Collider* c = AddComponent(

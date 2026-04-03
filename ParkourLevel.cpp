@@ -49,7 +49,11 @@ void ParkourLevel::Init()
 	PlayerManager::GetInstance().Init();
 	AddGameObjectToVector(PlayerManager::GetInstance().meleePlayer, levelGameObjectVector);
 	AddGameObjectToVector(PlayerManager::GetInstance().rangedPlayer, levelGameObjectVector);
-	AddGameObjectToVector(PlayerManager::GetInstance().rangePlayerArrow, levelGameObjectVector);
+	for (Arrow* a : PlayerManager::GetInstance().arrowGameObjectPool)
+	{
+		AddGameObjectToVector(a, levelGameObjectVector);
+	}
+	//AddGameObjectToVector(PlayerManager::GetInstance().rangePlayerArrow, levelGameObjectVector);
 
 	EnemyManager::GetInstance().Init(PlayerManager::GetInstance().currentPlayer);
 	EnemyManager::GetInstance().SpawnEnemies(5, 1, levelGameObjectVector);
@@ -154,7 +158,16 @@ void ParkourLevel::Free()
 		// skip players PlayerManager owns and deletes them
 		if (obj == PlayerManager::GetInstance().meleePlayer) continue;
 		if (obj == PlayerManager::GetInstance().rangedPlayer) continue;
-		if (obj == PlayerManager::GetInstance().rangePlayerArrow) continue;
+		bool isArrow = false;
+		for (int i = 0; i < PlayerManager::GetInstance().arrowGameObjectPool.size(); i++)
+		{
+			if (obj == PlayerManager::GetInstance().arrowGameObjectPool[i])
+			{
+				isArrow = true;
+				break;
+			}
+		}
+		if (isArrow) continue;
 		if (dynamic_cast<Tile*>(obj)) continue;
 		obj->Free();
 		delete obj;

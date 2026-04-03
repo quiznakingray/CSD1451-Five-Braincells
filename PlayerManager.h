@@ -20,7 +20,10 @@ struct PlayerManager : public Singleton<PlayerManager>
 	MeleePlayer* meleePlayer{};
 	RangePlayer* rangedPlayer{};
 
-	static Arrow* rangePlayerArrow;
+	//static Arrow* rangePlayerArrow;
+
+	std::vector<Arrow*> arrowGameObjectPool;
+	int maxArrowPoolSize = 5;
 	Player* currentPlayer = meleePlayer;
 	PLAYER_TYPE currentPlayerType = PLAYER_TYPE::MELEE;
 

@@ -7,7 +7,7 @@
 #include <fstream>
 #include <direct.h>
 
-Arrow* PlayerManager::rangePlayerArrow = nullptr;
+//Arrow* PlayerManager::rangePlayerArrow = nullptr;
 
 
 void PlayerManager::Init()
@@ -16,9 +16,14 @@ void PlayerManager::Init()
 	AEVec2Set(&meleePlayer->pos, MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y + 200.f);
 	rangedPlayer = new RangePlayer;
 	AEVec2Set(&rangedPlayer->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
-	rangePlayerArrow = new Arrow;
-	AEVec2Set(&rangePlayerArrow->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
-
+	//rangePlayerArrow = new Arrow;
+	//AEVec2Set(&rangePlayerArrow->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
+	for (size_t i = 0; i < maxArrowPoolSize; i++)
+	{
+		Arrow* a = new Arrow;
+		AEVec2Set(&a->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
+		arrowGameObjectPool.push_back(a);
+	}
 	currentPlayer = PlayerStats::GetInstance().GetPlayerType() == PLAYER_TYPE::MELEE
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
@@ -71,9 +76,14 @@ void PlayerManager::Update(){
 
 }
 void PlayerManager::Render(){
+	if (!currentPlayer) return;
 	meleePlayer->Render();
 	rangedPlayer->Render();
-	rangePlayerArrow->Render();
+	//rangePlayerArrow->Render();
+	for (Arrow* a : arrowGameObjectPool)
+	{
+		a->Render();
+	}
 }
 
 void PlayerManager::Free() {
@@ -87,10 +97,16 @@ void PlayerManager::Free() {
 		delete rangedPlayer;
 		rangedPlayer = nullptr;
 	}
-	if (rangePlayerArrow) {
-		rangePlayerArrow->Free();
-		delete rangePlayerArrow;
-		rangePlayerArrow = nullptr;
+	//if (rangePlayerArrow) {
+	//	rangePlayerArrow->Free();
+	//	delete rangePlayerArrow;
+	//	rangePlayerArrow = nullptr;
+	//}
+	for (Arrow* a : arrowGameObjectPool)
+	{
+		if (!a) continue;
+		a->Free();
+		delete a;
 	}
 	currentPlayer = nullptr;
 }

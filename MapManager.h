@@ -89,7 +89,7 @@ struct Tile : GameObject {
 	size_t row{};
 	size_t col{};
 	bool isTrigger{};
-	bool isCollidable{};
+	bool canCollide{};
 	bool isCenter{};
 	bool canArrowPass{ false };
 	bool isCurrActive{ true };
@@ -110,7 +110,8 @@ struct Tile : GameObject {
 		size_t col_ = 0,
 		float tileSize = 0.f,
 		bool is_Trigger = false,
-		bool can_Interact = false
+		bool can_Interact = false,
+		bool can_Collide = true
 	)
 		: currID(curr_ID)
 		, bgID(bg_ID)
@@ -122,6 +123,7 @@ struct Tile : GameObject {
 		, col(col_)
 		, isTrigger(is_Trigger)
 		, canInteract(can_Interact)
+		, canCollide(can_Collide)
 	{
 		// scale
 		AEVec2Set(&scale, tileSize, tileSize);
@@ -145,8 +147,7 @@ struct Tile : GameObject {
 			new Collider()
 		);
 		collider->isTrigger = isTrigger;
-
-
+		collider->canCollide = canCollide;
 		if (canInteract)
 		{
 			interactionTextBox = AddComponent(

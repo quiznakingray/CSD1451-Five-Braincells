@@ -474,7 +474,7 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
         newTile = new MovingTileTarget(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
     default:
-        newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
+        newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, false, false, false);
         //newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
         break;
     }
