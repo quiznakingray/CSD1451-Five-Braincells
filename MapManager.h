@@ -3,17 +3,13 @@
 
 #include "AEEngine.h"
 #include "SpriteManager.h"
-#include "TileData.h"
 #include <rapidcsv.h>
-#include <functional>
 #include <iostream>
 #include <algorithm>
 #include "SingletonTemplate.h"
 #include "PlayerGameObject.h"
 #include "GameObjectManager.h"
 #include "TextComponent.h"
-#include "InputManager.h"
-#include "GameStateManager.h"
 #include "PlayerStats.h"
 #include "AudioManager.h"
 #include "PlayerManager.h"
@@ -209,9 +205,6 @@ struct Tile : GameObject {
 
 
 };
-//using Tile = struct Tile;
-
-
 static std::array<TILE_ID, 4> spikes = { TILE_ID::SPIKEDOWN , TILE_ID::SPIKEUP, TILE_ID::SPIKELEFT, TILE_ID::SPIKERIGHT };
 
 struct SpikeTile : Tile {
@@ -624,7 +617,7 @@ struct DamagePickupTile : Tile {
 };
 
 struct ProficiencyPickupTile : Tile {
-	float proficiencyAmount = 0.1f; // amount to add (0..1)
+	float proficiencyAmount = 0.1f; // amount to add (0 - 1)
 
 	ProficiencyPickupTile(TILE_ID currID_,
 		TILE_ID bgID_,
@@ -786,14 +779,7 @@ struct MapManager : public Singleton<MapManager> {
 	GAME_STATE_TYPE mapCurrLevel;
 	static size_t rowCount;
 	static size_t colCount;
-
 	static MapManager* mapManager;
-	//S MapManager() {};
-	//S ~MapManager() {};
-	//S get_instance();
-
-
-
 #pragma region MapFuncs
 	// Loads a map
 	void InitMap(std::string fileName, GAME_STATE_TYPE currLevel);
