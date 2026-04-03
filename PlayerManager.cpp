@@ -169,6 +169,7 @@ void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 	currentPlayer = type == PLAYER_TYPE::MELEE
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
+	PlayerStats::GetInstance().SetPlayerType(currentPlayerType);
 	canChangePlayer = false;
 }
 

@@ -84,6 +84,43 @@ enum class TILE_ID {
 	MINIBOSSRANGE = 253,
 	CHECKPOINT = 300,
 	GOAL = 500,
+	// non interactables, only for decoration
+	HOUSEBEIGEBOTTOMLEFT = 600,
+	HOUSEBEIGEBOTTOMMID = 601,
+	HOUSEBEIGEBOTTOMRIGHT = 602,
+	HOUSEBEIGEMIDLEFT = 603,
+	HOUSEBEIGEMID = 604,
+	HOUSEBEIGEMIDRIGHT = 605,
+	HOUSEBEIGETOPLEFT = 606,
+	HOUSEBEIGETOPRIGHT = 607,
+
+	HOUSEDARKBOTTOMLEFT = 608,
+	HOUSEDARKBOTTOMMID = 609,
+	HOUSEDARKBOTTOMRIGHT = 610,
+	HOUSEDARKMIDLEFT = 611,
+	HOUSEDARKMID = 612,
+	HOUSEDARKMIDRIGHT = 613,
+	HOUSEDARKTOPLEFT = 614,
+	HOUSEDARKTOPRIGHT = 615,
+
+	ROOFYELLOWMID = 616,
+	ROOFYELLOWLEFT = 617,
+	ROOFYELLOWRIGHT = 618,
+	ROOFYELLOWTOPMID = 619,
+	ROOFYELLOWTOPLEFT = 620,
+	ROOFYELLOWTOPRIGHT = 621,
+
+	ROOFREDMID = 622,
+	ROOFREDLEFT = 623,
+	ROOFREDRIGHT = 624,
+	ROOFREDTOPMID = 625,
+	ROOFREDTOPLEFT = 626,
+	ROOFREDTOPRIGHT = 627,
+
+	DOORKNOB = 628,
+	DOORTOP = 629,
+	WINDOW = 630,
+	CHIMNEY = 631
 };
 //using TILE_ID = enum TILE_ID;
 
@@ -216,6 +253,134 @@ struct SpikeTile : Tile {
 	int damage = 1;
 	void Init() override;
 };
+
+struct HouseTile : Tile {
+	HouseTile(
+		TILE_ID currID_,
+		TILE_ID bgID_,
+		int currTag_,
+		bool bgActive,
+		bool currActive,
+		size_t row_,
+		size_t col_,
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize) {
+		
+
+		switch (currID_) {
+			// Beige House
+		case TILE_ID::HOUSEBEIGEBOTTOMLEFT:
+			currSprite->textureFileName = "Assets/Environment/houseBeigeBottomLeft.png";
+			break;
+		case TILE_ID::HOUSEBEIGEBOTTOMMID:
+			currSprite->textureFileName = "Assets/Environment/houseBeigeBottomMid.png";
+			break;
+		case TILE_ID::HOUSEBEIGEBOTTOMRIGHT:
+			currSprite->textureFileName = "Assets/Environment/houseBeigeBottomRight.png";
+			break;
+		case TILE_ID::HOUSEBEIGEMIDLEFT:
+			currSprite->textureFileName = "Assets/Environment/houseBeigeMidLeft.png";
+			break;
+		case TILE_ID::HOUSEBEIGEMID:
+			currSprite->textureFileName = "Assets/Environment/houseBeigeMid.png";
+			break;
+		case TILE_ID::HOUSEBEIGEMIDRIGHT:
+			currSprite->textureFileName = "Assets/Environment/houseBeigeMidRight.png";
+			break;
+		case TILE_ID::HOUSEBEIGETOPLEFT:
+			currSprite->textureFileName = "Assets/Environment/houseBeigeTopLeft.png";
+			break;
+		case TILE_ID::HOUSEBEIGETOPRIGHT:
+			currSprite->textureFileName = "Assets/Environment/houseBeigeTopRight.png";
+			break;
+
+			// Dark House
+		case TILE_ID::HOUSEDARKBOTTOMLEFT:
+			currSprite->textureFileName = "Assets/Environment/houseDarkBottomLeft.png";
+			break;
+		case TILE_ID::HOUSEDARKBOTTOMMID:
+			currSprite->textureFileName = "Assets/Environment/houseDarkBottomMid.png";
+			break;
+		case TILE_ID::HOUSEDARKBOTTOMRIGHT:
+			currSprite->textureFileName = "Assets/Environment/houseDarkBottomRight.png";
+			break;
+		case TILE_ID::HOUSEDARKMIDLEFT:
+			currSprite->textureFileName = "Assets/Environment/houseDarkMidLeft.png";
+			break;
+		case TILE_ID::HOUSEDARKMID:
+			currSprite->textureFileName = "Assets/Environment/houseDarkMid.png";
+			break;
+		case TILE_ID::HOUSEDARKMIDRIGHT:
+			currSprite->textureFileName = "Assets/Environment/houseDarkMidRight.png";
+			break;
+		case TILE_ID::HOUSEDARKTOPLEFT:
+			currSprite->textureFileName = "Assets/Environment/houseDarkTopLeft.png";
+			break;
+		case TILE_ID::HOUSEDARKTOPRIGHT:
+			currSprite->textureFileName = "Assets/Environment/houseDarkTopRight.png";
+			break;
+
+			// Yellow Roof
+		case TILE_ID::ROOFYELLOWMID:
+			currSprite->textureFileName = "Assets/Environment/roofYellowMid.png";
+			break;
+		case TILE_ID::ROOFYELLOWLEFT:
+			currSprite->textureFileName = "Assets/Environment/roofYellowLeft.png";
+			break;
+		case TILE_ID::ROOFYELLOWRIGHT:
+			currSprite->textureFileName = "Assets/Environment/roofYellowRight.png";
+			break;
+		case TILE_ID::ROOFYELLOWTOPMID:
+			currSprite->textureFileName = "Assets/Environment/roofYellowTopMid.png";
+			break;
+		case TILE_ID::ROOFYELLOWTOPLEFT:
+			currSprite->textureFileName = "Assets/Environment/roofYellowTopLeft.png";
+			break;
+		case TILE_ID::ROOFYELLOWTOPRIGHT:
+			currSprite->textureFileName = "Assets/Environment/roofYellowTopRight.png";
+			break;
+
+			// Red Roof
+		case TILE_ID::ROOFREDMID:
+			currSprite->textureFileName = "Assets/Environment/roofRedMid.png";
+			break;
+		case TILE_ID::ROOFREDLEFT:
+			currSprite->textureFileName = "Assets/Environment/roofRedLeft.png";
+			break;
+		case TILE_ID::ROOFREDRIGHT:
+			currSprite->textureFileName = "Assets/Environment/roofRedRight.png";
+			break;
+		case TILE_ID::ROOFREDTOPMID:
+			currSprite->textureFileName = "Assets/Environment/roofRedTopMid.png";
+			break;
+		case TILE_ID::ROOFREDTOPLEFT:
+			currSprite->textureFileName = "Assets/Environment/roofRedTopLeft.png";
+			break;
+		case TILE_ID::ROOFREDTOPRIGHT:
+			currSprite->textureFileName = "Assets/Environment/roofRedTopRight.png";
+			break;
+
+			// Props
+		case TILE_ID::DOORKNOB:
+			currSprite->textureFileName = "Assets/Environment/doorKnob.png";
+			break;
+		case TILE_ID::DOORTOP:
+			currSprite->textureFileName = "Assets/Environment/doorTop.png";
+			break;
+		case TILE_ID::WINDOW:
+			currSprite->textureFileName = "Assets/Environment/window.png";
+			break;
+		case TILE_ID::CHIMNEY:
+			currSprite->textureFileName = "Assets/Environment/chimney.png";
+			break;
+		}
+	}
+	void Init() override {
+		Tile::Init();
+		collider->canCollide = false;
+	}
+};
+
 
 struct GroundTile : Tile {
 	GroundTile(
@@ -667,18 +832,8 @@ struct MapManager : public Singleton<MapManager> {
 	// rotates tile based on given rotation
 	void RotateTile(double rotation, Tile tile);
 
-	// Resets tile currID back to bgID
-	//void ResetTile(unsigned int col, unsigned int row);
-
-	//// Returns true if tile currID is on map regardless of position
-	//bool FindTile(unsigned int* col, unsigned int* row, unsigned int currID);
-
 	// returns a vector of all tiles with given currID
 	std::vector<Tile*> GetTilesWithID(TILE_ID currID);
-
-
-	// Sets map info
-	/*void SetTile(unsigned int col, unsigned int row, unsigned int currID, unsigned int currTag);*/
 
 	// Finds all tiles on the map with provided currTag
 	std::vector<Tile*> GetTaggedTiles(int tag);
@@ -687,18 +842,6 @@ struct MapManager : public Singleton<MapManager> {
 	static std::vector<Tile*> GetTaggedTiles(int tag, TILE_ID id);
 
 	static std::vector<Tile*> GetAltTaggedTiles(int altTag, TILE_ID id);
-
-	//// compares row of tiles in ascending order
-	//int compRowAsc(const Tile** t1, const Tile** t2);
-
-	//// compares rows of tiles in descending order
-	//int compRowDsc(const Tile** t1, const Tile** t2);
-
-	//// compares cols of tiles in ascending order
-	//int compColAsc(const Tile** t1, const Tile** t2);
-
-	//// compares cols of tiles in descending order
-	//int compColDsc(const Tile** t1, const Tile** t2);
 
 	// get tiles near position
 	static std::vector<Tile*> GetTilesNearPos(AEVec2 pos, AEVec2 scale);

@@ -97,7 +97,7 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
 }
 
 void EnemyGameObject::Update() {
-    float dt = AEFrameRateControllerGetFrameTime();
+    float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
 	isActive = base.isAlive;
 
     // If no players exist, just update animation/projectiles
@@ -165,7 +165,7 @@ void EnemyGameObject::Update() {
 
     for (auto it = hurtTexts.begin(); it != hurtTexts.end();)
     {
-        float dt = AEFrameRateControllerGetFrameTime();
+        float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
         it->second += dt;
 
         float offsetY = 80.f * it->second;

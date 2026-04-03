@@ -68,8 +68,8 @@ std::vector<AEVec2> EnemyMovement::FindPath(AEVec2 start, AEVec2 target) {
     for (Node* n : allNodes) n->ResetAll();
 
     startNode->actualCost = 0.f;
-    startNode->estimatedCost = sqrtf(pow(startNode->position.x - endNode->position.x, 2) +
-        pow(startNode->position.y - endNode->position.y, 2));
+    startNode->estimatedCost = static_cast<float>(sqrtf(static_cast<float>(pow(startNode->position.x - endNode->position.x, 2)) +
+        static_cast<float>(pow(startNode->position.y - endNode->position.y, 2))));
     startNode->UpdateTotalCost();
 
     std::vector<Node*> openList{ startNode };
@@ -97,15 +97,15 @@ std::vector<AEVec2> EnemyMovement::FindPath(AEVec2 start, AEVec2 target) {
             if (!neighbor->walkable) continue;
             if (std::find(closedList.begin(), closedList.end(), neighbor) != closedList.end()) continue;
 
-            float newCost = current->actualCost + sqrtf(pow(neighbor->position.x - current->position.x, 2) +
-                pow(neighbor->position.y - current->position.y, 2));
+            float newCost = static_cast<float>(current->actualCost + sqrtf(static_cast<float>(pow(neighbor->position.x - current->position.x, 2)) +
+                static_cast<float>(pow(neighbor->position.y - current->position.y, 2))));
 
             bool inOpen = std::find(openList.begin(), openList.end(), neighbor) != openList.end();
             if (inOpen && newCost >= neighbor->actualCost) continue;
 
             neighbor->actualCost = newCost;
-            neighbor->estimatedCost = sqrtf(pow(neighbor->position.x - endNode->position.x, 2) +
-                pow(neighbor->position.y - endNode->position.y, 2));
+            neighbor->estimatedCost = static_cast<float>(sqrtf(static_cast<float>(pow(neighbor->position.x - endNode->position.x, 2)) +
+                static_cast<float>(pow(neighbor->position.y - endNode->position.y, 2))));
             neighbor->parent = current;
             neighbor->UpdateTotalCost();
 

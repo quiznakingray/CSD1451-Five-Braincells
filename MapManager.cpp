@@ -479,6 +479,40 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
     case TILE_ID::MOVINGTILETARGET:
         newTile = new MovingTileTarget(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
+    case TILE_ID::HOUSEBEIGEBOTTOMLEFT:
+    case TILE_ID::HOUSEBEIGEBOTTOMMID:
+    case TILE_ID::HOUSEBEIGEBOTTOMRIGHT:
+    case TILE_ID::HOUSEBEIGEMIDLEFT:
+    case TILE_ID::HOUSEBEIGEMID:
+    case TILE_ID::HOUSEBEIGEMIDRIGHT:
+    case TILE_ID::HOUSEBEIGETOPLEFT:
+    case TILE_ID::HOUSEBEIGETOPRIGHT:
+    case TILE_ID::HOUSEDARKBOTTOMLEFT:
+    case TILE_ID::HOUSEDARKBOTTOMMID:
+    case TILE_ID::HOUSEDARKBOTTOMRIGHT:
+    case TILE_ID::HOUSEDARKMIDLEFT:
+    case TILE_ID::HOUSEDARKMID:
+    case TILE_ID::HOUSEDARKMIDRIGHT:
+    case TILE_ID::HOUSEDARKTOPLEFT:
+    case TILE_ID::HOUSEDARKTOPRIGHT:
+    case TILE_ID::ROOFYELLOWMID:
+    case TILE_ID::ROOFYELLOWLEFT:
+    case TILE_ID::ROOFYELLOWRIGHT:
+    case TILE_ID::ROOFYELLOWTOPMID:
+    case TILE_ID::ROOFYELLOWTOPLEFT:
+    case TILE_ID::ROOFYELLOWTOPRIGHT:
+    case TILE_ID::ROOFREDMID:
+    case TILE_ID::ROOFREDLEFT:
+    case TILE_ID::ROOFREDRIGHT:
+    case TILE_ID::ROOFREDTOPMID:
+    case TILE_ID::ROOFREDTOPLEFT:
+    case TILE_ID::ROOFREDTOPRIGHT:
+    case TILE_ID::DOORKNOB:
+    case TILE_ID::DOORTOP:
+    case TILE_ID::WINDOW:
+    case TILE_ID::CHIMNEY:
+        newTile = new HouseTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
     default:
         newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
         //newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
@@ -688,6 +722,102 @@ std::string MapManager::GetTileTexture(TILE_ID currID)
         break;
     case TILE_ID::HEALTHPICKUPTILE:
         tTex = "Assets/Environment/gemRed.png";
+        break;
+    case TILE_ID::HOUSEBEIGEBOTTOMLEFT:
+        tTex = "Assets/Environment/houseBeigeBottomLeft.png";
+        break;
+    case TILE_ID::HOUSEBEIGEBOTTOMMID:
+        tTex = "Assets/Environment/houseBeigeBottomMid.png";
+        break;
+    case TILE_ID::HOUSEBEIGEBOTTOMRIGHT:
+        tTex = "Assets/Environment/houseBeigeBottomRight.png";
+        break;
+    case TILE_ID::HOUSEBEIGEMIDLEFT:
+        tTex = "Assets/Environment/houseBeigeMidLeft.png";
+        break;
+    case TILE_ID::HOUSEBEIGEMID:
+        tTex = "Assets/Environment/houseBeigeMid.png";
+        break;
+    case TILE_ID::HOUSEBEIGEMIDRIGHT:
+        tTex = "Assets/Environment/houseBeigeMidRight.png";
+        break;
+    case TILE_ID::HOUSEBEIGETOPLEFT:
+        tTex = "Assets/Environment/houseBeigeTopLeft.png";
+        break;
+    case TILE_ID::HOUSEBEIGETOPRIGHT:
+        tTex = "Assets/Environment/houseBeigeTopRight.png";
+        break;
+    case TILE_ID::HOUSEDARKBOTTOMLEFT:
+        tTex = "Assets/Environment/houseDarkBottomLeft.png";
+        break;
+    case TILE_ID::HOUSEDARKBOTTOMMID:
+        tTex = "Assets/Environment/houseDarkBottomMid.png";
+        break;
+    case TILE_ID::HOUSEDARKBOTTOMRIGHT:
+        tTex = "Assets/Environment/houseDarkBottomRight.png";
+        break;
+    case TILE_ID::HOUSEDARKMIDLEFT:
+        tTex = "Assets/Environment/houseDarkMidLeft.png";
+        break;
+    case TILE_ID::HOUSEDARKMID:
+        tTex = "Assets/Environment/houseDarkMid.png";
+        break;
+    case TILE_ID::HOUSEDARKMIDRIGHT:
+        tTex = "Assets/Environment/houseDarkMidRight.png";
+        break;
+    case TILE_ID::HOUSEDARKTOPLEFT:
+        tTex = "Assets/Environment/houseDarkTopLeft.png";
+        break;
+    case TILE_ID::HOUSEDARKTOPRIGHT:
+        tTex = "Assets/Environment/houseDarkTopRight.png";
+        break;
+    case TILE_ID::ROOFYELLOWMID:
+        tTex = "Assets/Environment/roofYellowMid.png";
+        break;
+    case TILE_ID::ROOFYELLOWLEFT:
+        tTex = "Assets/Environment/roofYellowLeft.png";
+        break;
+    case TILE_ID::ROOFYELLOWRIGHT:
+        tTex = "Assets/Environment/roofYellowRight.png";
+        break;
+    case TILE_ID::ROOFYELLOWTOPMID:
+        tTex = "Assets/Environment/roofYellowTopMid.png";
+        break;
+    case TILE_ID::ROOFYELLOWTOPLEFT:
+        tTex = "Assets/Environment/roofYellowTopLeft.png";
+        break;
+    case TILE_ID::ROOFYELLOWTOPRIGHT:
+        tTex = "Assets/Environment/roofYellowTopRight.png";
+        break;
+    case TILE_ID::ROOFREDMID:
+        tTex = "Assets/Environment/roofRedMid.png";
+        break;
+    case TILE_ID::ROOFREDLEFT:
+        tTex = "Assets/Environment/roofRedLeft.png";
+        break;
+    case TILE_ID::ROOFREDRIGHT:
+        tTex = "Assets/Environment/roofRedRight.png";
+        break;
+    case TILE_ID::ROOFREDTOPMID:
+        tTex = "Assets/Environment/roofRedTopMid.png";
+        break;
+    case TILE_ID::ROOFREDTOPLEFT:
+        tTex = "Assets/Environment/roofRedTopLeft.png";
+        break;
+    case TILE_ID::ROOFREDTOPRIGHT:
+        tTex = "Assets/Environment/roofRedTopRight.png";
+        break;
+    case TILE_ID::DOORKNOB:
+        tTex = "Assets/Environment/doorKnob.png";
+        break;
+    case TILE_ID::DOORTOP:
+        tTex = "Assets/Environment/doorTop.png";
+        break;
+    case TILE_ID::WINDOW:
+        tTex = "Assets/Environment/window.png";
+        break;
+    case TILE_ID::CHIMNEY:
+        tTex = "Assets/Environment/chimney.png";
         break;
     default:
         tTex = "Assets/PlanetTexture.png";
