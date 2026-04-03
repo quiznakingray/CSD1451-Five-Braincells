@@ -31,12 +31,23 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
 
     if (!spawnTile) return;
 
+    // Base position
     AEVec2Set(&pos, spawnTile->pos.x + 50, spawnTile->pos.y);
     pos.z = 1.f;
-    AEVec2Set(&scale, MapManager::tileSize, MapManager::tileSize);
 
-    base.patrolStart = { spawnTile->pos.x - 100.f, spawnTile->pos.y - 100.f };
-    base.patrolEnd = { spawnTile->pos.x + 150.f, spawnTile->pos.y - 100.f };
+    // Base scale (regular enemy)
+    float scaleFactor = 1.f;
+
+    // Make mini-bosses bigger
+    if (type == EnemyType::MINI_BOSS_MELEE || type == EnemyType::MINI_BOSS_RANGED) {
+        scaleFactor = 2.f; // 2x bigger, can adjust as needed
+    }
+
+    AEVec2Set(&scale, MapManager::tileSize * scaleFactor, MapManager::tileSize * scaleFactor);
+
+    // Patrol area (optional, scale may influence it)
+    base.patrolStart = { spawnTile->pos.x - 100.f * scaleFactor, spawnTile->pos.y - 100.f * scaleFactor };
+    base.patrolEnd = { spawnTile->pos.x + 150.f * scaleFactor, spawnTile->pos.y - 100.f * scaleFactor };
 
     // Setup animations
     Sprite* s = new Sprite();
@@ -79,6 +90,7 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     healthText = AddComponent(new Text());
     healthText->SetText(std::to_string(base.stats.health));
     healthText->center.y = 100.f;
+
     base.isAlive = true;
     InitHealthBar();
     GameObject::Init();
