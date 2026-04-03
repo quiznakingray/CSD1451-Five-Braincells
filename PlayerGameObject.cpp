@@ -722,7 +722,7 @@ void Arrow::Init()
 
 					isActive = false;
 					timer = 0.0f;
-
+					AudioManager::GetInstance().PlaySFX("arrowHit");
 				}
 
 				if (EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(other->owner))
@@ -732,6 +732,7 @@ void Arrow::Init()
 
 					isActive = false;
 					EnemyTakeDamage(*enemy, damage);
+					AudioManager::GetInstance().PlaySFX("arrowHit");
 				}
 			//}
 		};

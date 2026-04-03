@@ -837,8 +837,8 @@ void MapManager::SetLaserActive(Tile tile, bool active)
     std::vector<Tile*> lasers = GetTaggedTiles(tile.currTag, tile.currID);
     for (Tile* laser : lasers) {
         laser->isCurrActive = active;
-        AudioManager::GetInstance().PlaySFX("laserOn");
     }
+    AudioManager::GetInstance().PlaySFX("laserOn");
 }
 #pragma endregion
 
@@ -984,6 +984,7 @@ void HealthPickupTile::Init() {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !other->isTrigger && PlayerStats::GetInstance().GetPlayerHealth() < PlayerStats::GetInstance().GetPlayerMaxHealth())
         {
+            AudioManager::GetInstance().PlaySFX("itemPickup");
             PlayerStats::GetInstance().IncreasePlayerHealth();
             isCurrActive = false;
             collider->canCollide = false;
@@ -1005,7 +1006,7 @@ void DamagePickupTile::Init() {
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !other->isTrigger && isCurrActive) {
-
+            AudioManager::GetInstance().PlaySFX("itemPickup");
             PlayerStats::GetInstance().IncreasePlayerDamage();
             isCurrActive = false;
             collider->canCollide = false;
@@ -1019,6 +1020,7 @@ void ProficiencyPickupTile::Init() {
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !other->isTrigger && isCurrActive) {
+            AudioManager::GetInstance().PlaySFX("itemPickup");
             PlayerStats::GetInstance().IncreasePlayerProficiency(proficiencyAmount);
             isCurrActive = false;
             collider->canCollide = false;
@@ -1042,7 +1044,7 @@ void GoalTile::Init() {
     collider->OnTriggerOver = [this](Collider* other, int sides) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
-            if (current == GAME_STATE_TYPE::LEVEL2)
+            if (current == GAME_STATE_TYPE::LEVEL3)
             {
                 interactionTextBox->SetText("You Win!");
             }
@@ -1051,33 +1053,22 @@ void GoalTile::Init() {
             }
             if (AEInputCheckTriggered(AEVK_F))
             {
-                //SaveManager::GetInstance().SaveAll();
-                //// save current state before transitioning
-                //SaveManager::GetInstance().SavePlayerData(
-                //    PlayerManager::GetInstance().meleePlayer->pos,
-                //    PlayerManager::GetInstance().rangedPlayer->pos
-                //);
-                //MapManager::GetInstance().SaveMapState(current);
-                
-
+                AudioManager::GetInstance().PlaySFX("enemyDie");
                 // transition to next level based on current
                 switch (current)
                 {
                 case GAME_STATE_TYPE::LEVEL1:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
+                    //SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
                     LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL2;
                     GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
                     //next = GAME_STATE_TYPE::LEVEL2;
                     break;
                 case GAME_STATE_TYPE::LEVEL2:
-                    //SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-                    //next = GAME_STATE_TYPE::LEVEL2BOSS;
+                    LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL3;
+                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
                     break;
                 case GAME_STATE_TYPE::LEVEL3:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-                    LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL2;
-                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
-                    //next = GAME_STATE_TYPE::LEVEL2;
+                    // put end menu here
                     break;
                 default:
                     next = GAME_STATE_TYPE::LEVEL1;

@@ -133,6 +133,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="RigidBodyComponent.cpp" />
     <ClCompile Include="SaveManager.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="SplashScreen.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="TextComponent.cpp" />
     <ClCompile Include="TextManager.cpp" />
@@ -178,6 +179,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="SaveManager.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SingletonTemplate.h" />
+    <ClInclude Include="SplashScreen.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="TextComponent.h" />
     <ClInclude Include="TextManager.h" />

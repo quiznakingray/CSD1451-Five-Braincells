@@ -34,7 +34,7 @@ void ParkourLevel::Init()
 		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_02.csv", GAME_STATE_TYPE::LEVEL2);
 		break;
 	case GAME_STATE_TYPE::LEVEL3:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_02 - Copy.csv", GAME_STATE_TYPE::LEVEL3);
+		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_03.csv", GAME_STATE_TYPE::LEVEL3);
 		break;
 	default:
 		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL1);

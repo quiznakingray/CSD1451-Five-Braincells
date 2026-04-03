@@ -3,6 +3,7 @@
 #include "MainMenu.h"
 #include "PauseMenu.h"
 #include "LoadingScreen.h"
+#include "SplashScreen.h"
 
 
 FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpRender = nullptr, fpFree = nullptr, fpUnload = nullptr;
@@ -30,6 +31,14 @@ void GameStateManager::Update()
 
 	switch (current)
 	{
+	case GAME_STATE_TYPE::SPLASH:
+		fpLoad = SplashScreen::Load;
+		fpInitialize = SplashScreen::Init;
+		fpUpdate = SplashScreen::Update;
+		fpRender = SplashScreen::Render;
+		fpFree = SplashScreen::Free;
+		fpUnload = SplashScreen::Unload;
+		break;
 	case GAME_STATE_TYPE::MENU:
 		fpLoad = []() {}; // Empty or load background textures
 		fpInitialize = MainMenu_Init;

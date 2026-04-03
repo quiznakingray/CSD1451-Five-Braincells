@@ -1,4 +1,5 @@
 #include "AudioManager.h"
+#include <iostream>
 
 AudioManager::AudioManager()
 {
@@ -38,6 +39,12 @@ void AudioManager::LoadAllAudio()
         { "laserOn", "Assets/Sounds/laserOn.wav" },
         { "shieldHit", "Assets/Sounds/shieldHit.wav" },
         { "uiButtonClick", "Assets/Sounds/uiButtonClick.wav" },
+         { "itemPickup", "Assets/Sounds/itemPickup.wav" },
+         { "enemyDie", "Assets/Sounds/enemyDie.wav" },
+          { "minibossDie", "Assets/Sounds/minibossDie.wav" },
+          { "goalEnter", "Assets/Sounds/goalEnter.wav" },
+          { "arrowHit", "Assets/Sounds/arrowHit.wav" },
+           { "gateTrigger", "Assets/Sounds/gateTrigger.wav" },
 
         // WHAT WE MAY WANT
         { "walk", "Assets/Sounds/walk.wav" },
@@ -49,8 +56,6 @@ void AudioManager::LoadAllAudio()
         { "checkpoint", "Assets/Sounds/checkpoint.wav" }, //party poppers
         { "win", "Assets/Sounds/win.wav" }, 
         { "lose", "Assets/Sounds/lose.wav" }, // DONT HAVE
-        { "nextLevel", "Assets/Sounds/nextLevel.wav" }, // open door
-        { "pickUp", "Assets/Sounds/pickUp.wav" },
         { "zap", "Assets/Sounds/zap.wav" },
         { "wheels", "Assets/Sounds/wheels.wav" },
         { "gameButtonClick", "Assets/Sounds/gameButtonClick.wav" }
@@ -149,6 +154,7 @@ void AudioManager::PlaySFX(const std::string& name)
 {
     if (sfx.count(name))
         AEAudioPlay(sfx[name], sfxGroup, sfxVolume * masterVolume, 1.0f, 0);
+    std::cout << name << '\n';
 }
 
 void AudioManager::PlayMusic(const std::string& name, bool loop)

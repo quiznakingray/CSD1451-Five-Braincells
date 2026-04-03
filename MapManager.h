@@ -1051,6 +1051,7 @@ struct ButtonTile : Tile {
 	}
 
 	void ActivateGates(bool _activate) {
+		AudioManager::GetInstance().PlaySFX("gateTrigger");
 		if (!isTimed) {
 			for (Tile* gate : MapManager::GetTaggedTiles(currTag, TILE_ID::GATE))
 			{
@@ -1188,14 +1189,19 @@ struct ButtonTile : Tile {
 			if (!wasPressed && isPressed) {
 				ToggleButton();
 				bool targetState = !gatesOriginalState;
-				if (queueRunning) {
-					hasPendingActivation = true;
-					pendingActivate = targetState;
+				std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
+				std::vector<Tile*> altGates = MapManager::GetTaggedTiles(altTag, TILE_ID::GATE);
+				if (!gates.empty() || !altGates.empty()) {
+					if (queueRunning) {
+						hasPendingActivation = true;
+						pendingActivate = targetState;
+					}
+					else {
+						gatesAreActive = targetState;
+						ActivateGates(targetState);
+					}
 				}
-				else {
-					gatesAreActive = targetState;
-					ActivateGates(targetState);
-				}
+
 				for (MovingTile* mt : linkedMovingTiles)
 					mt->isEnabled = true;
 			}
@@ -1214,14 +1220,21 @@ struct ButtonTile : Tile {
 
 			if (wasPressed && !isPressed) {
 				ToggleButton();
-				if (queueRunning) {
-					hasPendingActivation = true;
-					pendingActivate = gatesOriginalState;
+
+				// Add this check
+				std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
+				std::vector<Tile*> altGates = MapManager::GetTaggedTiles(altTag, TILE_ID::GATE);
+				if (!gates.empty() || !altGates.empty()) {
+					if (queueRunning) {
+						hasPendingActivation = true;
+						pendingActivate = gatesOriginalState;
+					}
+					else {
+						gatesAreActive = gatesOriginalState;
+						ActivateGates(gatesOriginalState);
+					}
 				}
-				else {
-					gatesAreActive = gatesOriginalState;
-					ActivateGates(gatesOriginalState);
-				}
+
 				for (MovingTile* mt : linkedMovingTiles)
 					mt->isEnabled = false;
 			}

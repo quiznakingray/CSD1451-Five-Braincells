@@ -93,6 +93,14 @@ void EnemyTakeDamage(EnemyGameObject& enemy, int damage)
     std::cout << "[EnemyCombat] Enemy took " << damage << " dmg, health now " << enemy.base.stats.health << "\n";
     if (IsEnemyDead(enemy.base))
     {
+        if (enemy.base.type == EnemyType::BASIC_MELEE ||
+            enemy.base.type == EnemyType::BASIC_RANGED)
+        {
+            AudioManager::GetInstance().PlaySFX("enemyDie");
+        }
+        else {
+            AudioManager::GetInstance().PlaySFX("minibossDie");
+        }
         std::cout << "[EnemyCombat] Enemy died!\n";
         PlayerStats::GetInstance().killCount++;
     }
