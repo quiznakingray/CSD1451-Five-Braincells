@@ -2,12 +2,15 @@
 #include <iostream>
 
 AudioManager::AudioManager()
+    : masterGroup{}
+    , musicGroup{}
+    , sfxGroup{}
 {
 }
 
 AudioManager::~AudioManager()
 {
-    Exit();
+    //Exit();
 }
 
 void AudioManager::LoadAllAudio()
@@ -122,6 +125,9 @@ void AudioManager::Exit()
 
     // Shutdown audio system
     AEAudioExit();
+
+    music.clear();
+    sfx.clear();
 }
 
 void AudioManager::SetMasterVolume(float v)

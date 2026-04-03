@@ -34,8 +34,8 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     if (!a->canCollide || !b->canCollide)
         return;
 
-    CrateTile* crateA = dynamic_cast<CrateTile*>(A);
-    CrateTile* crateB = dynamic_cast<CrateTile*>(B);
+    //CrateTile* crateA = dynamic_cast<CrateTile*>(A);
+    //CrateTile* crateB = dynamic_cast<CrateTile*>(B);
     Player* playerA = dynamic_cast<Player*>(A);
     Player* playerB = dynamic_cast<Player*>(B);
    
@@ -73,8 +73,7 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
         };
 
     // Classify each body
-    bool aIsStatic = !ra || ra->type == RIGIDBODY_TYPE::STATIC;
-    bool bIsStatic = !rb || rb->type == RIGIDBODY_TYPE::STATIC;
+ 
     bool aIsKinematic = ra && ra->type == RIGIDBODY_TYPE::KINEMATIC;
     bool bIsKinematic = rb && rb->type == RIGIDBODY_TYPE::KINEMATIC;
     bool aIsDynamic = ra && ra->type == RIGIDBODY_TYPE::DYNAMIC;
@@ -125,15 +124,28 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     // Dynamic vs Dynamic split resolution by mass (unchanged)
     if (aIsDynamic && bIsDynamic)
     {
+        // A can only push B if A's mass >= B's mass AND A is moving toward B
+        float relVelX = ra->velocity.x - rb->velocity.x;
+        float relVelY = ra->velocity.y - rb->velocity.y;
+
+        bool aMovingTowardB = (dx < 0 && relVelX > 0) || (dx > 0 && relVelX < 0);
+        bool bMovingTowardA = (dx > 0 && relVelX > 0) || (dx < 0 && relVelX < 0);
+
+        bool aMovingDownTowardB = (dy > 0 && relVelY < 0); 
+        bool bMovingDownTowardA = (dy < 0 && relVelY > 0);
+
+        bool aCanPushB = (ra->mass > rb->mass) && aMovingTowardB;
+        bool bCanPushA = (rb->mass > ra->mass) && bMovingTowardA;
+
         if (pyOverlap < pxOverlap)  // more vertical overlap → resolve Y
         {
-            if (dy > 0)  // A is above B
+            if (aMovingDownTowardB)  // A is above B
             {
                 move(A, 0, pyOverlap, ra, false);   // push A up
                 ra->velocity.y = 0.f;
                 ra->onCollider = true;
             }
-            else
+            else if (bMovingDownTowardA)
             {
                 move(B, 0, pyOverlap, rb, false);   // push B up
                 rb->velocity.y = 0.f;
@@ -142,15 +154,6 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
             return;
         }
 
-        // A can only push B if A's mass >= B's mass AND A is moving toward B
-        float relVelX = ra->velocity.x - rb->velocity.x;
-        float relVelY = ra->velocity.y - rb->velocity.y;
-
-        bool aMovingTowardB = (dx < 0 && relVelX > 0) || (dx > 0 && relVelX < 0);
-        bool bMovingTowardA = (dx > 0 && relVelX > 0) || (dx < 0 && relVelX < 0);
-
-        bool aCanPushB = (ra->mass > rb->mass) && aMovingTowardB;
-        bool bCanPushA = (rb->mass > ra->mass) && bMovingTowardA;
 
         //if (!aCanPushB && !bCanPushA) return; // neither qualifies, no resolution
 

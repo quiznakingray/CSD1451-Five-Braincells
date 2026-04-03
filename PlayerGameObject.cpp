@@ -20,7 +20,7 @@ void Player::PlayerInput()
 
 	bool isGrabbing = currentAction == PLAYER_ACTION::CRATEINTERACT;
 	float accel = isGrabbing ? 200.0f : 300.0f;
-	float jumpHeight = 300.0f;  // lower jump when grabbing
+	float jumpHeight = 350.0f;  // lower jump when grabbing
 
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	//std::cout << "On GRASSCENTER: " << (onGround ? "--" : "___________________________ ") << std::endl;
@@ -30,7 +30,7 @@ void Player::PlayerInput()
 		{
 			if (PlayerStats::GetInstance().ConsumeJumpStamina())
 			{
-				float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * 350.0f);
+				float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * jumpHeight);
 				rb->velocity.y = jumpVelocity;
 			}
 			else
@@ -250,7 +250,7 @@ void Player::Init()
 			}
 		};
 
-	c->OnCollisionExit = [this](Collider* other, int sides)
+	c->OnCollisionExit = [this](Collider* other, int )
 		{
 			if (Tile* tile = dynamic_cast<Tile*>(other->owner))
 			{
@@ -378,7 +378,7 @@ void MeleePlayer::Init()
 		);
 	shieldCollider->isTrigger = true;
 
-	shieldCollider->OnTriggerEnter = [this](Collider* other, int sides)
+	shieldCollider->OnTriggerEnter = [this](Collider* other, int)
 		{
 			if (!shieldActive) return;   // shield is down = do nothing
 
@@ -434,7 +434,7 @@ MeleePlayer::~MeleePlayer()
 }
 void MeleePlayer::Update()
 {
-	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
+	//float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
 
 	// shield input
 
@@ -572,13 +572,13 @@ void RangePlayer::Init()
 	jumpAnim->loopAnimation = true;
 	jumpAnim->animationFPS = 30.f;
 
-	Sprite* aiming = new Sprite();
-	aiming->meshColor = 0xFF0000FF;
-	aiming->textureFileName = "Assets/SpriteSheets/Player_Range_Aim.png";
-	aiming->spriteSheet = Sprite::SpriteSheet(1, 1);
-	aiming->spriteSheet.isSpriteSheet = true;
+	Sprite* aimingSprite = new Sprite();
+	aimingSprite->meshColor = 0xFF0000FF;
+	aimingSprite->textureFileName = "Assets/SpriteSheets/Player_Range_Aim.png";
+	aimingSprite->spriteSheet = Sprite::SpriteSheet(1, 1);
+	aimingSprite->spriteSheet.isSpriteSheet = true;
 
-	aimingAnim = new Animation(aiming);
+	aimingAnim = new Animation(aimingSprite);
 	aimingAnim->loopAnimation = true;
 	//aimingAnim->animationFPS = 30.f;
 
@@ -730,7 +730,7 @@ void Arrow::Init()
 	Collider* c = AddComponent(
 		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.f, 1.f, 0.5f)
 	);
-	c->OnTriggerEnter = [this](Collider* other, int sides)
+	c->OnTriggerEnter = [this](Collider* other, int )
 		{
 			//if (((sides & COLLISION_SIDE::LEFT) && rb->velocity.x < 0) ||
 			//	((sides & COLLISION_SIDE::RIGHT) && rb->velocity.x > 0))
@@ -807,6 +807,12 @@ void Arrow::Render()
 {
 	if (isActive) particlePool.Draw();
 	GameObject::Render();
+}
+
+void Arrow::Free()
+{
+	GameObject::Free();
+	particlePool.Exit();
 }
 
 void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir)

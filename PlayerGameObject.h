@@ -49,7 +49,6 @@ struct Player : GameObject {
 	void Free() override;
 
 	virtual void PlayerInput();
-	void ReducePlayerHealth();
 	virtual void PlayerAction();
 	void ApplyDeceleration();
 
@@ -126,6 +125,7 @@ struct Arrow : GameObject {
 	void Init() override;
 	void Update() override;
 	void Render() override;
+	void Free() override;
 	void ShootArrow(AEVec2 startPos, AEVec2 dir);
 };
 

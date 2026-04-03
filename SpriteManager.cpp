@@ -380,15 +380,15 @@ void Sprite::RenderLine()
 
 		AEVec2 normal = { -dir.y, dir.x };
 
-		AEVec2 offset;
-		AEVec2Scale(&offset, &normal, half);
+		AEVec2 lineOffset;
+		AEVec2Scale(&lineOffset, &normal, half);
 
 		AEVec2 v0, v1, v2, v3;
 
-		AEVec2Sub(&v0, &p0, &offset);
-		AEVec2Add(&v1, &p0, &offset);
-		AEVec2Add(&v2, &p1, &offset);
-		AEVec2Sub(&v3, &p1, &offset);
+		AEVec2Sub(&v0, &p0, &lineOffset);
+		AEVec2Add(&v1, &p0, &lineOffset);
+		AEVec2Add(&v2, &p1, &lineOffset);
+		AEVec2Sub(&v3, &p1, &lineOffset);
 
 
 		AEGfxTriAdd(

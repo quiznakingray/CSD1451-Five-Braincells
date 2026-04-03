@@ -36,8 +36,8 @@ void AudioMenu::Init()
     // Font
     font = AEGfxCreateFont("Assets/liberation-mono.ttf", static_cast<int>(fontSize));
 
-    float screenW = (float)AEGfxGetWindowWidth();
-    float screenH = (float)AEGfxGetWindowHeight();
+    //float screenW = (float)AEGfxGetWindowWidth();
+    //float screenH = (float)AEGfxGetWindowHeight();
 
     panelTex = AEGfxTextureLoad("Assets/TEMP_Sprites/audio_panel.png");
 

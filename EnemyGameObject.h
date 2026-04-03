@@ -34,9 +34,10 @@ struct EnemyGameObject : GameObject {
     void Init(EnemyType type, Tile* spawnTile);
     void Update() override;
     void Render() override;
+	void Free() override;
 
     void Patrol(f64 dt);
-    void FollowPlayer(AEVec2 playerPos, f64 dt);
+    void FollowPlayer(AEVec2 playerPos);
     void UpdateAnimation();
     void InitHealthBar();
     void UpdateHealthBar();

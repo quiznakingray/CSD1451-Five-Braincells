@@ -35,9 +35,9 @@ private:
     std::map<std::string, AEAudio> sfx; // stores sfx audio
     std::map<std::string, AEAudio> music; // stores music audio
 
-    AEAudioGroup masterGroup;
-    AEAudioGroup musicGroup;
-    AEAudioGroup sfxGroup;
+    AEAudioGroup masterGroup{};
+    AEAudioGroup musicGroup{};
+    AEAudioGroup sfxGroup{};
 
     float masterVolume = 1.0f;
     float musicVolume = 1.0f;

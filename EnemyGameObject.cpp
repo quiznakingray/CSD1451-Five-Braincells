@@ -121,7 +121,7 @@ void EnemyGameObject::Update() {
 
     healthText->SetText(std::to_string(base.stats.health));
     // Get position of the closest player
-    AEVec2 playerPos = EnemyManager::GetInstance().GetClosestPlayerPos(pos);
+    AEVec3 playerPos = EnemyManager::GetInstance().GetClosestPlayerPos(pos);
 
     // Determine which player is closest for attack
     Player* targetPlayer = nullptr;
@@ -158,7 +158,7 @@ void EnemyGameObject::Update() {
         EnemyAttackPlayer(base, *targetPlayer, pos, dt);
     }
     else if (distSq < detectionRangeSq && base.canMove) {
-        if (isMelee) FollowPlayer(playerPos, dt);
+        if (isMelee) FollowPlayer(static_cast<AEVec2>(playerPos));
         else if (isRanged) {
             const float tooClose = 150.f;
             if (distSq < tooClose * tooClose) rb->velocity.x = (dx > 0 ? -1 : 1) * base.stats.movementSpeed;
@@ -176,7 +176,7 @@ void EnemyGameObject::Update() {
 
     for (auto it = hurtTexts.begin(); it != hurtTexts.end();)
     {
-        float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
+        //float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
         it->second += dt;
 
         float offsetY = 80.f * it->second;
@@ -202,11 +202,11 @@ void EnemyGameObject::Update() {
 
 void EnemyGameObject::Patrol(f64 dt) {
     if (!base.canMove) return;
-    EnemyMovement::UpdateEnemyPatrol(this, dt);
+    EnemyMovement::UpdateEnemyPatrol(this);
     base.currentState = EnemyState::PATROL;
 }
 
-void EnemyGameObject::FollowPlayer(AEVec2 playerPos, f64 dt) {
+void EnemyGameObject::FollowPlayer(AEVec2 playerPos) {
     if (!base.canMove) return;
 
     if (!EnemyMovement::allNodes.empty()) {
@@ -316,4 +316,14 @@ void EnemyGameObject::Render() {
     if (base.projectile) base.projectile->Render();
     RenderGameObjects(healthBarObjects);
     GameObject::Render();
+}
+
+void EnemyGameObject::Free()
+{
+    if (base.projectile)
+    {
+        base.projectile->Free();
+        delete base.projectile;
+		base.projectile = nullptr;
+    }
 }

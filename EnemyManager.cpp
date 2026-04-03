@@ -28,8 +28,8 @@ void EnemyManager::RegisterEnemy(EnemyGameObject* enemy) {
     registeredEnemies.insert(enemy);
 }
 
-AEVec2 EnemyManager::GetClosestPlayerPos(const AEVec2& enemyPos) {
-    if (!player1 && !player2) return { 0,0 };
+AEVec3 EnemyManager::GetClosestPlayerPos(const AEVec2& enemyPos) {
+    if (!player1 && !player2) return AEVec3{ 0.f, 0.f, 0.f };
     if (!player1) return player2->pos;
     if (!player2) return player1->pos;
 

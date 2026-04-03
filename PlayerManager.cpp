@@ -110,6 +110,7 @@ void PlayerManager::Free() {
 		a->Free();
 		delete a;
 	}
+	arrowGameObjectPool.clear();
 	currentPlayer = nullptr;
 }
 

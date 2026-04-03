@@ -120,7 +120,9 @@ enum class TILE_ID {
 	DOORKNOB = 628,
 	DOORTOP = 629,
 	WINDOW = 630,
-	CHIMNEY = 631
+	CHIMNEY = 631,
+
+	NUM_TILE_ID
 };
 //using TILE_ID = enum TILE_ID;
 
@@ -411,7 +413,7 @@ struct GroundTile : Tile {
 				currSprite->textureFileName = "Assets/Environment/grassCenter.png";
 				break;
 			}
-			
+			break;
 		case TILE_ID::GRASSCENTER:
 			currSprite->textureFileName = "Assets/Environment/grassCenter.png";
 			break;
@@ -467,13 +469,13 @@ struct GroundTile : Tile {
 		Tile::Init();
 		if (currID == TILE_ID::NOCOLLISIONGROUND) {
 			collider->isTrigger = true;
-			collider->OnTriggerEnter = [this](Collider* other, int sides) {
+			collider->OnTriggerEnter = [this](Collider* other, int) {
 				if (Player* player = dynamic_cast<Player*>(other->owner))
 				{
 					currSprite->opacity = 0.2f;
 				}
 				};
-			collider->OnTriggerExit = [this](Collider* other, int sides) {
+			collider->OnTriggerExit = [this](Collider* other, int) {
 				if (Player* player = dynamic_cast<Player*>(other->owner))
 				{
 					currSprite->opacity = 1.f;
@@ -676,7 +678,7 @@ struct CloudTile : Tile {
 
 	void Init() override {
 		Tile::Init();
-		collider->OnCollisionEnter = [this](Collider* other, int sides) {
+		collider->OnCollisionEnter = [this](Collider* other, int) {
 			Player* player = dynamic_cast<Player*>(other->owner);
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
 			if (player || crate)
@@ -692,7 +694,7 @@ struct CloudTile : Tile {
 			}
 			};
 
-		collider->OnCollisionOver = [this](Collider* other, int sides) {
+		collider->OnCollisionOver = [this](Collider* other, int) {
 			Player* player = dynamic_cast<Player*>(other->owner);
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
 			if (player || crate)
@@ -783,7 +785,7 @@ struct MapManager : public Singleton<MapManager> {
 
 	static constexpr  float tileSize = 100.f;
 	const char delimiter = ',';
-	GAME_STATE_TYPE mapCurrLevel;
+	GAME_STATE_TYPE mapCurrLevel = GAME_STATE_TYPE::LEVEL1;
 	static size_t rowCount;
 	static size_t colCount;
 
@@ -831,7 +833,7 @@ struct MapManager : public Singleton<MapManager> {
 	void CheckTileToInit(Tile* tile);
 
 	// rotates tile based on given rotation
-	void RotateTile(double rotation, Tile tile);
+	//void RotateTile(double rotation, Tile tile);
 
 	// returns a vector of all tiles with given currID
 	std::vector<Tile*> GetTilesWithID(TILE_ID currID);
@@ -986,7 +988,7 @@ struct LeverTile : Tile {
 		collider->size.x = 2.f;
 		collider->size.y = 1.5f;
 		collider->isTrigger = true;
-		collider->OnTriggerEnter = [this](Collider* other, int sides) {
+		collider->OnTriggerEnter = [this](Collider* other, int) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
 				this->interactionTextBox->isActive = true;
@@ -997,7 +999,7 @@ struct LeverTile : Tile {
 				TriggerLever(arrow);
 			}
 			};
-		collider->OnTriggerOver = [this](Collider* other, int sides) {
+		collider->OnTriggerOver = [this](Collider* other, int) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
 				this->interactionTextBox->isActive = true;
@@ -1016,7 +1018,7 @@ struct LeverTile : Tile {
 				TriggerLever(arrow);
 			}
 			};
-		collider->OnTriggerExit = [this](Collider* other, int sides) {
+		collider->OnTriggerExit = [this](Collider* other, int) {
 			if (Player* player = dynamic_cast<Player*>(other->owner))
 			{
 				this->interactionTextBox->isActive = false;
@@ -1318,7 +1320,7 @@ struct ButtonTile : Tile {
 
 		const float TOP_SURFACE_TOLERANCE = 40.0f;
 
-		collider->OnTriggerEnter = [this, TOP_SURFACE_TOLERANCE](Collider* other, int sides) {
+		collider->OnTriggerEnter = [this, TOP_SURFACE_TOLERANCE](Collider* other, int) {
 			Player* player = dynamic_cast<Player*>(other->owner);
 
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
@@ -1351,7 +1353,7 @@ struct ButtonTile : Tile {
 
 			};
 
-		collider->OnTriggerExit = [this](Collider* other, int sides) {
+		collider->OnTriggerExit = [this](Collider* other, int) {
 			Player* player = dynamic_cast<Player*>(other->owner);
 			CrateTile* crate = dynamic_cast<CrateTile*>(other->owner);
 			bool wasPressed = isPressed;

@@ -161,7 +161,7 @@ AEVec2 Collider::GetPos2D()
 AEVec2 Collider::GetScale()
 {
 	AEVec2 scale{};
-	f32 scaleY = owner->scale.y * size.y;
+	//f32 scaleY = owner->scale.y * size.y;
 	AEVec2Set(&scale, owner->scale.x * size.x, owner->scale.y * size.y);
 	return scale;
 }
@@ -246,6 +246,7 @@ void Collider::Free()
 
 		// Remove this collider from the other's list without triggering callbacks
 		auto& otherInfos = info.other->collisionInfos;
+		if (otherInfos.empty()) continue;
 		auto it = std::find_if(otherInfos.begin(), otherInfos.end(),
 			[this](const CollisionInfo& i) { return i.other == this; });
 

@@ -5,7 +5,7 @@
 #include <vector>
 
 struct Node {
-    AEVec2 position;
+    AEVec2 position{};
     std::vector<Node*> neighbors;
 
     // A* costs

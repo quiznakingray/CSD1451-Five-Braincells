@@ -19,17 +19,17 @@ public:
     bool IsClicked() const;
 
 private:
-    float x, y;
-    float width, height;
+    float x{}, y{};
+    float width{}, height{};
 
     bool isHovered = false;
     bool isClicked = false;
 
     bool IsMouseOver() const; // check if mouse cursor over button
 
-    AEGfxTexture* texIdle;
-    AEGfxTexture* texHover;
-    AEGfxVertexList* mesh;
+    AEGfxTexture* texIdle = nullptr;
+    AEGfxTexture* texHover = nullptr;
+    AEGfxVertexList* mesh = nullptr;
 };
 
 #endif

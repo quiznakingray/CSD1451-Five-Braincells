@@ -161,8 +161,8 @@ void HUD::Init()
 
 		// bar
 		GameObject* bar = new GameObject(staminaBarScale.x, staminaBarScale.y, posX,staminaBarStartPos.y, 1, 0, true);
-		Sprite* s = bar->AddComponent(new Sprite());
-		s->meshColor = 0xFFFFDD00;
+		Sprite* sBar = bar->AddComponent(new Sprite());
+		sBar->meshColor = 0xFFFFDD00;
 		staminaBars.push_back(bar);
 
 		AddGameObjectToVector(bar, HUDGameObjects);
@@ -183,8 +183,8 @@ void HUD::Init()
 
 		// bar
 		GameObject* bar = new GameObject(healthBarScale.x, healthBarScale.y, posX,healthBarStartPos.y, 1, 0, true);
-		Sprite* s = bar->AddComponent(new Sprite());
-		s->meshColor = 0xFFdb0b0b;
+		Sprite* sBar = bar->AddComponent(new Sprite());
+		sBar->meshColor = 0xFFdb0b0b;
 		healthBars.push_back(bar);
 
 		AddGameObjectToVector(bar, HUDGameObjects);

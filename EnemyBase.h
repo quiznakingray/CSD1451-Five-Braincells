@@ -38,14 +38,14 @@ struct EnemyStats
 // Base enemy structure
 struct EnemyBase
 {
-    EnemyType type;
-    EnemyStats stats;
+    EnemyType type{};
+    EnemyStats stats{};
 
     EnemyState currentState;
 
-    AEVec2 patrolStart;
-    AEVec2 patrolEnd;
-    AEVec2 currentTarget; // For patrol movement
+    AEVec2 patrolStart{};
+    AEVec2 patrolEnd {};
+    AEVec2 currentTarget {}; // For patrol movement
 
     f32 timeSinceLastAttack;
 

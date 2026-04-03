@@ -113,5 +113,6 @@ void LoadingScreen::Unload()
         AEGfxTextureUnload(loadingTexture);
         loadingTexture = nullptr;
     }
+
     AEGfxDestroyFont(fontId);
 }

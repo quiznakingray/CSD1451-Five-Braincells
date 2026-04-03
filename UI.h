@@ -27,7 +27,7 @@ struct ProgressBar
     ProgressBar& operator=(const ProgressBar&) = delete;
 
     // Movable
-    ProgressBar(ProgressBar&& other);
+    ProgressBar(ProgressBar&& other) noexcept;
 
     ~ProgressBar();
     void Init(float inMaxWidth, float inMaxValue,

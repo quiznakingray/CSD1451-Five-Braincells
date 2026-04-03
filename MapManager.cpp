@@ -136,7 +136,7 @@ void MapManager::ChangeMap(GAME_STATE_TYPE currLevel)
 }
 
 void MapManager::PrintMap() {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
@@ -145,7 +145,7 @@ void MapManager::PrintMap() {
         std::vector<std::string> row = map.GetRow<std::string>(uiRow);
 
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
+        for (size_t uiCol = 0; uiCol < cCount; ++uiCol)
         {
             std::cout << static_cast<int>(arrMapInfo[uiRow][uiCol]->currID) << ' ';
 
@@ -155,13 +155,13 @@ void MapManager::PrintMap() {
 }
 void MapManager::LoopMap(void* (mapfunc)())
 {    
-    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
+        for (size_t uiCol = 0; uiCol < cCount; ++uiCol)
         {
             mapfunc();
         }
@@ -170,13 +170,13 @@ void MapManager::LoopMap(void* (mapfunc)())
 }
 void MapManager::DrawMapSprite()
 {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             Tile * currTile = arrMapInfo[uiRow][uiCol];
             if (currTile->currID != TILE_ID::EMPTY) {
@@ -199,15 +199,15 @@ void MapManager::DrawMapSprite()
 void MapManager::FreeMap()
 {
     AEGfxMeshFree(mesh);
-    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
     size_t rowCount = (map.GetColumn<std::string>(0)).size();
     for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             Tile* tile = arrMapInfo[uiRow][uiCol];
             // prevents double free 
-            if (tile && static_cast<int>(tile->currID) > -1 && static_cast<int>(tile->currID) <= 500)
+            if (tile && static_cast<int>(tile->currID) > -1 && static_cast<int>(tile->currID) <= static_cast<int>(TILE_ID::NUM_TILE_ID))
             {
                 tile->Free();   // frees all components (sprite, collider, text, etc.)
                 delete tile;
@@ -858,20 +858,20 @@ void MapManager::CheckTileToInit(Tile* tile)
     }
 }
 
-void MapManager::RotateTile(double rotation, Tile tile)
-{
-
-}
+//void MapManager::RotateTile(double rotation, Tile tile)
+//{
+//
+//}
 std::vector<Tile*> MapManager::GetTilesWithID(TILE_ID currID)
 {
-    size_t rowCount = (map.GetRow<std::string>(0)).size();
-    size_t colCount = (map.GetColumn<std::string>(0)).size();
+    size_t rCount = (map.GetRow<std::string>(0)).size();
+    size_t cCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> foundTiles;
     //taggedTiles.resize(size, 0);
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             if (arrMapInfo[uiCol][uiRow]->currID == currID)
             {
@@ -892,14 +892,14 @@ Tile* MapManager::GetTile(size_t col, size_t row)
 }
 std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
 {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
-    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
+    size_t rCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> taggedTiles;
     //taggedTiles.resize(size, 0);
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             if (arrMapInfo[uiCol][uiRow]->currTag == tag)
             {
@@ -915,14 +915,14 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
 
 std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
 {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
-    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
+    size_t rCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> taggedTiles;
     //taggedTiles.resize(size, 0);
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             Tile* currTile = arrMapInfo[uiRow][uiCol];
             if (currTile->currTag == tag && 
@@ -938,13 +938,13 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
 }
 std::vector<Tile*> MapManager::GetAltTaggedTiles(int altTag, TILE_ID id)
 {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
-    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
+    size_t rCount = (map.GetColumn<std::string>(0)).size();
     std::vector<Tile*> taggedTiles;
 
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             Tile* currTile = arrMapInfo[uiRow][uiCol];
             if (currTile->altTag == altTag &&
@@ -1031,13 +1031,13 @@ size_t MapManager::GetCol()
 
 void MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
 {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
-    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
+    size_t rCount = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             Tile* currTile = arrMapInfo[uiRow][uiCol];
 
@@ -1074,7 +1074,7 @@ void SpikeTile::Init() {
     //collider->isTrigger = true;
     collider->size.x = 0.7f;
     collider->size.y = 0.7f;
-    collider->OnCollisionEnter = [this](Collider* other, int sides) {
+    collider->OnCollisionEnter = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
             if (!other->isTrigger) {
@@ -1110,7 +1110,7 @@ void SpikeTile::Init() {
 void HealthPickupTile::Init() {
     Tile::Init();
     collider->isTrigger = true;
-    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+    collider->OnTriggerEnter = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !other->isTrigger && PlayerStats::GetInstance().GetPlayerHealth() < PlayerStats::GetInstance().GetPlayerMaxHealth())
         {
@@ -1124,7 +1124,7 @@ void HealthPickupTile::Init() {
             interactionTextBox->SetText("Health at max!");
         }
         };
-    collider->OnTriggerExit = [this](Collider* other, int sides) {
+    collider->OnTriggerExit = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
             this->interactionTextBox->isActive = false;
         };
@@ -1133,7 +1133,7 @@ void HealthPickupTile::Init() {
 void DamagePickupTile::Init() {
     Tile::Init();
     collider->isTrigger = true;
-    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+    collider->OnTriggerEnter = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !other->isTrigger && isCurrActive) {
             AudioManager::GetInstance().PlaySFX("itemPickup");
@@ -1147,7 +1147,7 @@ void DamagePickupTile::Init() {
 void ProficiencyPickupTile::Init() {
     Tile::Init();
     collider->isTrigger = true;
-    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+    collider->OnTriggerEnter = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !other->isTrigger && isCurrActive) {
             AudioManager::GetInstance().PlaySFX("itemPickup");
@@ -1166,12 +1166,12 @@ void GoalTile::Init() {
     collider->size.y = 1.5f;
     collider->isTrigger = true;
 
-    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+    collider->OnTriggerEnter = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
             this->interactionTextBox->isActive = true;
     };
 
-    collider->OnTriggerOver = [this](Collider* other, int sides) {
+    collider->OnTriggerOver = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
             if (current == GAME_STATE_TYPE::LEVEL3)
@@ -1209,7 +1209,7 @@ void GoalTile::Init() {
         }
     };
 
-    collider->OnTriggerExit = [this](Collider* other, int sides) {
+    collider->OnTriggerExit = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
             this->interactionTextBox->isActive = false;
         };
@@ -1222,7 +1222,7 @@ void CheckpointTile::Init() {
     Tile::Init();
     canArrowPass = true;
     collider->isTrigger = true;
-    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+    collider->OnTriggerEnter = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player)
         {
@@ -1231,7 +1231,7 @@ void CheckpointTile::Init() {
             SaveManager::GetInstance().SaveAll();
         }
         };
-    collider->OnTriggerExit = [this](Collider* other, int sides) {
+    collider->OnTriggerExit = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
             this->interactionTextBox->isActive = false;
@@ -1248,7 +1248,7 @@ void CrateTile::Init()
 
     interactionTextBox->SetText("[F] Grab");
 
-    collider->OnCollisionEnter = [this](Collider* other, int sides) {
+    collider->OnCollisionEnter = [this](Collider* other, int) {
 
         int hitSides = collider->GetSidesForCollider(other);
         if (hitSides & COLLISION_SIDE::BOTTOM) {
@@ -1279,7 +1279,7 @@ void CrateTile::Init()
             arrow->timer = 0.0f;
         }
         };
-    collider->OnCollisionOver = [this](Collider* other, int sides) {
+    collider->OnCollisionOver = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player)
         {
@@ -1303,7 +1303,7 @@ void CrateTile::Init()
         }
         };
 
-    collider->OnCollisionExit = [this](Collider* other, int sides) {
+    collider->OnCollisionExit = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !pushState)
         {

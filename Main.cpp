@@ -1,6 +1,5 @@
 // ---------------------------------------------------------------------------
 // includes
-
 #include <crtdbg.h> // To check for memory leaks
 #include <vector>
 #include <iostream>
@@ -127,6 +126,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		previous = current;
 		current = next;
 	}
+	AudioManager::GetInstance().Exit();
 	// free the system
 	AESysExit();
 }

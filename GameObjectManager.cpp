@@ -274,7 +274,7 @@ void HandleInteraction(std::vector<GameObject*>& gos)
 		GameObject* go = candidates[i].go;
 		Collider* col = candidates[i].col;
 		bool isHover = (col == topCollider);
-
+		if (!col) continue;
 		if (col->isHovering == false && isHover)
 			if (col->OnMouseEnter) col->OnMouseEnter();
 

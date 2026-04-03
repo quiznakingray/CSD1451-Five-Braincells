@@ -38,7 +38,7 @@ static std::vector<Button> buttons;
 static std::vector<Button> warnButtons;
 static bool showOverwriteWarning = false;
 
-static void DrawRect(f32 cx, f32 cy, f32 w, f32 h, f32 r, f32 g, f32 b, f32 a)
+static void DrawRect(f32 cx, f32 cy, f32 w, f32 h)
 {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
@@ -216,8 +216,8 @@ void MainMenu_Draw() {
     sprintf_s(scoreBuffer, "HIGHEST SCORE: %d", highScore);
 
     // Positioned at y = 0.2f (above NEW GAME) with a white/cyan color
-    f32 a = showOverwriteWarning ? 0.15f : 1.0f;
-    AEGfxPrint(menuFont, scoreBuffer, -0.35f, 0.2f, 0.8f, 0.5f * a, 1.0f * a, 1.0f * a, a);
+    f32 alpha = showOverwriteWarning ? 0.15f : 1.0f;
+    AEGfxPrint(menuFont, scoreBuffer, -0.35f, 0.2f, 0.8f, 0.5f * alpha, 1.0f * alpha, 1.0f * alpha, alpha);
 
     // Main buttons — dimmed when warning panel is open
     for (const auto& btn : buttons) {
@@ -255,4 +255,6 @@ void MainMenu_Free() {
     AEGfxMeshFree(pRectMesh);
 
     audioMenu.Free(); // free audio panel
+    buttons.clear();
+	warnButtons.clear();
 }
