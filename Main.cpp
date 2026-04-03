@@ -13,10 +13,8 @@
 #include "TextManager.h"
 #include "PauseMenu.h"
 #include "MainMenu.h"
-#include "EnemyGameObject.h"
-#include "EnemyManager.h"
-#include "AudioManager.h"
-#include "CameraSystem.h"
+#include <filesystem>
+
 
 int gGameRunning = 1;
 //AEGfxVertexList* pMesh = 0;
@@ -28,6 +26,7 @@ MapManager mapManager;
 
 //std::vector<GameObject*> gameObjects{};
 
+GameStateManager gameStateManager;
 #pragma region tempFuncs
 // temporary functions
 void RenderGraphics() {
@@ -46,10 +45,31 @@ void RenderGraphics() {
 	if (AEInputCheckCurr(AEVK_2))
 		AESysSetFullScreen(0);
 }
+void GameInit()
+{
+	s32 windowWidth = AEGfxGetWindowWidth();
+	s32 windowHeight = AEGfxGetWindowHeight();
+	// Clears game background
+	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
+	//mapManager.GetInstance();
+	TextManager::Init();
+
+	mapManager.InitMap("Assets/Maps/Map_Level_01.csv", 0);
+
+	mapManager.PrintMap();
+
+	//mapManager.AddTilesToGameObjectVector(gameObjects);
+
+	//AddGameObjectToVector(player, gameObjects);
+	
+	
+	//InitGameObjects(gameObjects);
+}
 void GameUpdate() {
 	double dt = AEFrameRateControllerGetFrameTime();
 	//UpdateGameObjects(gameObjects);
 	RenderGraphics();
+
 }
 #pragma endregion
 
@@ -66,7 +86,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	//_CrtSetBreakAlloc(136607);
+
 	//int gGameRunning = 1;
 
 	// Initialization of your own variables go here
@@ -77,47 +97,40 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// Changing the window title
 	AESysSetWindowTitle("My New Demo!");
 
+	// reset the system modules
+	AESysReset();
 
-	printf("Hello LEVEL1\n");
+	printf("Hello World\n");
 
-	GameStateManager::GetInstance().Initialize(GAME_STATE_TYPE::MENU);
-	CameraSystem::Init();
+	//GameInit();
+	gameStateManager.Initialize(GAME_STATE_TYPE::MENU);
 
 	// Game Loop
 	while (gGameRunning)
 	{
-		// reset the system modules
-		AESysReset();
-		AudioManager::GetInstance().GetInstance().Init();
 		// Informing the system about the loop's start
+		gameStateManager.Update();
 
-		if (current != GAME_STATE_TYPE::RESTART)
-		{
-			GameStateManager::GetInstance().Update();
-
-			// Initialize the current game state
+		// Only Load and Init if we aren't resuming from Pause
+		if (current != GAME_STATE_TYPE::PAUSE && current != GAME_STATE_TYPE::CONFIRMATION) {
+		// Initialize the current game state
 			fpLoad();
-
+			fpInitialize();
 		}
-		else {
-			next = current = previous;
-		}
-
-		fpInitialize();
 
 		while (next == current && gGameRunning)
 		{
 			AESysFrameStart();
 			// Update game logic for the current frame
 			fpUpdate();
-			double dt = AEFrameRateControllerGetFrameTime();
-			CameraSystem::Update(dt);
-
 			// Render graphics for the current frame
 			fpRender();
 			// check if forcing the application to quit
-			if (AEInputCheckCurr(AEVK_RETURN)) {
-				next = GAME_STATE_TYPE::RESTART;
+			if (AEInputCheckTriggered(AEVK_ESCAPE)) {
+				if (current != GAME_STATE_TYPE::PAUSE && current != GAME_STATE_TYPE::MENU) {
+					previousState = current; // Defined in GameStateManager
+					next = GAME_STATE_TYPE::PAUSE;
+				}
 			}
 			if (0 == AESysDoesWindowExist())
 				gGameRunning = 0;
@@ -127,34 +140,44 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			if (AEInputCheckCurr(AEVK_2))
 				AESysSetFullScreen(0);
 
-			//if (AEInputCheckCurr(AEVK_3)) {
-			//	if (mapManager.mapCurrLevel != GAME_STATE_TYPE::LEVEL1) {
-			//		gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL2);
-			//		gameStateManager.Update();
-			//		mapManager.ChangeMap(GAME_STATE_TYPE::LEVEL2);
-			//	}
+			if (AEInputCheckCurr(AEVK_3)) {
+				if (mapManager.mapCurrLevel != 1) {
+					gameStateManager.ChangeState(GAME_STATE_TYPE::OTHER);
+					gameStateManager.Update();
+					mapManager.ChangeMap(1);
+				}
 
-			//}
-			//if (AEInputCheckCurr(AEVK_4)) {
-			//	if (mapManager.mapCurrLevel != GAME_STATE_TYPE::LEVEL2) {
-			//		gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL1);
-			//		gameStateManager.Update();
-			//		mapManager.ChangeMap(GAME_STATE_TYPE::LEVEL1);
-			//	}
-			//}
+			}
+			if (AEInputCheckCurr(AEVK_4)) {
+				if (mapManager.mapCurrLevel != 0) {
+					gameStateManager.ChangeState(GAME_STATE_TYPE::WORLD);
+					gameStateManager.Update();
+					mapManager.ChangeMap(0);
+				}
+			}
 			// Informing the system about the loop's end
 
 			AESysFrameEnd();
 		}
 		//GameUpdate();
 
-		fpFree();
-		if (next != GAME_STATE_TYPE::RESTART)
-		{
-			fpUnload();	
-
+		// Logic to prevent unloading when pausing
+	    // If moving to pause or confirmation, do NOT free the level
+		if (next == GAME_STATE_TYPE::PAUSE || next == GAME_STATE_TYPE::CONFIRMATION) {
+			// Do nothing, keep level data in memory
 		}
-		previous = current;
+		else if (current == GAME_STATE_TYPE::CONFIRMATION && next == previousState) {
+			// moving back to the level,
+			// but need to unload it first to reset it.
+			fpFree();
+			fpUnload();
+		}
+		else {
+			// Normal state change: Unload the old state.
+			fpFree();
+			fpUnload();
+		}
+
 		current = next;
 	}
 	//mapManager.FreeMap();
