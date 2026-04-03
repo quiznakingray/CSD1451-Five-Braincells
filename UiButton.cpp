@@ -1,4 +1,5 @@
 #include "UIButton.h"
+#include "AudioManager.h"
 
 bool UIButton::IsClicked() const
 {
@@ -54,7 +55,7 @@ void UIButton::Update()
     if (isHovered && AEInputCheckTriggered(AEVK_LBUTTON))
     {
         isClicked = true;
-        AudioManager::GetInstance().GetInstance().PlaySFX("button_click"); // play button click sfx
+        AudioManager::GetInstance().PlaySFX("uiButtonClick"); // play button click sfx
     }
 }
 

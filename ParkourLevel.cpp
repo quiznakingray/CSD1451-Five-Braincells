@@ -51,8 +51,8 @@ void ParkourLevel::Init()
 	AddGameObjectToVector(PlayerManager::GetInstance().rangedPlayer, levelGameObjectVector);
 	AddGameObjectToVector(PlayerManager::GetInstance().rangePlayerArrow, levelGameObjectVector);
 
-	EnemyManager::GetInstance().Init(PlayerManager::GetInstance().currentPlayer);
-	EnemyManager::GetInstance().SpawnEnemies(5, 1, levelGameObjectVector);
+	EnemyManager::GetInstance().Init(PlayerManager::GetInstance().meleePlayer, PlayerManager::GetInstance().rangedPlayer);
+	EnemyManager::GetInstance().SpawnEnemies(levelGameObjectVector);
 
 	InitGameObjects(levelGameObjectVector);
 

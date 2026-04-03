@@ -15,20 +15,20 @@ private:
     std::unordered_set<EnemyGameObject*> registeredEnemies;
 
 public:
-    Player* player = nullptr;
+    MeleePlayer* player1 = nullptr;
+    RangePlayer* player2 = nullptr;
 
-    void Init(Player* p);
+    void Init(MeleePlayer* p1, RangePlayer* p2);
     void FreeEnemies();
 
     void RegisterEnemy(EnemyGameObject* enemy);
 
-    void SpawnEnemies(int numBasic, int numMiniBoss, std::vector<GameObject*>& gameObjects);
+    void SpawnEnemies(std::vector<GameObject*>& gameObjects);
     void SpawnEnemy(EnemyType type, Tile* tile, std::vector<GameObject*>& gameObjects);
 
     void RenderEnemies();
 
-    AEVec2 GetPlayerPos();
-    void SetTarget(Player* p);
+    AEVec2 GetClosestPlayerPos(const AEVec2& enemyPos);
     void SaveEnemyStates();
     void LoadEnemyStates();
 

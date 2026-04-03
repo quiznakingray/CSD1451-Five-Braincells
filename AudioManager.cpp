@@ -14,9 +14,9 @@ void AudioManager::LoadAllAudio()
     // Store all music audio
     struct MusicFile { const char* key; const char* path; };
     MusicFile musicFiles[] = {
-        {"menu_bgm", "Assets/Sounds/Explosion CTE01_56.1.wav"},
-        //{"leverSwitch.wav", "Assets/Sounds/ex1.wav"}, // EXAMPLE, REPLACE THIS, same format for sfx
-        //{"callThisFileName", "Assets/Sounds/ex2.wav"} // EXAMPLE, REPLACE THIS
+        {"mainMenu", "Assets/Sounds/mainMenu.wav"},
+        {"level1", "Assets/Sounds/level1.wav"},
+        {"level2", "Assets/Sounds/level2.wav"}
     };
 
     // Load all music audio
@@ -32,7 +32,28 @@ void AudioManager::LoadAllAudio()
         { "buttonSwitch", "Assets/Sounds/buttonSwitch.wav" },
         { "crateLanding", "Assets/Sounds/crateLanding.wav" },
         { "playerHurt", "Assets/Sounds/playerHurt.wav" },
-        { "playerDie", "Assets/Sounds/playerDie.wav" }
+        { "playerDie", "Assets/Sounds/playerDie.wav" },
+
+        // WHAT WE HAVE
+        { "laserOn", "Assets/Sounds/laserOn.wav" },
+        { "shieldHit", "Assets/Sounds/shieldHit.wav" },
+        { "uiButtonClick", "Assets/Sounds/uiButtonClick.wav" },
+
+        // WHAT WE MAY WANT
+        { "walk", "Assets/Sounds/walk.wav" },
+        { "jump", "Assets/Sounds/jump.wav" }, // DONT HAVE
+        { "land", "Assets/Sounds/land.wav" },
+        { "aimBow", "Assets/Sounds/aimBow.wav" },
+        { "shootArrow", "Assets/Sounds/shootArrow.wav" },
+        { "shieldOn", "Assets/Sounds/shieldOn.wav" },
+        { "checkpoint", "Assets/Sounds/checkpoint.wav" }, //party poppers
+        { "win", "Assets/Sounds/win.wav" }, 
+        { "lose", "Assets/Sounds/lose.wav" }, // DONT HAVE
+        { "nextLevel", "Assets/Sounds/nextLevel.wav" }, // open door
+        { "pickUp", "Assets/Sounds/pickUp.wav" },
+        { "zap", "Assets/Sounds/zap.wav" },
+        { "wheels", "Assets/Sounds/wheels.wav" },
+        { "gameButtonClick", "Assets/Sounds/gameButtonClick.wav" }
     };
 
     // Load all sfx audio
@@ -60,24 +81,39 @@ void AudioManager::Update()
 
 void AudioManager::Exit()
 {
-    // Stop all audio first then unload audio groups
+    // Stop all audio first
     if (AEAudioIsValidGroup(masterGroup))
-    {
         AEAudioStopGroup(masterGroup);
-        AEAudioUnloadAudioGroup(masterGroup);
-    }
 
     if (AEAudioIsValidGroup(musicGroup))
-    {
         AEAudioStopGroup(musicGroup);
-        AEAudioUnloadAudioGroup(musicGroup);
-    }
 
     if (AEAudioIsValidGroup(sfxGroup))
-    {
         AEAudioStopGroup(sfxGroup);
-        AEAudioUnloadAudioGroup(sfxGroup);
+
+    // Unload all individual music audio
+    for (auto& m : music)
+    {
+        if (AEAudioIsValidAudio(m.second))
+            AEAudioUnloadAudio(m.second);
     }
+
+    // Unload all individual sfx audio
+    for (auto& s : sfx)
+    {
+        if (AEAudioIsValidAudio(s.second))
+            AEAudioUnloadAudio(s.second);
+    }
+
+    // Unload the audio groups
+    if (AEAudioIsValidGroup(masterGroup))
+        AEAudioUnloadAudioGroup(masterGroup);
+
+    if (AEAudioIsValidGroup(musicGroup))
+        AEAudioUnloadAudioGroup(musicGroup);
+
+    if (AEAudioIsValidGroup(sfxGroup))
+        AEAudioUnloadAudioGroup(sfxGroup);
 
     // Shutdown audio system
     AEAudioExit();

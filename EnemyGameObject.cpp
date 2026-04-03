@@ -87,15 +87,38 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
 void EnemyGameObject::Update() {
     float dt = AEFrameRateControllerGetFrameTime();
 	isActive = base.isAlive;
-    //if (!base.isAlive) return;
-    if (!EnemyManager::GetInstance().player) {
+
+    // If no players exist, just update animation/projectiles
+    if (!EnemyManager::GetInstance().player1 && !EnemyManager::GetInstance().player2) {
         UpdateAnimation();
         GameObject::Update();
         if (base.projectile) base.projectile->Update(); // Update arrow
         return;
     }
+
     healthText->SetText(std::to_string(base.stats.health));
-    AEVec2 playerPos = EnemyManager::GetInstance().GetPlayerPos();
+    // Get position of the closest player
+    AEVec2 playerPos = EnemyManager::GetInstance().GetClosestPlayerPos(pos);
+
+    // Determine which player is closest for attack
+    Player* targetPlayer = nullptr;
+    float distToP1 = FLT_MAX, distToP2 = FLT_MAX;
+    if (EnemyManager::GetInstance().player1) {
+        float dx1 = EnemyManager::GetInstance().player1->pos.x - pos.x;
+        float dy1 = EnemyManager::GetInstance().player1->pos.y - pos.y;
+        distToP1 = dx1 * dx1 + dy1 * dy1;
+    }
+    if (EnemyManager::GetInstance().player2) {
+        float dx2 = EnemyManager::GetInstance().player2->pos.x - pos.x;
+        float dy2 = EnemyManager::GetInstance().player2->pos.y - pos.y;
+        distToP2 = dx2 * dx2 + dy2 * dy2;
+    }
+
+    if (distToP1 <= distToP2)
+        targetPlayer = EnemyManager::GetInstance().player1;
+    else
+        targetPlayer = EnemyManager::GetInstance().player2;
+
     float dx = playerPos.x - pos.x;
     float dy = playerPos.y - pos.y;
     float distSq = dx * dx + dy * dy;
@@ -109,7 +132,7 @@ void EnemyGameObject::Update() {
     if (distSq <= attackRangeSq) {
         if (rb) rb->velocity.x = 0.f;
         base.currentState = EnemyState::ATTACK;
-        EnemyAttackPlayer(base, *EnemyManager::GetInstance().player, pos, dt);
+        EnemyAttackPlayer(base, *targetPlayer, pos, dt);
     }
     else if (distSq < detectionRangeSq && base.canMove) {
         if (isMelee) FollowPlayer(playerPos, dt);
