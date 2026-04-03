@@ -830,9 +830,6 @@ struct MapManager : public Singleton<MapManager> {
 	// Checks if tile needs to have special properties applied
 	void CheckTileToInit(Tile* tile);
 
-	// rotates tile based on given rotation
-	void RotateTile(double rotation, Tile tile);
-
 	// returns a vector of all tiles with given currID
 	std::vector<Tile*> GetTilesWithID(TILE_ID currID);
 

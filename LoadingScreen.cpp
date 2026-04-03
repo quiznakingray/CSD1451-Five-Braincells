@@ -62,14 +62,12 @@ void LoadingScreen::Render()
 {
     AEGfxSetBackgroundColor(0.f, 0.f, 0.f);
 
-    // REQUIRED RESET (important)
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetColorToMultiply(1, 1, 1, 1);
     AEGfxSetColorToAdd(0, 0, 0, 0);
     AEGfxSetTransparency(1.0f);
 
-    // Bind texture
     AEGfxTextureSet(loadingTexture, 0, 0);
 
     // Scale to screen size
@@ -86,12 +84,10 @@ void LoadingScreen::Render()
     AEGfxSetTransform(final.m);
     AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 
-    // Reset transform
     AEMtx33 identity{};
     AEMtx33Identity(&identity);
     AEGfxSetTransform(identity.m);
 
-    // Draw loading text on top
     constexpr float textX = -0.2f;
     constexpr float textY = -0.05f;
     AEGfxPrint(fontId, loadingText.c_str(), textX, textY, 1.5f, 1.f, 1.f, 1.f, 1.f);

@@ -183,12 +183,9 @@ void MapManager::DrawMapSprite()
                 if (currTile->currID != currTile->bgID && 
                      currTile->isBGActive)
                 {
-                    //RenderSprite(currTile->bgSprite, mesh);
                     currTile->Render();
                 }
                 if (currTile->isCurrActive) {
-                    //RenderSprite(*currTile.currSprite, mesh);
-                    //currTile.currSprite->Render();
                     currTile->Render();
                 }
             }
@@ -207,7 +204,7 @@ void MapManager::FreeMap()
         {
             Tile* tile = arrMapInfo[uiRow][uiCol];
             // prevents double free 
-            if (tile && static_cast<int>(tile->currID) > -1 && static_cast<int>(tile->currID) <= 500)
+            if (tile && static_cast<int>(tile->currID) > -1 && static_cast<int>(tile->currID) <= 700)
             {
                 tile->Free();   // frees all components (sprite, collider, text, etc.)
                 delete tile;
@@ -858,10 +855,6 @@ void MapManager::CheckTileToInit(Tile* tile)
     }
 }
 
-void MapManager::RotateTile(double rotation, Tile tile)
-{
-
-}
 std::vector<Tile*> MapManager::GetTilesWithID(TILE_ID currID)
 {
     size_t rowCount = (map.GetRow<std::string>(0)).size();
@@ -919,7 +912,6 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
     size_t rowCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> taggedTiles;
-    //taggedTiles.resize(size, 0);
     for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
@@ -1188,10 +1180,8 @@ void GoalTile::Init() {
                 switch (current)
                 {
                 case GAME_STATE_TYPE::LEVEL1:
-                    //SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
                     LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL2;
                     GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
-                    //next = GAME_STATE_TYPE::LEVEL2;
                     break;
                 case GAME_STATE_TYPE::LEVEL2:
                     LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL3;
@@ -1213,9 +1203,6 @@ void GoalTile::Init() {
         if (Player* player = dynamic_cast<Player*>(other->owner))
             this->interactionTextBox->isActive = false;
         };
-
-    //interactionTextBox->text = "[F] Enter";
-
 }
 
 void CheckpointTile::Init() {
@@ -1257,6 +1244,14 @@ void CrateTile::Init()
             // Check if crate landed on an enemy while falling
             EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(other->owner);
             if (enemy && enemy->base.isAlive && rb->velocity.y < 0.f) {
+                if (enemy->base.type == EnemyType::BASIC_MELEE ||
+                    enemy->base.type == EnemyType::BASIC_RANGED)
+                {
+                    AudioManager::GetInstance().PlaySFX("enemyDie");
+                }
+                else {
+                    AudioManager::GetInstance().PlaySFX("minibossDie");
+                }
                 enemy->base.stats.health = 0;
                 enemy->base.isAlive = false;
             }

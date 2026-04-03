@@ -125,31 +125,7 @@ void ParkourLevel::Render()
 
 void ParkourLevel::Free()
 {
-	//playerManager.Save();
-
 	// Clean up game objects
-	/*switch (next) {
-	case GAME_STATE_TYPE::LEVEL1:
-	case GAME_STATE_TYPE::LEVEL2:
-	case GAME_STATE_TYPE::LEVEL3:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-		break;
-	case GAME_STATE_TYPE::LEVEL1BOSS:
-	case GAME_STATE_TYPE::LEVEL2BOSS:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-		break;
-	default:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-		break;
-	}*/
-
-	//// Clean up player1
-	//if (player1)
-	//{
-	//	delete player1;
-	//	player1 = nullptr;
-	//}
-
 	//AEGfxSetCamPosition(0.f, 0.f);
 	//FreeGameObjects(levelGameObjectVector);
 	for (auto* obj : levelGameObjectVector) {
