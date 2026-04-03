@@ -1183,7 +1183,7 @@ void GoalTile::Init() {
             }
             if (AEInputCheckTriggered(AEVK_F))
             {
-                AudioManager::GetInstance().PlaySFX("enemyDie");
+                AudioManager::GetInstance().PlaySFX("goalEnter");
                 // transition to next level based on current
                 switch (current)
                 {
