@@ -6,6 +6,7 @@
 #include "SpriteManager.h"
 #include "TextComponent.h"
 #include "CollisionManager.h"
+#include "LoadingScreen.h"
 #include <string>
 
 // Logic flags
@@ -179,27 +180,39 @@ void PauseMenu::Unload() {
     // Usually empty unless loaded textures specifically for this menu
 }
 // --- Confirmation Logic ---
-void ConfirmationMenu::Init() {
+void ConfirmationMenu::Init()
+{
     if (!gameObjectVector.empty())
     {
         SetActiveGameObjects(gameObjectVector, true);
         return;
     }
+
     GameObject* panel = new GameObject(AEGfxGetWindowWidth() / 2.f, AEGfxGetWindowHeight() - 100.f, 0, 0, 0, 0, true);
-    Sprite* panelSprite = panel->AddComponent(new Sprite());
-    panelSprite->meshColor = 0xFF000000;
+    panel->AddComponent(new Sprite())->meshColor = 0xFF000000;
     AddGameObjectToVector(panel, gameObjectVector);
 
     PauseButton(200, 60, -150, -100, "NO", gameObjectVector, [] {
         PauseMenu::GetInstance().showConfirmation = false;
         ConfirmationMenu::GetInstance().Hide();
         });
+
     PauseButton(200, 60, 150, -100, "YES", gameObjectVector, [] {
-        // handle yes — restart or main menu
-        next = isRestartConfirm
-            ? previous
-            : GAME_STATE_TYPE::MENU;
         PauseMenu::GetInstance().showConfirmation = false;
+        GameStateManager::GetInstance().showPauseMenu = false;
+
+        if (isRestartConfirm)
+        {
+            // Restart: reload the current level through the loading screen
+            LoadingScreen::targetState = previous;
+            GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+        }
+        else
+        {
+            // Main menu: go through loading screen
+            LoadingScreen::targetState = GAME_STATE_TYPE::MENU;
+            GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+        }
         });
 
     InitGameObjects(gameObjectVector);

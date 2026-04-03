@@ -7,6 +7,7 @@
 #include "PlayerStats.h"
 #include "Node.h"
 #include "EnemyMovement.h"
+#include "LoadingScreen.h"
 #include <array>
 #include <algorithm>
 #include <iostream>
@@ -226,9 +227,9 @@ void MapManager::FreeMap()
 void MapManager::SaveMapState()
 {
     SaveManager::GetInstance().mapSaveData.tileStates.clear();
-    SaveManager::GetInstance().mapSaveData.savedLevel = mapCurrLevel;
+    SaveManager::GetInstance().mapSaveData.savedLevel = current;
 
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+     for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
@@ -421,6 +422,11 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
     case TILE_ID::DIRTRIGHT:
     case TILE_ID::DIRTTOP:
     case TILE_ID::DIRTMID:
+    case TILE_ID::SANDCENTER:
+    case TILE_ID::SANDLEFT:
+    case TILE_ID::SANDRIGHT:
+    case TILE_ID::SANDTOP:
+    case TILE_ID::SANDMID:
         newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
     case TILE_ID::WALL:
@@ -479,7 +485,7 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
         break;
     }
 
-    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMY) {
+    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMYMELEE) {
         return newTile;
     }
 
@@ -505,7 +511,7 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     {
     case TILE_ID::EMPTY:
     case TILE_ID::PLAYER:
-    case TILE_ID::ENEMY:
+    case TILE_ID::ENEMYMELEE:
         tTex = nullptr;
         break;
     case TILE_ID::GRASSCENTER:
@@ -602,7 +608,7 @@ std::string MapManager::GetTileTexture(TILE_ID currID)
     {
     case TILE_ID::EMPTY:
     case TILE_ID::PLAYER:
-    case TILE_ID::ENEMY:
+    case TILE_ID::ENEMYMELEE:
         tTex = "";
         break;
     case TILE_ID::GRASSCENTER:
@@ -832,6 +838,7 @@ void MapManager::SetLaserActive(Tile tile, bool active)
     for (Tile* laser : lasers) {
         laser->isCurrActive = active;
     }
+    AudioManager::GetInstance().PlaySFX("laserOn");
 }
 #pragma endregion
 
@@ -934,7 +941,7 @@ void Tile::Update()
 
 void SpikeTile::Init() {
     Tile::Init();
-    collider->isTrigger = true;
+    //collider->isTrigger = true;
     collider->size.x = 0.7f;
     collider->size.y = 0.7f;
     collider->OnCollisionEnter = [this](Collider* other, int sides) {
@@ -975,10 +982,12 @@ void HealthPickupTile::Init() {
     collider->isTrigger = true;
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player && PlayerStats::GetInstance().GetPlayerHealth() < PlayerStats::GetInstance().GetPlayerMaxHealth())
+        if (player && !other->isTrigger && PlayerStats::GetInstance().GetPlayerHealth() < PlayerStats::GetInstance().GetPlayerMaxHealth())
         {
+            AudioManager::GetInstance().PlaySFX("itemPickup");
             PlayerStats::GetInstance().IncreasePlayerHealth();
             isCurrActive = false;
+            collider->canCollide = false;
         }
         else if (PlayerStats::GetInstance().GetPlayerHealth() >= PlayerStats::GetInstance().GetPlayerMaxHealth()) {
             interactionTextBox->isActive = true;
@@ -996,10 +1005,11 @@ void DamagePickupTile::Init() {
     collider->isTrigger = true;
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player && isCurrActive) {
-
+        if (player && !other->isTrigger && isCurrActive) {
+            AudioManager::GetInstance().PlaySFX("itemPickup");
             PlayerStats::GetInstance().IncreasePlayerDamage();
             isCurrActive = false;
+            collider->canCollide = false;
         }
         };
 }
@@ -1009,9 +1019,11 @@ void ProficiencyPickupTile::Init() {
     collider->isTrigger = true;
     collider->OnTriggerEnter = [this](Collider* other, int sides) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player && isCurrActive) {
-            PlayerStats::GetInstance().IncreasePlayerProficiency();
+        if (player && !other->isTrigger && isCurrActive) {
+            AudioManager::GetInstance().PlaySFX("itemPickup");
+            PlayerStats::GetInstance().IncreasePlayerProficiency(proficiencyAmount);
             isCurrActive = false;
+            collider->canCollide = false;
         }
         };
 }
@@ -1032,7 +1044,7 @@ void GoalTile::Init() {
     collider->OnTriggerOver = [this](Collider* other, int sides) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
-            if (current == GAME_STATE_TYPE::LEVEL2)
+            if (current == GAME_STATE_TYPE::LEVEL3)
             {
                 interactionTextBox->SetText("You Win!");
             }
@@ -1041,33 +1053,22 @@ void GoalTile::Init() {
             }
             if (AEInputCheckTriggered(AEVK_F))
             {
-                //SaveManager::GetInstance().SaveAll();
-                //// save current state before transitioning
-                //SaveManager::GetInstance().SavePlayerData(
-                //    PlayerManager::GetInstance().meleePlayer->pos,
-                //    PlayerManager::GetInstance().rangedPlayer->pos
-                //);
-                //MapManager::GetInstance().SaveMapState(current);
-                
-
+                AudioManager::GetInstance().PlaySFX("enemyDie");
                 // transition to next level based on current
                 switch (current)
                 {
                 case GAME_STATE_TYPE::LEVEL1:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-                    next = GAME_STATE_TYPE::LEVEL2;
-                    break;
-                case GAME_STATE_TYPE::LEVEL1BOSS:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-                    next = GAME_STATE_TYPE::LEVEL2;
+                    //SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
+                    LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL2;
+                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+                    //next = GAME_STATE_TYPE::LEVEL2;
                     break;
                 case GAME_STATE_TYPE::LEVEL2:
-                    //SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-                    //next = GAME_STATE_TYPE::LEVEL2BOSS;
+                    LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL3;
+                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
                     break;
-                case GAME_STATE_TYPE::LEVEL2BOSS:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-                    next = GAME_STATE_TYPE::LEVEL2;
+                case GAME_STATE_TYPE::LEVEL3:
+                    // put end menu here
                     break;
                 default:
                     next = GAME_STATE_TYPE::LEVEL1;
@@ -1076,7 +1077,7 @@ void GoalTile::Init() {
                 SaveManager::GetInstance().toContinue = false;
             }
         }
-                };
+    };
 
     collider->OnTriggerExit = [this](Collider* other, int sides) {
         if (Player* player = dynamic_cast<Player*>(other->owner))

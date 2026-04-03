@@ -2,6 +2,7 @@
 #include "SaveManager.h"
 #include "AudioManager.h"
 #include "GameStateManager.h"
+#include "HUD.h"
 #include <iostream>
 
 float PlayerStats::GetAttackCooldown() const
@@ -52,11 +53,9 @@ void PlayerStats::ReducePlayerHealth(int amount)
     else
     {
         AudioManager::GetInstance().PlaySFX("playerDie");
-        health = maxHealth;
-        SaveManager::GetInstance().toContinue = true;
-        GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
-        current = GAME_STATE_TYPE::MENU;
-        next = respawnLevel;
+        IncreaseDeathCounter();
+        SaveManager::GetInstance().SavePlayerTime(totalSeconds);
+        HUD::GetInstance().ShowDeathPanel();
     }
 }
 
@@ -89,10 +88,14 @@ void PlayerStats::SetPlayerHealth(int h)
             AudioManager::GetInstance().PlaySFX("playerDie");
             IncreaseDeathCounter();
             SaveManager::GetInstance().SavePlayerTime(totalSeconds);
+            if (deathCount < 10) {
+                SaveManager::GetInstance().SaveHighScore(highScore);
+            }
+            HUD::GetInstance().ShowDeathPanel();
             SaveManager::GetInstance().toContinue = true;
-            GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
-            current = GAME_STATE_TYPE::MENU;
-            next = respawnLevel;
+            //GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
+            //current = GAME_STATE_TYPE::MENU;
+            //next = respawnLevel;
         }
     }
     else {

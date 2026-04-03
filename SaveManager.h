@@ -38,6 +38,9 @@ struct PlayerSaveData {
     // timers
     float totalSeconds = 0;
 
+    // high score
+    int highScore = 0;
+
     bool preserveOnLoad = false;
     bool hasSavedData = false;
 };
@@ -61,7 +64,23 @@ struct MapSaveData {
 
 struct EnemySaveData {
     AEVec3 pos{};
-    EnemyBase enemyBase{};
+    EnemyType type{}; // EnemyType as int
+    EnemyStats stats{};
+    EnemyState currentState = EnemyState::IDLE;
+    bool isAlive = true;
+    bool canMove = true;
+    AEVec2 patrolStart{};
+    AEVec2 patrolEnd{};
+    AEVec2 currentTarget{};
+    float timeSinceLastAttack = 0.f;
+};
+
+struct AudioStateData {
+    float masterVolume = 1.0f;
+    float musicVolume = 1.0f;
+    float sfxVolume = 1.0f;
+    bool preserveOnLoad = false;
+    bool hasSavedData = false;
 };
 
 struct StatsSaveData {
@@ -77,6 +96,7 @@ struct SaveManager : public Singleton<SaveManager>
     std::vector<EnemySaveData> enemySaveData;
     StatsSaveData  statsSaveData;
 
+    AudioStateData audioSaveData;
     bool toContinue = false;
 
     void SavePlayerData();
@@ -84,10 +104,14 @@ struct SaveManager : public Singleton<SaveManager>
     void SetPreservePlayerOnLoad(bool preserve);
     void SaveDeathCount(int count);
     void SavePlayerTime(float seconds);
+    void SaveKillCount(int count);
+    void SaveHighScore(int score);
     void SaveMapData();
     void LoadMapData();
     void SaveEnemyData();
     void LoadEnemyData();
+    void SaveAudioData();
+    void LoadAudioData();
     void SaveAll();
     void LoadAll();
     bool HasSaveData();

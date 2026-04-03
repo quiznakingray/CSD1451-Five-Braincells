@@ -4,6 +4,8 @@
 #include "AudioManager.h"
 #include "GameStateManager.h"
 
+struct HUD;
+
 enum class PLAYER_TYPE {
     MELEE,
     RANGE
@@ -41,6 +43,9 @@ struct PlayerStats : public Singleton<PlayerStats>
 
     // timer
     float totalSeconds = 0;
+
+    // high score
+    int highScore = 0;
 
     // current player
     PLAYER_TYPE playerType = PLAYER_TYPE::MELEE;

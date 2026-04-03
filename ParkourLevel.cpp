@@ -30,17 +30,14 @@ void ParkourLevel::Init()
 	case GAME_STATE_TYPE::LEVEL1:
 		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL1);
 		break;
-	case GAME_STATE_TYPE::LEVEL1BOSS:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01b.csv", GAME_STATE_TYPE::LEVEL1BOSS);
-		break;
 	case GAME_STATE_TYPE::LEVEL2:
 		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_02.csv", GAME_STATE_TYPE::LEVEL2);
 		break;
-	case GAME_STATE_TYPE::LEVEL2BOSS:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_02b.csv", GAME_STATE_TYPE::LEVEL2BOSS);
+	case GAME_STATE_TYPE::LEVEL3:
+		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_03.csv", GAME_STATE_TYPE::LEVEL3);
 		break;
 	default:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL3);
+		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL1);
 		break;
 	}
 	
@@ -55,8 +52,8 @@ void ParkourLevel::Init()
 	}
 	//AddGameObjectToVector(PlayerManager::GetInstance().rangePlayerArrow, levelGameObjectVector);
 
-	EnemyManager::GetInstance().Init(PlayerManager::GetInstance().currentPlayer);
-	EnemyManager::GetInstance().SpawnEnemies(5, 1, levelGameObjectVector);
+	EnemyManager::GetInstance().Init(PlayerManager::GetInstance().meleePlayer, PlayerManager::GetInstance().rangedPlayer);
+	EnemyManager::GetInstance().SpawnEnemies(levelGameObjectVector);
 
 	InitGameObjects(levelGameObjectVector);
 
@@ -131,9 +128,10 @@ void ParkourLevel::Free()
 	//playerManager.Save();
 
 	// Clean up game objects
-	switch (next) {
+	/*switch (next) {
 	case GAME_STATE_TYPE::LEVEL1:
 	case GAME_STATE_TYPE::LEVEL2:
+	case GAME_STATE_TYPE::LEVEL3:
 		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
 		break;
 	case GAME_STATE_TYPE::LEVEL1BOSS:
@@ -143,7 +141,7 @@ void ParkourLevel::Free()
 	default:
 		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
 		break;
-	}
+	}*/
 
 	//// Clean up player1
 	//if (player1)

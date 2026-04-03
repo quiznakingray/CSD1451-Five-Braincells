@@ -73,6 +73,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	// Using custom window procedure
 	AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
+	AudioManager::GetInstance().Init();
 
 	// Changing the window title
 	AESysSetWindowTitle("My New Demo!");
@@ -80,7 +81,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	printf("Hello LEVEL1\n");
 
-	GameStateManager::GetInstance().Initialize(GAME_STATE_TYPE::MENU);
+	GameStateManager::GetInstance().Initialize(GAME_STATE_TYPE::SPLASH);
 	CameraSystem::Init();
 
 	// Game Loop
@@ -88,7 +89,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	{
 		// reset the system modules
 		AESysReset();
-		AudioManager::GetInstance().GetInstance().Init();
 		// Informing the system about the loop's start
 
 		if (current != GAME_STATE_TYPE::RESTART)

@@ -7,6 +7,8 @@
 #include "TextComponent.h"
 #include "InputManager.h"
 #include "TextManager.h"
+#include "SaveManager.h"
+#include "LoadingScreen.h"
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -31,11 +33,23 @@ void PlayerUI::SetCooldownText(f32 value)
 	}
 }
 
+void HUD::ShowDeathPanel()
+{
+	showDeathPanel = true;
+
+	deathPanelBG->isActive = true;
+	deathPanelTitle->isActive = true;
+
+	deathReloadBtn->isActive = true;
+	deathMainMenuBtn->isActive = true;
+}
+
 void PlayerUI::Init(std::vector<GameObject*>& go)
 {
 	AddGameObjectToVector(border, go);
 	AddGameObjectToVector(player, go);
 	AddGameObjectToVector(cooldown, go);
+
 }
 
 void HUD::Init()
@@ -233,10 +247,87 @@ void HUD::Init()
 	timerText->inWorldSpace = false;
 	timerText->SetText("0:00");
 	AddGameObjectToVector(timerObj, HUDGameObjects);
+
+	// -------------------------------------------------------
+	// DEATH PANEL (hidden until ShowDeathPanel() is called)
+	// -------------------------------------------------------
+	float panelW = 500.f, panelH = 300.f;
+	float panelX = 0.f, panelY = 0.f; // screen centre
+
+	// Dark backdrop
+	deathPanelBG = new GameObject(panelW, panelH, panelX, panelY, 2, 0, true);
+	deathPanelBG->AddComponent(new Sprite())->meshColor = 0xEE111111;
+	deathPanelBG->isActive = false;
+	AddGameObjectToVector(deathPanelBG, HUDGameObjects);
+
+	// "YOU DIED" title
+	deathPanelTitle = new GameObject(panelW - 20.f, 60.f, panelX, panelY + 90.f, 2, 0, true);
+	deathPanelTitle->AddComponent(new Sprite())->meshColor = 0x00000000; // transparent bg
+	Text* titleText = deathPanelTitle->AddComponent(new Text());
+	titleText->inWorldSpace = false;
+	titleText->SetText("YOU DIED");
+	deathPanelTitle->isActive = false;
+	AddGameObjectToVector(deathPanelTitle, HUDGameObjects);
+
+	// RELOAD SAVE button
+	deathReloadBtn = new GameObject(200.f, 55.f, panelX - 120.f, panelY - 60.f, 2, 0, true);
+	deathReloadBtn->AddComponent(new Sprite())->meshColor = 0xFF1A6B1A;
+
+	Collider* reloadCol = deathReloadBtn->AddComponent(new Collider());
+	reloadCol->canInteract = true;
+	reloadCol->OnClick = [] {
+		if (SaveManager::GetInstance().HasSaveData()) {
+			SaveManager::GetInstance().LoadPlayerData();
+			SaveManager::GetInstance().LoadMapData();
+			SaveManager::GetInstance().LoadEnemyData();
+			SaveManager::GetInstance().toContinue = true;
+
+			GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
+
+			current = GAME_STATE_TYPE::MENU;
+			LoadingScreen::targetState = respawnLevel;
+			GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+		}
+		};
+
+	Text* reloadText = deathReloadBtn->AddComponent(new Text());
+	reloadText->inWorldSpace = false;
+	reloadText->SetText("RELOAD SAVE");
+
+	deathReloadBtn->isActive = false;
+	AddGameObjectToVector(deathReloadBtn, HUDGameObjects);
+
+	// MAIN MENU button
+	deathMainMenuBtn = new GameObject(200.f, 55.f, panelX + 120.f, panelY - 60.f, 2, 0, true);
+	deathMainMenuBtn->AddComponent(new Sprite())->meshColor = 0xFF6B1A1A;
+
+	Collider* menuCol = deathMainMenuBtn->AddComponent(new Collider());
+	menuCol->canInteract = true;
+	menuCol->OnClick = [] {
+		LoadingScreen::targetState = GAME_STATE_TYPE::MENU;
+		GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+		};
+
+	Text* menuText = deathMainMenuBtn->AddComponent(new Text());
+	menuText->inWorldSpace = false;
+	menuText->SetText("MAIN MENU");
+
+	deathMainMenuBtn->isActive = false;
+	AddGameObjectToVector(deathMainMenuBtn, HUDGameObjects);
+
 	InitGameObjects(HUDGameObjects);
 }
 void HUD::Update(f64 dt)
 {
+	if (showDeathPanel) {
+		for (int i = 0; i < healthBars.size(); i++)
+		{
+			healthBars[i]->isActive = (PlayerStats::GetInstance().health >= i + 1);
+		}
+		UpdateGameObjects(HUDGameObjects);
+		return;
+	}
+
 	// update players
 	bool isMelee = PlayerManager::GetInstance().currentPlayerType == PLAYER_TYPE::MELEE;
 	bool isRange = PlayerManager::GetInstance().currentPlayerType == PLAYER_TYPE::RANGE;
@@ -267,7 +358,7 @@ void HUD::Update(f64 dt)
 	UpdateGameObjects(HUDGameObjects);
 
 	// --- TOP STATS ---
-	PlayerStats::GetInstance().SetTotalSeconds(PlayerStats::GetInstance().GetTotalSeconds() + dt);
+	PlayerStats::GetInstance().SetTotalSeconds(PlayerStats::GetInstance().GetTotalSeconds() + static_cast<float>(dt));
 	int totalSeconds = static_cast<int>(PlayerStats::GetInstance().GetTotalSeconds());
 	int minutes = totalSeconds / 60;
 	int seconds = totalSeconds % 60;
@@ -288,7 +379,6 @@ void HUD::Update(f64 dt)
 void HUD::Render() {
 	if (!showHUD) return;
 	RenderGameObjects(HUDGameObjects);
-
 	//AEGfxPrint(TextManager::pFont, "help", -1, 0, 1, 1, 1, 1, 1);
 }
 
@@ -316,4 +406,9 @@ void HUD::Free() {
 	sHintQ = nullptr;
 	rHintQ = nullptr;
 	rHintLMB = nullptr;
+	deathPanelBG = nullptr;
+	deathPanelTitle = nullptr;
+	deathReloadBtn = nullptr;
+	deathMainMenuBtn = nullptr;
+	showDeathPanel = false;
 }

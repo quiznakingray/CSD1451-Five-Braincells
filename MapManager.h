@@ -72,8 +72,16 @@ enum class TILE_ID {
 	MOVINGTILEBUTTONMID = 184,
 	MOVINGTILEBUTTONLEFT = 185,
 	MOVINGTILEBUTTONRIGHT = 186,
+	SANDLEFT = 190,
+	SANDRIGHT = 191,
+	SANDTOP = 192,
+	SANDMID = 193,
+	SANDCENTER = 194,
 	PLAYER = 200,
-	ENEMY = 250,
+	ENEMYMELEE = 250,
+	ENEMYRANGE = 251,
+	MINIBOSSMELEE = 252,
+	MINIBOSSRANGE = 253,
 	CHECKPOINT = 300,
 	GOAL = 500,
 };
@@ -224,8 +232,23 @@ struct GroundTile : Tile {
 
 		switch (currID_) {
 		case TILE_ID::NOCOLLISIONGROUND:
+			switch (current) {
+			case GAME_STATE_TYPE::LEVEL1:
+				currSprite->textureFileName = "Assets/Environment/grassCenter.png";
+				break;
+			case GAME_STATE_TYPE::LEVEL2:
+				currSprite->textureFileName = "Assets/Environment/dirtCenter.png";
+				break;
+			case GAME_STATE_TYPE::LEVEL3:
+				currSprite->textureFileName = "Assets/Environment/sandCenter.png";
+				break;
+			default:
+				currSprite->textureFileName = "Assets/Environment/grassCenter.png";
+				break;
+			}
+			
 		case TILE_ID::GRASSCENTER:
-			currSprite->textureFileName = "Assets/Environment/GRASSCENTER.png";
+			currSprite->textureFileName = "Assets/Environment/grassCenter.png";
 			break;
 		case TILE_ID::GRASSLEFT:
 			currSprite->textureFileName = "Assets/Environment/grassLeft.png";
@@ -254,6 +277,22 @@ struct GroundTile : Tile {
 		case TILE_ID::DIRTMID:
 			currSprite->textureFileName = "Assets/Environment/dirtMid.png";
 			break;
+		case TILE_ID::SANDCENTER:
+			currSprite->textureFileName = "Assets/Environment/sandCenter.png";
+			break;
+		case TILE_ID::SANDLEFT:
+			currSprite->textureFileName = "Assets/Environment/sandLeft.png";
+			break;
+		case TILE_ID::SANDRIGHT:
+			currSprite->textureFileName = "Assets/Environment/sandRight.png";
+			break;
+		case TILE_ID::SANDTOP:
+			currSprite->textureFileName = "Assets/Environment/sandTop.png";
+			break;
+		case TILE_ID::SANDMID:
+			currSprite->textureFileName = "Assets/Environment/sandMid.png";
+			break;
+
 		}
 		
 
@@ -429,10 +468,8 @@ struct ProficiencyPickupTile : Tile {
 		bool currActive,
 		size_t row_,
 		size_t col_,
-		float tileSize,
-		float proficiencyAmount_ = 0.1f)
-		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true),
-		proficiencyAmount(proficiencyAmount_)
+		float tileSize)
+		: Tile(currID_, bgID_, currTag_, bgActive, currActive, row_, col_, tileSize, true, true)
 	{
 		currSprite->textureFileName = "Assets/Environment/gemBlue.png";
 	}
@@ -1014,6 +1051,7 @@ struct ButtonTile : Tile {
 	}
 
 	void ActivateGates(bool _activate) {
+		AudioManager::GetInstance().PlaySFX("gateTrigger");
 		if (!isTimed) {
 			for (Tile* gate : MapManager::GetTaggedTiles(currTag, TILE_ID::GATE))
 			{
@@ -1151,14 +1189,19 @@ struct ButtonTile : Tile {
 			if (!wasPressed && isPressed) {
 				ToggleButton();
 				bool targetState = !gatesOriginalState;
-				if (queueRunning) {
-					hasPendingActivation = true;
-					pendingActivate = targetState;
+				std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
+				std::vector<Tile*> altGates = MapManager::GetTaggedTiles(altTag, TILE_ID::GATE);
+				if (!gates.empty() || !altGates.empty()) {
+					if (queueRunning) {
+						hasPendingActivation = true;
+						pendingActivate = targetState;
+					}
+					else {
+						gatesAreActive = targetState;
+						ActivateGates(targetState);
+					}
 				}
-				else {
-					gatesAreActive = targetState;
-					ActivateGates(targetState);
-				}
+
 				for (MovingTile* mt : linkedMovingTiles)
 					mt->isEnabled = true;
 			}
@@ -1177,14 +1220,21 @@ struct ButtonTile : Tile {
 
 			if (wasPressed && !isPressed) {
 				ToggleButton();
-				if (queueRunning) {
-					hasPendingActivation = true;
-					pendingActivate = gatesOriginalState;
+
+				// Add this check
+				std::vector<Tile*> gates = MapManager::GetTaggedTiles(currTag, TILE_ID::GATE);
+				std::vector<Tile*> altGates = MapManager::GetTaggedTiles(altTag, TILE_ID::GATE);
+				if (!gates.empty() || !altGates.empty()) {
+					if (queueRunning) {
+						hasPendingActivation = true;
+						pendingActivate = gatesOriginalState;
+					}
+					else {
+						gatesAreActive = gatesOriginalState;
+						ActivateGates(gatesOriginalState);
+					}
 				}
-				else {
-					gatesAreActive = gatesOriginalState;
-					ActivateGates(gatesOriginalState);
-				}
+
 				for (MovingTile* mt : linkedMovingTiles)
 					mt->isEnabled = false;
 			}
