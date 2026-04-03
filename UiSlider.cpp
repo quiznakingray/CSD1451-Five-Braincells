@@ -116,7 +116,7 @@ void UISlider::Update()
     // Countdown timer every frame
     if (displayTimer > 0.0f)
     {
-        displayTimer -= AEFrameRateControllerGetFrameTime();
+        displayTimer -= static_cast<float>(AEFrameRateControllerGetFrameTime());
         showValue = true;
     }
     else

@@ -69,7 +69,7 @@ void PauseMenu::Init()
 {
     showConfirmation = false;
     // Background overlay
-    GameObject* bg = new GameObject(AEGfxGetWindowWidth(), AEGfxGetWindowHeight(), 0, 0, 0, 0, true);
+    GameObject* bg = new GameObject(static_cast<f32>(AEGfxGetWindowWidth()), static_cast<f32>(AEGfxGetWindowHeight()), 0, 0, 0, 0, true);
     Sprite* bgSprite = bg->AddComponent(new Sprite());
     bgSprite->meshColor = 0x77000000;
     AddGameObjectToVector(bg, gameObjectVector);

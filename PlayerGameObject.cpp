@@ -455,7 +455,7 @@ void MeleePlayer::PlayerInput()
 		inShieldAction = true;
 		if (!shieldDepleted)
 		{
-			shieldTimer += dt;
+			shieldTimer += static_cast<float>(dt);
 			//currentAction = PLAYER_ACTION::SHIELDING;
 			float maxDuration = PlayerStats::GetInstance().GetMaxShieldDuration();
 			if (shieldTimer >= maxDuration)
@@ -799,7 +799,7 @@ void Arrow::Update()
 			pos.y + tailOffsetY,
 			rb->velocity);
 
-		particlePool.Update(dt);
+		particlePool.Update(static_cast<f32>(dt));
 	}
 }
 
