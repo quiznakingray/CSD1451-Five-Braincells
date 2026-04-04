@@ -42,6 +42,12 @@ struct EnemyGameObject : GameObject {
     void UpdateAnimation();
     void InitHealthBar();
     void UpdateHealthBar();
+
+private:
+    float walkSfxTimer = 0.f;
+    float walkSfxInterval = 0.4f;
+
+    void HandleWalkSFX(float dt);
 };
 
 #endif

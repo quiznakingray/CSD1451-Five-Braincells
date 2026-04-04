@@ -198,6 +198,9 @@ void EnemyGameObject::Update() {
 	attackingAnim->sprite->size.x = fabs(attackingAnim->sprite->size.x) * (movement.movingRight? -1 : 1);
     UpdateAnimation();
     GameObject::Update();
+
+    if (isOnCamera)
+        HandleWalkSFX(dt);
 }
 
 void EnemyGameObject::Patrol() {
@@ -327,4 +330,18 @@ void EnemyGameObject::Free()
 		base.projectile = nullptr;
     }
 	GameObject::Free();
+}
+
+void EnemyGameObject::HandleWalkSFX(float dt)
+{
+    // Only play if moving on X axis
+    if (fabs(rb->velocity.x) > 0.1f)
+    {
+        walkSfxTimer -= dt;
+        if (walkSfxTimer <= 0.f)
+        {
+            AudioManager::GetInstance().PlaySFX("wheels");
+            walkSfxTimer = walkSfxInterval;
+        }
+    }
 }

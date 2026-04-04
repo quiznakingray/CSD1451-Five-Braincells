@@ -42,26 +42,26 @@ void AudioManager::LoadAllAudio()
         { "laserOn", "Assets/Sounds/laserOn.wav" },
         { "shieldHit", "Assets/Sounds/shieldHit.wav" },
         { "uiButtonClick", "Assets/Sounds/uiButtonClick.wav" },
-         { "itemPickup", "Assets/Sounds/itemPickup.wav" },
-         { "enemyDie", "Assets/Sounds/enemyDie.wav" },
-          { "minibossDie", "Assets/Sounds/minibossDie.wav" },
-          { "goalEnter", "Assets/Sounds/goalEnter.wav" },
-          { "arrowHit", "Assets/Sounds/arrowHit.wav" },
-           { "gateTrigger", "Assets/Sounds/gateTrigger.wav" },
+        { "itemPickup", "Assets/Sounds/itemPickup.wav" },
+        { "enemyDie", "Assets/Sounds/enemyDie.wav" },
+        { "minibossDie", "Assets/Sounds/minibossDie.wav" },
+        { "goalEnter", "Assets/Sounds/goalEnter.wav" },
+        { "arrowHit", "Assets/Sounds/arrowHit.wav" },
+        { "gateTrigger", "Assets/Sounds/gateTrigger.wav" },
 
         // WHAT WE MAY WANT
         { "walk", "Assets/Sounds/walk.wav" },
         { "jump", "Assets/Sounds/jump.wav" }, // DONT HAVE
-        { "land", "Assets/Sounds/land.wav" },
+        { "land", "Assets/Sounds/land.wav" }, // NOT DONE
         { "aimBow", "Assets/Sounds/aimBow.wav" },
         { "shootArrow", "Assets/Sounds/shootArrow.wav" },
-        { "shieldOn", "Assets/Sounds/shieldOn.wav" },
-        { "checkpoint", "Assets/Sounds/checkpoint.wav" }, //party poppers
-        { "win", "Assets/Sounds/win.wav" }, 
+        { "shieldOn", "Assets/Sounds/shieldOn.wav" }, // DONT HAVE
+        { "checkpoint", "Assets/Sounds/checkpoint.wav" },
+        { "win", "Assets/Sounds/win.wav" }, // DONT HAVE
         { "lose", "Assets/Sounds/lose.wav" }, // DONT HAVE
         { "zap", "Assets/Sounds/zap.wav" },
-        { "wheels", "Assets/Sounds/wheels.wav" },
-        { "gameButtonClick", "Assets/Sounds/gameButtonClick.wav" }
+        { "wheels", "Assets/Sounds/wheelsShort.wav" },
+        { "cratePickUp", "Assets/Sounds/cratePickUp.wav" }
     };
 
     // Load all sfx audio

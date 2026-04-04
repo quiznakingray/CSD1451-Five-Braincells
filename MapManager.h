@@ -569,6 +569,7 @@ struct CrateTile : Tile {
 
 
 struct CheckpointTile : Tile {
+	bool isActivated = false;
 	CheckpointTile(TILE_ID currID_,
 		TILE_ID bgID_,
 		int currTag_,
