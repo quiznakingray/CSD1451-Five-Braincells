@@ -7,6 +7,7 @@
 #include "PlayerStats.h"
 #include "Node.h"
 #include "EnemyMovement.h"
+#include "LoadingScreen.h"
 #include <array>
 #include <algorithm>
 #include <iostream>
@@ -135,7 +136,7 @@ void MapManager::ChangeMap(GAME_STATE_TYPE currLevel)
 }
 
 void MapManager::PrintMap() {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
@@ -144,7 +145,7 @@ void MapManager::PrintMap() {
         std::vector<std::string> row = map.GetRow<std::string>(uiRow);
 
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
+        for (size_t uiCol = 0; uiCol < cCount; ++uiCol)
         {
             std::cout << static_cast<int>(arrMapInfo[uiRow][uiCol]->currID) << ' ';
 
@@ -154,13 +155,13 @@ void MapManager::PrintMap() {
 }
 void MapManager::LoopMap(void* (mapfunc)())
 {    
-    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < colCount; ++uiCol)
+        for (size_t uiCol = 0; uiCol < cCount; ++uiCol)
         {
             mapfunc();
         }
@@ -169,25 +170,22 @@ void MapManager::LoopMap(void* (mapfunc)())
 }
 void MapManager::DrawMapSprite()
 {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
     size_t y = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
     for (size_t uiRow = 0; uiRow < y; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             Tile * currTile = arrMapInfo[uiRow][uiCol];
             if (currTile->currID != TILE_ID::EMPTY) {
                 if (currTile->currID != currTile->bgID && 
                      currTile->isBGActive)
                 {
-                    //RenderSprite(currTile->bgSprite, mesh);
                     currTile->Render();
                 }
                 if (currTile->isCurrActive) {
-                    //RenderSprite(*currTile.currSprite, mesh);
-                    //currTile.currSprite->Render();
                     currTile->Render();
                 }
             }
@@ -198,15 +196,15 @@ void MapManager::DrawMapSprite()
 void MapManager::FreeMap()
 {
     AEGfxMeshFree(mesh);
-    size_t colCount = (map.GetRow<std::string>(0)).size();
-    size_t rowCount = (map.GetColumn<std::string>(0)).size();
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    size_t cCount = (map.GetRow<std::string>(0)).size();
+    size_t rCount = (map.GetColumn<std::string>(0)).size();
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             Tile* tile = arrMapInfo[uiRow][uiCol];
             // prevents double free 
-            if (tile && static_cast<int>(tile->currID) > -1 && static_cast<int>(tile->currID) <= 500)
+            if (tile && static_cast<int>(tile->currID) > -1 && static_cast<int>(tile->currID) <= static_cast<int>(TILE_ID::NUM_TILE_ID))
             {
                 tile->Free();   // frees all components (sprite, collider, text, etc.)
                 delete tile;
@@ -226,25 +224,16 @@ void MapManager::FreeMap()
 void MapManager::SaveMapState()
 {
     SaveManager::GetInstance().mapSaveData.tileStates.clear();
-    SaveManager::GetInstance().mapSaveData.savedLevel = mapCurrLevel;
+    SaveManager::GetInstance().mapSaveData.savedLevel = current;
 
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+     for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
     {
         for (size_t uiCol = 0; uiCol < colCount; uiCol++)
         {
             Tile* tile = arrMapInfo[uiRow][uiCol];
             if (!tile) continue;
-
-            bool isInteractable =
-                dynamic_cast<LeverTile*>(tile) ||
-                dynamic_cast<ButtonTile*>(tile) ||
-                dynamic_cast<CrateTile*>(tile) ||
-                dynamic_cast<LaserTile*>(tile) ||
-                dynamic_cast<GateTile*>(tile) ||
-                dynamic_cast<CloudTile*>(tile) ||
-                dynamic_cast<HealthPickupTile*>(tile);
-
-            if (!isInteractable) continue;
+            if (!tile->canInteract && !dynamic_cast<LaserTile*>(tile) && !dynamic_cast<GateTile*>(tile)) continue;
+            if (dynamic_cast<CloudTile*>(tile)) continue;
 
             TileStateData data;
             data.row = uiRow;
@@ -269,6 +258,7 @@ void MapManager::LoadMapState()
     {
         Tile* tile = arrMapInfo[data.row][data.col];
         if (!tile) continue;
+        if (!tile->canInteract && !dynamic_cast<LaserTile*>(tile) && !dynamic_cast<GateTile*>(tile)) continue;
         tile->currID = data.currID;
         tile->isActive = data.isActive;
         tile->isCurrActive = data.isCurrActive;
@@ -279,6 +269,7 @@ void MapManager::LoadMapState()
             lever->SetTexture();
         else if (ButtonTile* button = dynamic_cast<ButtonTile*>(tile))
             button->SetTexture();
+
     }
 }
 #pragma endregion
@@ -428,6 +419,11 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
     case TILE_ID::DIRTRIGHT:
     case TILE_ID::DIRTTOP:
     case TILE_ID::DIRTMID:
+    case TILE_ID::SANDCENTER:
+    case TILE_ID::SANDLEFT:
+    case TILE_ID::SANDRIGHT:
+    case TILE_ID::SANDTOP:
+    case TILE_ID::SANDMID:
         newTile = new GroundTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
     case TILE_ID::WALL:
@@ -469,14 +465,58 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
     case TILE_ID::PROFPICKUPTILE:
         newTile = new ProficiencyPickupTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
         break;
-
+    case TILE_ID::MOVINGTILEMID:
+    case TILE_ID::MOVINGTILELEFT:
+    case TILE_ID::MOVINGTILERIGHT:
+    case TILE_ID::MOVINGTILEBUTTONMID:
+    case TILE_ID::MOVINGTILEBUTTONLEFT:
+    case TILE_ID::MOVINGTILEBUTTONRIGHT:
+        newTile = new MovingTile(currID, bgID, currTag, altTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::MOVINGTILETARGET:
+        newTile = new MovingTileTarget(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
+    case TILE_ID::HOUSEBEIGEBOTTOMLEFT:
+    case TILE_ID::HOUSEBEIGEBOTTOMMID:
+    case TILE_ID::HOUSEBEIGEBOTTOMRIGHT:
+    case TILE_ID::HOUSEBEIGEMIDLEFT:
+    case TILE_ID::HOUSEBEIGEMID:
+    case TILE_ID::HOUSEBEIGEMIDRIGHT:
+    case TILE_ID::HOUSEBEIGETOPLEFT:
+    case TILE_ID::HOUSEBEIGETOPRIGHT:
+    case TILE_ID::HOUSEDARKBOTTOMLEFT:
+    case TILE_ID::HOUSEDARKBOTTOMMID:
+    case TILE_ID::HOUSEDARKBOTTOMRIGHT:
+    case TILE_ID::HOUSEDARKMIDLEFT:
+    case TILE_ID::HOUSEDARKMID:
+    case TILE_ID::HOUSEDARKMIDRIGHT:
+    case TILE_ID::HOUSEDARKTOPLEFT:
+    case TILE_ID::HOUSEDARKTOPRIGHT:
+    case TILE_ID::ROOFYELLOWMID:
+    case TILE_ID::ROOFYELLOWLEFT:
+    case TILE_ID::ROOFYELLOWRIGHT:
+    case TILE_ID::ROOFYELLOWTOPMID:
+    case TILE_ID::ROOFYELLOWTOPLEFT:
+    case TILE_ID::ROOFYELLOWTOPRIGHT:
+    case TILE_ID::ROOFREDMID:
+    case TILE_ID::ROOFREDLEFT:
+    case TILE_ID::ROOFREDRIGHT:
+    case TILE_ID::ROOFREDTOPMID:
+    case TILE_ID::ROOFREDTOPLEFT:
+    case TILE_ID::ROOFREDTOPRIGHT:
+    case TILE_ID::DOORKNOB:
+    case TILE_ID::DOORTOP:
+    case TILE_ID::WINDOW:
+    case TILE_ID::CHIMNEY:
+        newTile = new HouseTile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize);
+        break;
     default:
-        newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, true);
+        newTile = new Tile(currID, bgID, currTag, bgActive, currActive, row, col, tileSize, false, false, false);
         //newTile->currSprite->texture = SetTileTexture(currID); // can remove this after making structs for all kinds of tiles
         break;
     }
 
-    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMY) {
+    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMYMELEE) {
         return newTile;
     }
 
@@ -502,7 +542,7 @@ AEGfxTexture* MapManager::SetTileTexture(TILE_ID currID)
     {
     case TILE_ID::EMPTY:
     case TILE_ID::PLAYER:
-    case TILE_ID::ENEMY:
+    case TILE_ID::ENEMYMELEE:
         tTex = nullptr;
         break;
     case TILE_ID::GRASSCENTER:
@@ -599,7 +639,7 @@ std::string MapManager::GetTileTexture(TILE_ID currID)
     {
     case TILE_ID::EMPTY:
     case TILE_ID::PLAYER:
-    case TILE_ID::ENEMY:
+    case TILE_ID::ENEMYMELEE:
         tTex = "";
         break;
     case TILE_ID::GRASSCENTER:
@@ -680,6 +720,102 @@ std::string MapManager::GetTileTexture(TILE_ID currID)
     case TILE_ID::HEALTHPICKUPTILE:
         tTex = "Assets/Environment/gemRed.png";
         break;
+    case TILE_ID::HOUSEBEIGEBOTTOMLEFT:
+        tTex = "Assets/Environment/houseBeigeBottomLeft.png";
+        break;
+    case TILE_ID::HOUSEBEIGEBOTTOMMID:
+        tTex = "Assets/Environment/houseBeigeBottomMid.png";
+        break;
+    case TILE_ID::HOUSEBEIGEBOTTOMRIGHT:
+        tTex = "Assets/Environment/houseBeigeBottomRight.png";
+        break;
+    case TILE_ID::HOUSEBEIGEMIDLEFT:
+        tTex = "Assets/Environment/houseBeigeMidLeft.png";
+        break;
+    case TILE_ID::HOUSEBEIGEMID:
+        tTex = "Assets/Environment/houseBeigeMid.png";
+        break;
+    case TILE_ID::HOUSEBEIGEMIDRIGHT:
+        tTex = "Assets/Environment/houseBeigeMidRight.png";
+        break;
+    case TILE_ID::HOUSEBEIGETOPLEFT:
+        tTex = "Assets/Environment/houseBeigeTopLeft.png";
+        break;
+    case TILE_ID::HOUSEBEIGETOPRIGHT:
+        tTex = "Assets/Environment/houseBeigeTopRight.png";
+        break;
+    case TILE_ID::HOUSEDARKBOTTOMLEFT:
+        tTex = "Assets/Environment/houseDarkBottomLeft.png";
+        break;
+    case TILE_ID::HOUSEDARKBOTTOMMID:
+        tTex = "Assets/Environment/houseDarkBottomMid.png";
+        break;
+    case TILE_ID::HOUSEDARKBOTTOMRIGHT:
+        tTex = "Assets/Environment/houseDarkBottomRight.png";
+        break;
+    case TILE_ID::HOUSEDARKMIDLEFT:
+        tTex = "Assets/Environment/houseDarkMidLeft.png";
+        break;
+    case TILE_ID::HOUSEDARKMID:
+        tTex = "Assets/Environment/houseDarkMid.png";
+        break;
+    case TILE_ID::HOUSEDARKMIDRIGHT:
+        tTex = "Assets/Environment/houseDarkMidRight.png";
+        break;
+    case TILE_ID::HOUSEDARKTOPLEFT:
+        tTex = "Assets/Environment/houseDarkTopLeft.png";
+        break;
+    case TILE_ID::HOUSEDARKTOPRIGHT:
+        tTex = "Assets/Environment/houseDarkTopRight.png";
+        break;
+    case TILE_ID::ROOFYELLOWMID:
+        tTex = "Assets/Environment/roofYellowMid.png";
+        break;
+    case TILE_ID::ROOFYELLOWLEFT:
+        tTex = "Assets/Environment/roofYellowLeft.png";
+        break;
+    case TILE_ID::ROOFYELLOWRIGHT:
+        tTex = "Assets/Environment/roofYellowRight.png";
+        break;
+    case TILE_ID::ROOFYELLOWTOPMID:
+        tTex = "Assets/Environment/roofYellowTopMid.png";
+        break;
+    case TILE_ID::ROOFYELLOWTOPLEFT:
+        tTex = "Assets/Environment/roofYellowTopLeft.png";
+        break;
+    case TILE_ID::ROOFYELLOWTOPRIGHT:
+        tTex = "Assets/Environment/roofYellowTopRight.png";
+        break;
+    case TILE_ID::ROOFREDMID:
+        tTex = "Assets/Environment/roofRedMid.png";
+        break;
+    case TILE_ID::ROOFREDLEFT:
+        tTex = "Assets/Environment/roofRedLeft.png";
+        break;
+    case TILE_ID::ROOFREDRIGHT:
+        tTex = "Assets/Environment/roofRedRight.png";
+        break;
+    case TILE_ID::ROOFREDTOPMID:
+        tTex = "Assets/Environment/roofRedTopMid.png";
+        break;
+    case TILE_ID::ROOFREDTOPLEFT:
+        tTex = "Assets/Environment/roofRedTopLeft.png";
+        break;
+    case TILE_ID::ROOFREDTOPRIGHT:
+        tTex = "Assets/Environment/roofRedTopRight.png";
+        break;
+    case TILE_ID::DOORKNOB:
+        tTex = "Assets/Environment/doorKnob.png";
+        break;
+    case TILE_ID::DOORTOP:
+        tTex = "Assets/Environment/doorTop.png";
+        break;
+    case TILE_ID::WINDOW:
+        tTex = "Assets/Environment/window.png";
+        break;
+    case TILE_ID::CHIMNEY:
+        tTex = "Assets/Environment/chimney.png";
+        break;
     default:
         tTex = "Assets/PlanetTexture.png";
         break;
@@ -719,20 +855,16 @@ void MapManager::CheckTileToInit(Tile* tile)
     }
 }
 
-void MapManager::RotateTile(double rotation, Tile tile)
-{
-
-}
 std::vector<Tile*> MapManager::GetTilesWithID(TILE_ID currID)
 {
-    size_t rowCount = (map.GetRow<std::string>(0)).size();
-    size_t colCount = (map.GetColumn<std::string>(0)).size();
+    size_t rCount = (map.GetRow<std::string>(0)).size();
+    size_t cCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> foundTiles;
     //taggedTiles.resize(size, 0);
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             if (arrMapInfo[uiCol][uiRow]->currID == currID)
             {
@@ -753,14 +885,14 @@ Tile* MapManager::GetTile(size_t col, size_t row)
 }
 std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
 {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
-    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
+    size_t rCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> taggedTiles;
     //taggedTiles.resize(size, 0);
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             if (arrMapInfo[uiCol][uiRow]->currTag == tag)
             {
@@ -776,14 +908,14 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag)
 
 std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
 {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
-    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
+    size_t rCount = (map.GetColumn<std::string>(0)).size();
     int i = 0;
     std::vector<Tile*> taggedTiles;
-    //taggedTiles.resize(size, 0);
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             Tile* currTile = arrMapInfo[uiRow][uiCol];
             if (currTile->currTag == tag && 
@@ -797,7 +929,26 @@ std::vector<Tile*> MapManager::GetTaggedTiles(int tag, TILE_ID id)
     }
     return taggedTiles;
 }
+std::vector<Tile*> MapManager::GetAltTaggedTiles(int altTag, TILE_ID id)
+{
+    size_t cCount = (map.GetRow<std::string>(0)).size();
+    size_t rCount = (map.GetColumn<std::string>(0)).size();
+    std::vector<Tile*> taggedTiles;
 
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
+    {
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
+        {
+            Tile* currTile = arrMapInfo[uiRow][uiCol];
+            if (currTile->altTag == altTag &&
+                currTile->currID == id)
+            {
+                taggedTiles.push_back(currTile);
+            }
+        }
+    }
+    return taggedTiles;
+}
 
 #pragma endregion
 
@@ -809,8 +960,8 @@ void MapManager::SetLaserActive(Tile tile, bool active)
     std::vector<Tile*> lasers = GetTaggedTiles(tile.currTag, tile.currID);
     for (Tile* laser : lasers) {
         laser->isCurrActive = active;
-        AudioManager::GetInstance().PlaySFX("laserOn");
     }
+    AudioManager::GetInstance().PlaySFX("laserOn");
 }
 #pragma endregion
 
@@ -873,13 +1024,13 @@ size_t MapManager::GetCol()
 
 void MapManager::AddTilesToGameObjectVector(std::vector<GameObject*>& gos)
 {
-    size_t colCount = (map.GetRow<std::string>(0)).size();
-    size_t rowCount = (map.GetColumn<std::string>(0)).size();
+    size_t cCount = (map.GetRow<std::string>(0)).size();
+    size_t rCount = (map.GetColumn<std::string>(0)).size();
     // Read the rows and columns of CSV data into arrMapInfo
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
         // Load a particular CSV value into the arrMapInfo
-        for (size_t uiCol = 0; uiCol < colCount; uiCol++)
+        for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {
             Tile* currTile = arrMapInfo[uiRow][uiCol];
 
@@ -913,36 +1064,38 @@ void Tile::Update()
 
 void SpikeTile::Init() {
     Tile::Init();
-    collider->isTrigger = true;
+    //collider->isTrigger = true;
     collider->size.x = 0.7f;
     collider->size.y = 0.7f;
-    collider->OnCollisionEnter = [this](Collider* other, int sides) {
+    collider->OnCollisionEnter = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
-            PlayerStats::Get().ReducePlayerHealth();
-            std::cout << PlayerStats::Get().GetPlayerHealth() << '\n';
-            // knockback based on collision side
-            RigidBody* playerRb = player->GetComponent<RigidBody>();
-            float knockbackX = 1000.0f;
-            float knockbackY = 500.0f;
+            if (!other->isTrigger) {
+                player->TakeDamage(1);
+                // knockback based on collision side
+                RigidBody* playerRb = player->GetComponent<RigidBody>();
+                float knockbackX = 300.0f;
+                float knockbackY = 500.0f;
 
-            switch (static_cast<int>(currID))
-            {
-            case static_cast<int>(TILE_ID::SPIKEUP):
-                playerRb->velocity.y = -knockbackY;
-                break;
-            case static_cast<int>(TILE_ID::SPIKEDOWN):
-                playerRb->velocity.y = knockbackY;
-                break;
-            case static_cast<int>(TILE_ID::SPIKELEFT):
-                playerRb->velocity.x = knockbackX;
-                break;
-            case static_cast<int>(TILE_ID::SPIKERIGHT):
-                playerRb->velocity.x = -knockbackX;
-                break;
-            default:
-                break;
+                switch (static_cast<int>(currID))
+                {
+                case static_cast<int>(TILE_ID::SPIKEUP):
+                    playerRb->velocity.y = -knockbackY;
+                    break;
+                case static_cast<int>(TILE_ID::SPIKEDOWN):
+                    playerRb->velocity.y = knockbackY;
+                    break;
+                case static_cast<int>(TILE_ID::SPIKELEFT):
+                    playerRb->velocity.x = knockbackX;
+                    break;
+                case static_cast<int>(TILE_ID::SPIKERIGHT):
+                    playerRb->velocity.x = -knockbackX;
+                    break;
+                default:
+                    break;
+                }
             }
+            
         }
         };
 }
@@ -950,25 +1103,36 @@ void SpikeTile::Init() {
 void HealthPickupTile::Init() {
     Tile::Init();
     collider->isTrigger = true;
-    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+    collider->OnTriggerEnter = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player && PlayerStats::Get().GetPlayerHealth() < PlayerStats::Get().GetPlayerMaxHealth())
+        if (player && !other->isTrigger && PlayerStats::GetInstance().GetPlayerHealth() < PlayerStats::GetInstance().GetPlayerMaxHealth())
         {
-            PlayerStats::Get().IncreasePlayerHealth();
+            AudioManager::GetInstance().PlaySFX("itemPickup");
+            PlayerStats::GetInstance().IncreasePlayerHealth();
             isCurrActive = false;
+            collider->canCollide = false;
         }
+        else if (PlayerStats::GetInstance().GetPlayerHealth() >= PlayerStats::GetInstance().GetPlayerMaxHealth()) {
+            interactionTextBox->isActive = true;
+            interactionTextBox->SetText("Health at max!");
+        }
+        };
+    collider->OnTriggerExit = [this](Collider* other, int) {
+        if (Player* player = dynamic_cast<Player*>(other->owner))
+            this->interactionTextBox->isActive = false;
         };
 }
 
 void DamagePickupTile::Init() {
     Tile::Init();
     collider->isTrigger = true;
-    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+    collider->OnTriggerEnter = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player && isCurrActive) {
-
-            PlayerStats::Get().IncreasePlayerDamage();
+        if (player && !other->isTrigger && isCurrActive) {
+            AudioManager::GetInstance().PlaySFX("itemPickup");
+            PlayerStats::GetInstance().IncreasePlayerDamage();
             isCurrActive = false;
+            collider->canCollide = false;
         }
         };
 }
@@ -976,11 +1140,13 @@ void DamagePickupTile::Init() {
 void ProficiencyPickupTile::Init() {
     Tile::Init();
     collider->isTrigger = true;
-    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+    collider->OnTriggerEnter = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
-        if (player && isCurrActive) {
-            PlayerStats::Get().IncreasePlayerProficiency();
+        if (player && !other->isTrigger && isCurrActive) {
+            AudioManager::GetInstance().PlaySFX("itemPickup");
+            PlayerStats::GetInstance().IncreasePlayerProficiency(proficiencyAmount);
             isCurrActive = false;
+            collider->canCollide = false;
         }
         };
 }
@@ -993,15 +1159,15 @@ void GoalTile::Init() {
     collider->size.y = 1.5f;
     collider->isTrigger = true;
 
-    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+    collider->OnTriggerEnter = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
             this->interactionTextBox->isActive = true;
     };
 
-    collider->OnTriggerOver = [this](Collider* other, int sides) {
+    collider->OnTriggerOver = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
-            if (current == GAME_STATE_TYPE::LEVEL2)
+            if (current == GAME_STATE_TYPE::LEVEL3)
             {
                 interactionTextBox->SetText("You Win!");
             }
@@ -1010,33 +1176,20 @@ void GoalTile::Init() {
             }
             if (AEInputCheckTriggered(AEVK_F))
             {
-                //SaveManager::GetInstance().SaveAll();
-                //// save current state before transitioning
-                //SaveManager::GetInstance().SavePlayerData(
-                //    PlayerManager::GetInstance().meleePlayer->pos,
-                //    PlayerManager::GetInstance().rangedPlayer->pos
-                //);
-                //MapManager::GetInstance().SaveMapState(current);
-                
-
+                AudioManager::GetInstance().PlaySFX("goalEnter");
                 // transition to next level based on current
                 switch (current)
                 {
                 case GAME_STATE_TYPE::LEVEL1:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-                    next = GAME_STATE_TYPE::LEVEL2;
-                    break;
-                case GAME_STATE_TYPE::LEVEL1BOSS:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-                    next = GAME_STATE_TYPE::LEVEL2;
+                    LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL2;
+                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
                     break;
                 case GAME_STATE_TYPE::LEVEL2:
-                    //SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-                    //next = GAME_STATE_TYPE::LEVEL2BOSS;
+                    LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL3;
+                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
                     break;
-                case GAME_STATE_TYPE::LEVEL2BOSS:
-                    SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-                    next = GAME_STATE_TYPE::LEVEL2;
+                case GAME_STATE_TYPE::LEVEL3:
+                    // put end menu here
                     break;
                 default:
                     next = GAME_STATE_TYPE::LEVEL1;
@@ -1045,22 +1198,19 @@ void GoalTile::Init() {
                 SaveManager::GetInstance().toContinue = false;
             }
         }
-                };
+    };
 
-    collider->OnTriggerExit = [this](Collider* other, int sides) {
+    collider->OnTriggerExit = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
             this->interactionTextBox->isActive = false;
         };
-
-    //interactionTextBox->text = "[F] Enter";
-
 }
 
 void CheckpointTile::Init() {
     Tile::Init();
     canArrowPass = true;
     collider->isTrigger = true;
-    collider->OnTriggerEnter = [this](Collider* other, int sides) {
+    collider->OnTriggerEnter = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player)
         {
@@ -1069,7 +1219,7 @@ void CheckpointTile::Init() {
             SaveManager::GetInstance().SaveAll();
         }
         };
-    collider->OnTriggerExit = [this](Collider* other, int sides) {
+    collider->OnTriggerExit = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
             this->interactionTextBox->isActive = false;
@@ -1086,10 +1236,26 @@ void CrateTile::Init()
 
     interactionTextBox->SetText("[F] Grab");
 
-    collider->OnCollisionEnter = [this](Collider* other, int sides) {
+    collider->OnCollisionEnter = [this](Collider* other, int) {
+
         int hitSides = collider->GetSidesForCollider(other);
         if (hitSides & COLLISION_SIDE::BOTTOM) {
             AudioManager::GetInstance().PlaySFX("crateLanding");
+
+            // Check if crate landed on an enemy while falling
+            EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(other->owner);
+            if (enemy && enemy->base.isAlive && rb->velocity.y < 0.f) {
+                if (enemy->base.type == EnemyType::BASIC_MELEE ||
+                    enemy->base.type == EnemyType::BASIC_RANGED)
+                {
+                    AudioManager::GetInstance().PlaySFX("enemyDie");
+                }
+                else {
+                    AudioManager::GetInstance().PlaySFX("minibossDie");
+                }
+                enemy->base.stats.health = 0;
+                enemy->base.isAlive = false;
+            }
         }
         Player* player = dynamic_cast<Player*>(other->owner);
         if (PlayerManager::GetInstance().currentPlayer != player)
@@ -1109,7 +1275,7 @@ void CrateTile::Init()
             arrow->timer = 0.0f;
         }
         };
-    collider->OnCollisionOver = [this](Collider* other, int sides) {
+    collider->OnCollisionOver = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player)
         {
@@ -1133,7 +1299,7 @@ void CrateTile::Init()
         }
         };
 
-    collider->OnCollisionExit = [this](Collider* other, int sides) {
+    collider->OnCollisionExit = [this](Collider* other, int) {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player && !pushState)
         {
@@ -1242,6 +1408,13 @@ void CrateTile::Update() {
     }
     else
     {
+        bool wasOnCollider = rb->onCollider;
+        PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
+
+        // if crate just left the ground, bleed off any residual X nudge velocity
+        if (wasOnCollider && !rb->onCollider)
+            rb->velocity.x = 0.f;
+
         rb->onCollider = false;
         PhysicsManager::UpdateRigidBody(rb, static_cast<f32>(dt));
 
@@ -1316,6 +1489,16 @@ void CrateTile::Update() {
                     pCol->RemoveFromOverlappingVector(oCol);
                     it = pCol->collisionInfos.begin();
                     continue;
+                }
+                if (oCol->owner)
+                {
+                    EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(oCol->owner);
+                    if (enemy && !enemy->base.isAlive)
+                    {
+                        pCol->RemoveFromOverlappingVector(oCol);
+                        it = pCol->collisionInfos.begin();
+                        continue;
+                    }
                 }
                 if (BoxToBoxCollision(
                     pCol->GetPos2D(), oCol->GetPos2D(),

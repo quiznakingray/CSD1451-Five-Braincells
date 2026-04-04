@@ -2,6 +2,8 @@
 #include "ParkourLevel.h"
 #include "MainMenu.h"
 #include "PauseMenu.h"
+#include "LoadingScreen.h"
+#include "SplashScreen.h"
 
 
 FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpRender = nullptr, fpFree = nullptr, fpUnload = nullptr;
@@ -29,6 +31,14 @@ void GameStateManager::Update()
 
 	switch (current)
 	{
+	case GAME_STATE_TYPE::SPLASH:
+		fpLoad = SplashScreen::Load;
+		fpInitialize = SplashScreen::Init;
+		fpUpdate = SplashScreen::Update;
+		fpRender = SplashScreen::Render;
+		fpFree = SplashScreen::Free;
+		fpUnload = SplashScreen::Unload;
+		break;
 	case GAME_STATE_TYPE::MENU:
 		fpLoad = []() {}; // Empty or load background textures
 		fpInitialize = MainMenu_Init;
@@ -37,10 +47,17 @@ void GameStateManager::Update()
 		fpFree = MainMenu_Free;
 		fpUnload = []() {};
 		break;
+	case GAME_STATE_TYPE::LOADING:
+		fpLoad = LoadingScreen::Load;
+		fpInitialize = LoadingScreen::Init;
+		fpUpdate = LoadingScreen::Update;
+		fpRender = LoadingScreen::Render;
+		fpFree = LoadingScreen::Free;
+		fpUnload = LoadingScreen::Unload;
+		break;
 	case GAME_STATE_TYPE::LEVEL1:  
-	case GAME_STATE_TYPE::LEVEL1BOSS:
 	case GAME_STATE_TYPE::LEVEL2:
-	case GAME_STATE_TYPE::LEVEL2BOSS:
+	case GAME_STATE_TYPE::LEVEL3:
 		fpLoad = ParkourLevel::Load;  
 		fpInitialize = ParkourLevel::Init;  
 		fpUpdate = ParkourLevel::Update;  

@@ -14,7 +14,7 @@ void PhysicsManager::UpdateRigidBody(RigidBody* rb, f64 dt)
     // Apply gravity
     if (rb->hasGravity ) rb->velocity.y += rb->gravity * static_cast<f32>(dt);
 
-    constexpr float MAX_FALL_SPEED = -600.0f; // tune this, keep fabs < 80 * fps
+    constexpr float MAX_FALL_SPEED = -400.0f; // tune this, keep fabs < 80 * fps
     if (rb->velocity.y < MAX_FALL_SPEED)
         rb->velocity.y = MAX_FALL_SPEED;
 
@@ -34,8 +34,8 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
     if (!a->canCollide || !b->canCollide)
         return;
 
-    CrateTile* crateA = dynamic_cast<CrateTile*>(A);
-    CrateTile* crateB = dynamic_cast<CrateTile*>(B);
+    //CrateTile* crateA = dynamic_cast<CrateTile*>(A);
+    //CrateTile* crateB = dynamic_cast<CrateTile*>(B);
     Player* playerA = dynamic_cast<Player*>(A);
     Player* playerB = dynamic_cast<Player*>(B);
    
@@ -73,19 +73,18 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
         };
 
     // Classify each body
-    bool aIsStatic = !ra || ra->type == RIGIDBODY_TYPE::STATIC;
-    bool bIsStatic = !rb || rb->type == RIGIDBODY_TYPE::STATIC;
+ 
     bool aIsKinematic = ra && ra->type == RIGIDBODY_TYPE::KINEMATIC;
     bool bIsKinematic = rb && rb->type == RIGIDBODY_TYPE::KINEMATIC;
     bool aIsDynamic = ra && ra->type == RIGIDBODY_TYPE::DYNAMIC;
     bool bIsDynamic = rb && rb->type == RIGIDBODY_TYPE::DYNAMIC;
 
-    constexpr float GROUND_BIAS = 12.0f;
+    constexpr float GROUND_BIAS = 10.0f;
     constexpr float WALL_HIT_THRESHOLD = 8.0f;
 
     if (!aIsDynamic && !bIsDynamic)
     {
-        // Kinematic vs Static � resolve the kinematic body
+        // Kinematic vs Static resolve the kinematic body
         if (aIsKinematic || bIsKinematic)
         {
             RigidBody* kinRb = aIsKinematic ? ra : rb;
@@ -122,7 +121,7 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
         return;  // static vs static still skips
     }
 
-    // Dynamic vs Dynamic � split resolution by mass (unchanged)
+    // Dynamic vs Dynamic split resolution by mass (unchanged)
     if (aIsDynamic && bIsDynamic)
     {
         // A can only push B if A's mass >= B's mass AND A is moving toward B
@@ -132,8 +131,29 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
         bool aMovingTowardB = (dx < 0 && relVelX > 0) || (dx > 0 && relVelX < 0);
         bool bMovingTowardA = (dx > 0 && relVelX > 0) || (dx < 0 && relVelX < 0);
 
+        bool aMovingDownTowardB = (dy > 0 && relVelY < 0); 
+        bool bMovingDownTowardA = (dy < 0 && relVelY > 0);
+
         bool aCanPushB = (ra->mass > rb->mass) && aMovingTowardB;
         bool bCanPushA = (rb->mass > ra->mass) && bMovingTowardA;
+
+        if (pyOverlap < pxOverlap)  // more vertical overlap → resolve Y
+        {
+            if (aMovingDownTowardB)  // A is above B
+            {
+                move(A, 0, pyOverlap, ra, false);   // push A up
+                ra->velocity.y = 0.f;
+                ra->onCollider = true;
+            }
+            else if (bMovingDownTowardA)
+            {
+                move(B, 0, pyOverlap, rb, false);   // push B up
+                rb->velocity.y = 0.f;
+                rb->onCollider = true;
+            }
+            return;
+        }
+
 
         //if (!aCanPushB && !bCanPushA) return; // neither qualifies, no resolution
 
@@ -172,7 +192,7 @@ void PhysicsManager::HandleCollision(Collider* a, Collider* b)
 
     }
 
-    // One side is dynamic; the other is static or kinematic � push the dynamic body
+    // One side is dynamic; the other is static or kinematic push the dynamic body
     RigidBody* dynamicRb = aIsDynamic ? ra : rb;
     RigidBody* passiveRb = aIsDynamic ? rb : ra;  // static or kinematic
     GameObject* dynamicObj = dynamicRb->owner;

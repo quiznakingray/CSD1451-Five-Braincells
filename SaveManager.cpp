@@ -45,18 +45,47 @@ void SaveManager::SetPreservePlayerOnLoad(bool preserve)
     playerSaveData.preserveOnLoad = preserve;
 }
 
+void SaveManager::SaveDeathCount(int count)
+{
+    playerSaveData.deathCount = count;
+    SavePlayerData();
+}
+
+void SaveManager::SaveKillCount(int count) {
+    playerSaveData.killCount = count;
+    SavePlayerData();
+}
+
+void SaveManager::SavePlayerTime(float seconds) {
+    playerSaveData.totalSeconds = seconds;
+    SavePlayerData();
+}
+
+void SaveManager::SaveHighScore(int score) {
+    playerSaveData.highScore = score;
+    SavePlayerData();
+}
+
 void SaveManager::SaveMapData()
 {
     std::ofstream file("Assets/Saves/mapSave.dat", std::ios::binary);
     if (file.is_open())
     {
+        // Save which level this data belongs to
+        file.write(reinterpret_cast<char*>(&mapSaveData.savedLevel), sizeof(GAME_STATE_TYPE));
+
+        // Save tile states
         size_t count = mapSaveData.tileStates.size();
         file.write(reinterpret_cast<char*>(&count), sizeof(size_t));
         file.write(reinterpret_cast<char*>(mapSaveData.tileStates.data()),
             count * sizeof(TileStateData));
+
+        // Save flag
         file.write(reinterpret_cast<char*>(&mapSaveData.hasSavedData), sizeof(bool));
+
         file.close();
-        std::cout << "Map saved: " << count << " tile states\n";
+        std::cout << "Map saved: " << count << " tile states for level "
+            << static_cast<int>(mapSaveData.savedLevel) << "\n";
     }
     else std::cout << "Failed to save map\n";
 }
@@ -66,16 +95,22 @@ void SaveManager::LoadMapData()
     std::ifstream file("Assets/Saves/mapSave.dat", std::ios::binary);
     if (file.is_open())
     {
+        file.read(reinterpret_cast<char*>(&mapSaveData.savedLevel), sizeof(GAME_STATE_TYPE));
+
         size_t count = 0;
         file.read(reinterpret_cast<char*>(&count), sizeof(size_t));
+
         mapSaveData.tileStates.resize(count);
         file.read(reinterpret_cast<char*>(mapSaveData.tileStates.data()),
             count * sizeof(TileStateData));
+
         file.read(reinterpret_cast<char*>(&mapSaveData.hasSavedData), sizeof(bool));
+
         file.close();
-        std::cout << "Map loaded: " << count << " tile states\n";
+        std::cout << "Map loaded: " << count << " tile states for level "
+            << static_cast<int>(mapSaveData.savedLevel) << "\n";
     }
-    else std::cout << "No map save found\n";
+    else std::cout << "Failed to load map\n";
 }
 
 void SaveManager::SaveEnemyData() {
@@ -142,6 +177,7 @@ void SaveManager::SaveAll()
     PlayerManager::GetInstance().SavePlayerData();
     EnemyManager::GetInstance().SaveEnemyStates();
     MapManager::GetInstance().SaveMapState();
+    
 
     // Write everything to disk
     SavePlayerData();

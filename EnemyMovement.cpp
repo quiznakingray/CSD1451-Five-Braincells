@@ -11,7 +11,7 @@ void EnemyMovement::InitEnemyMovement(EnemyMovement& move) {
     move.movingRight = true;
 }
 
-void EnemyMovement::UpdateEnemyPatrol(EnemyGameObject* enemy, f64 dt) {
+void EnemyMovement::UpdateEnemyPatrol(EnemyGameObject* enemy) {
     f32 dir = enemy->movement.movingRight ? 1.f : -1.f;
     enemy->rb->velocity.x = dir * enemy->base.stats.movementSpeed;
 
@@ -64,12 +64,12 @@ std::vector<AEVec2> EnemyMovement::FindPath(AEVec2 start, AEVec2 target) {
 
     if (!startNode || !endNode || startNode == endNode) return path;
 
-    // Reset all nodes using Node's Reset()
-    for (Node* n : allNodes) n->Reset();
+    // ResetAll all nodes using Node's ResetAll()
+    for (Node* n : allNodes) n->ResetAll();
 
     startNode->actualCost = 0.f;
-    startNode->estimatedCost = sqrtf(pow(startNode->position.x - endNode->position.x, 2) +
-        pow(startNode->position.y - endNode->position.y, 2));
+    startNode->estimatedCost = static_cast<float>(sqrtf(static_cast<float>(pow(startNode->position.x - endNode->position.x, 2)) +
+        static_cast<float>(pow(startNode->position.y - endNode->position.y, 2))));
     startNode->UpdateTotalCost();
 
     std::vector<Node*> openList{ startNode };
@@ -79,34 +79,34 @@ std::vector<AEVec2> EnemyMovement::FindPath(AEVec2 start, AEVec2 target) {
 
     while (!openList.empty()) {
         // Pick node with lowest totalCost
-        Node* current = openList[0];
+        Node* currentNode = openList[0];
         for (Node* node : openList) {
-            if (node->totalCost < current->totalCost)
-                current = node;
+            if (node->totalCost < currentNode->totalCost)
+                currentNode = node;
         }
 
-        openList.erase(std::remove(openList.begin(), openList.end(), current), openList.end());
-        closedList.push_back(current);
+        openList.erase(std::remove(openList.begin(), openList.end(), currentNode), openList.end());
+        closedList.push_back(currentNode);
 
-        if (current == endNode) {
+        if (currentNode == endNode) {
             reachedEnd = true;
             break;
         }
 
-        for (Node* neighbor : current->neighbors) {
+        for (Node* neighbor : currentNode->neighbors) {
             if (!neighbor->walkable) continue;
             if (std::find(closedList.begin(), closedList.end(), neighbor) != closedList.end()) continue;
 
-            float newCost = current->actualCost + sqrtf(pow(neighbor->position.x - current->position.x, 2) +
-                pow(neighbor->position.y - current->position.y, 2));
+            float newCost = static_cast<float>(currentNode->actualCost + sqrtf(static_cast<float>(pow(neighbor->position.x - currentNode->position.x, 2)) +
+                static_cast<float>(pow(neighbor->position.y - currentNode->position.y, 2))));
 
             bool inOpen = std::find(openList.begin(), openList.end(), neighbor) != openList.end();
             if (inOpen && newCost >= neighbor->actualCost) continue;
 
             neighbor->actualCost = newCost;
-            neighbor->estimatedCost = sqrtf(pow(neighbor->position.x - endNode->position.x, 2) +
-                pow(neighbor->position.y - endNode->position.y, 2));
-            neighbor->parent = current;
+            neighbor->estimatedCost = static_cast<float>(sqrtf(static_cast<float>(pow(neighbor->position.x - endNode->position.x, 2)) +
+                static_cast<float>(pow(neighbor->position.y - endNode->position.y, 2))));
+            neighbor->parent = currentNode;
             neighbor->UpdateTotalCost();
 
             if (!inOpen) openList.push_back(neighbor);
@@ -116,10 +116,10 @@ std::vector<AEVec2> EnemyMovement::FindPath(AEVec2 start, AEVec2 target) {
     if (!reachedEnd) return path;
 
     // Reconstruct path
-    Node* current = endNode;
-    while (current && current->parent != nullptr) {
-        path.push_back(current->position);
-        current = current->parent;
+    Node* currentEndNode = endNode;
+    while (currentEndNode && currentEndNode->parent != nullptr) {
+        path.push_back(currentEndNode->position);
+        currentEndNode = currentEndNode->parent;
     }
     std::reverse(path.begin(), path.end());
 

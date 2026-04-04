@@ -271,10 +271,9 @@ void HandleInteraction(std::vector<GameObject*>& gos)
 	// --- Update interaction state ---
 	for (size_t i = 0; i < candidates.size(); ++i)
 	{
-		GameObject* go = candidates[i].go;
 		Collider* col = candidates[i].col;
 		bool isHover = (col == topCollider);
-
+		if (!col) continue;
 		if (col->isHovering == false && isHover)
 			if (col->OnMouseEnter) col->OnMouseEnter();
 

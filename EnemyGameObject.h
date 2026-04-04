@@ -7,6 +7,7 @@
 #include "PhysicsManager.h"
 #include "AnimatorComponent.h"
 #include "MapManager.h"
+#include "AEVec3.h"
 
 struct EnemyGameObject : GameObject {
     bool isGrounded = false;
@@ -24,6 +25,7 @@ struct EnemyGameObject : GameObject {
     Animation* patrolAnim = nullptr;
     Animation* chaseAnim = nullptr;
     Animation* attackAnim = nullptr;
+    Animation* attackingAnim = nullptr;
 
     GameObject* healthBarBG = nullptr;
     GameObject* healthBarFG = nullptr;
@@ -33,9 +35,10 @@ struct EnemyGameObject : GameObject {
     void Init(EnemyType type, Tile* spawnTile);
     void Update() override;
     void Render() override;
+	void Free() override;
 
-    void Patrol(f64 dt);
-    void FollowPlayer(AEVec2 playerPos, f64 dt);
+    void Patrol();
+    void FollowPlayer(AEVec3 playerPos);
     void UpdateAnimation();
     void InitHealthBar();
     void UpdateHealthBar();

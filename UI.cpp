@@ -5,11 +5,11 @@
 #include <vector>
 
 
-ProgressBar::ProgressBar(ProgressBar&& other)
+ProgressBar::ProgressBar(ProgressBar&& other) noexcept
     : backgroundGO(other.backgroundGO), fillGO(other.fillGO), flashGO(other.flashGO)
     , background(other.background), fill(other.fill), flash(other.flash)
     , maxWidth(other.maxWidth), currentValue(other.currentValue)
-    , maxValue(other.maxValue), flashTimer(other.flashTimer)
+    , maxValue(other.maxValue), flashTimer(other.flashTimer) 
 {
     other.backgroundGO = other.fillGO = other.flashGO = nullptr;
     other.background = other.fill = other.flash = nullptr;

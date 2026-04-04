@@ -11,7 +11,7 @@ struct EnemyMovement {
     bool movingRight = true;
 
     static void InitEnemyMovement(EnemyMovement& move);
-    static void UpdateEnemyPatrol(EnemyGameObject* enemy, f64 dt);
+    static void UpdateEnemyPatrol(EnemyGameObject* enemy);
 
     // A* Pathfinding
     static std::vector<AEVec2> FindPath(AEVec2 start, AEVec2 target);

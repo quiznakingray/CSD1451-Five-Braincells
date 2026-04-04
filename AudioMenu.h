@@ -18,7 +18,7 @@ public:
 private:
     bool isOpen = false;
 
-    s8 font;
+    s8 font{};
     const f32 fontSize = 80.0f;
 
     // Normalize screen coords relative to screen center
@@ -29,16 +29,16 @@ private:
     const float panelX = 0.0f, panelY = 0.0f;
     const float panelW = 700.0f, panelH = 700.0f;
 
-    AEGfxTexture* panelTex;
-    AEGfxVertexList* panelMesh;
+    AEGfxTexture* panelTex = nullptr;
+    AEGfxVertexList* panelMesh = nullptr;
 
     // Back button
     UIButton backButton;
 
     // Audio sliders
-    float masterPos;
-    float musicPos;
-    float sfxPos;
+    float masterPos{};
+    float musicPos{};
+    float sfxPos{};
 
     UISlider masterSlider;
     UISlider musicSlider;

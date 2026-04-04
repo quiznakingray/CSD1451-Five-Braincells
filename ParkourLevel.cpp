@@ -30,17 +30,14 @@ void ParkourLevel::Init()
 	case GAME_STATE_TYPE::LEVEL1:
 		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL1);
 		break;
-	case GAME_STATE_TYPE::LEVEL1BOSS:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01b.csv", GAME_STATE_TYPE::LEVEL1BOSS);
-		break;
 	case GAME_STATE_TYPE::LEVEL2:
 		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_02.csv", GAME_STATE_TYPE::LEVEL2);
 		break;
-	case GAME_STATE_TYPE::LEVEL2BOSS:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_02b.csv", GAME_STATE_TYPE::LEVEL2BOSS);
+	case GAME_STATE_TYPE::LEVEL3:
+		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_03.csv", GAME_STATE_TYPE::LEVEL3);
 		break;
 	default:
-		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL3);
+		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL1);
 		break;
 	}
 	
@@ -49,7 +46,11 @@ void ParkourLevel::Init()
 	PlayerManager::GetInstance().Init();
 	AddGameObjectToVector(PlayerManager::GetInstance().meleePlayer, levelGameObjectVector);
 	AddGameObjectToVector(PlayerManager::GetInstance().rangedPlayer, levelGameObjectVector);
-	AddGameObjectToVector(PlayerManager::GetInstance().rangePlayerArrow, levelGameObjectVector);
+	for (Arrow* a : PlayerManager::GetInstance().arrowGameObjectPool)
+	{
+		AddGameObjectToVector(a, levelGameObjectVector);
+	}
+	//AddGameObjectToVector(PlayerManager::GetInstance().rangePlayerArrow, levelGameObjectVector);
 
 	EnemyManager::GetInstance().Init(PlayerManager::GetInstance().meleePlayer, PlayerManager::GetInstance().rangedPlayer);
 	EnemyManager::GetInstance().SpawnEnemies(levelGameObjectVector);
@@ -80,10 +81,16 @@ void ParkourLevel::Init()
 
 void ParkourLevel::Update()
 {
+	double dt = AEFrameRateControllerGetFrameTime();
 	InputManager::GetInstance().Update();
-	if (GameStateManager::GetInstance().showPauseMenu) {
 
-		PauseMenu::GetInstance().Update();
+	HUD::GetInstance().Update(dt);
+	if (GameStateManager::GetInstance().gamePaused) {
+		if (GameStateManager::GetInstance().showPauseMenu) {
+
+			PauseMenu::GetInstance().Update();
+			
+		}
 		return;
 	}
 	
@@ -101,10 +108,8 @@ void ParkourLevel::Update()
 
 	//CheckPlayerDeath(); // Check if player is dead
 
-	double dt = AEFrameRateControllerGetFrameTime();
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
-	HUD::GetInstance().Update(dt);
 }
 
 void ParkourLevel::Render()
@@ -124,37 +129,27 @@ void ParkourLevel::Render()
 
 void ParkourLevel::Free()
 {
-	//playerManager.Save();
-
 	// Clean up game objects
-	switch (next) {
-	case GAME_STATE_TYPE::LEVEL1:
-	case GAME_STATE_TYPE::LEVEL2:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-		break;
-	case GAME_STATE_TYPE::LEVEL1BOSS:
-	case GAME_STATE_TYPE::LEVEL2BOSS:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(true);
-		break;
-	default:
-		SaveManager::GetInstance().SetPreservePlayerOnLoad(false);
-		break;
-	}
-
-	//// Clean up player1
-	//if (player1)
-	//{
-	//	delete player1;
-	//	player1 = nullptr;
-	//}
-
 	//AEGfxSetCamPosition(0.f, 0.f);
 	//FreeGameObjects(levelGameObjectVector);
 	for (auto* obj : levelGameObjectVector) {
-		// skip players � PlayerManager owns and deletes them
+		// skip players PlayerManager owns and deletes them
 		if (obj == PlayerManager::GetInstance().meleePlayer) continue;
 		if (obj == PlayerManager::GetInstance().rangedPlayer) continue;
-		if (obj == PlayerManager::GetInstance().rangePlayerArrow) continue;
+		//bool isArrow = false;
+		if (Arrow* tile = dynamic_cast<Arrow*>(obj)) continue;
+		if (EnemyGameObject* tile = dynamic_cast<EnemyGameObject*>(obj)) continue;
+		//for (int i = 0; i < PlayerManager::GetInstance().arrowGameObjectPool.size(); i++)
+		//{
+		//	if (obj == PlayerManager::GetInstance().arrowGameObjectPool[i])
+		//	{
+		//		isArrow = true;
+		//		break;
+		//	}
+		//}
+		//if (isArrow) continue;
+
+
 		if (dynamic_cast<Tile*>(obj)) continue;
 		obj->Free();
 		delete obj;
@@ -172,7 +167,7 @@ void ParkourLevel::Free()
 	PauseMenu::GetInstance().Free();
 
 	//EndMenu::GetInstance().Free();
-	//EndMenu::GetInstance().isActive = false; // Reset for the next time the level loads
+	//EndMenu::GetInstance().isActive = false; // ResetAll for the next time the level loads
 }
 
 void ParkourLevel::Unload()

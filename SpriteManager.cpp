@@ -194,86 +194,6 @@ void Sprite::Free()
 //	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 //}
 
-void UpdateSpriteArray(std::vector<Sprite*>& spriteArr)
-{
-	HandleSpriteInteraction(spriteArr);
-}
-
-void HandleSpriteInteraction(std::vector<Sprite*>& spriteArr)
-{
-
-	//int highestInteractionZ = -1;
-	//for (Sprite*& s : spriteArr)
-	//{
-	//	if (!s->isActive) continue;
-	//	//s->isHovering = IsCursorOverRect(s->pos.x, s->pos.y, s->scale.x, s->scale.y);
-	//	for (Collider *collider : s->colliders)
-	//	{
-	//		if (IsCursorOverRect(
-	//			s->pos.x + collider->center.x,
-	//			s->pos.y + collider->center.y, 
-	//			s->scale.x * collider->size.x,
-	//			s->scale.y * collider->size.y) 
-	//			&& 
-	//			highestInteractionZ < s->pos.z) {
-	//			highestInteractionZ = static_cast<int>(s->pos.z);
-	//		}
-
-	//	}
-	//}
-
-	//for (Sprite*& s : spriteArr)
-	//{
-	//	if (!s->hasCollision || !s->isActive) continue;
-
-	//	for (Collider* collider : s->colliders)
-	//	{
-
-	//		bool isHover = highestInteractionZ == s->pos.z && IsCursorOverRect(
-	//			s->pos.x + collider->center.x,
-	//			s->pos.y + collider->center.y,
-	//			s->scale.x / collider->size.x,
-	//			s->scale.y / collider->size.y)
-	//			;
-	//		if (!s->isHovering && isHover)
-	//		{
-	//			if (collider->OnMouseEnter)collider->OnMouseEnter();
-	//		}
-	//		else if (s->isHovering)
-	//		{
-	//			if (isHover)
-	//			{
-	//				if (collider->OnMouseOver) collider->OnMouseOver();
-	//			}
-	//			else {
-	//				if (collider->OnMouseExit) collider->OnMouseExit();
-	//			}
-	//		}
-	//		s->isHovering = isHover;
-
-
-	//		if (s->isHovering && AEInputCheckTriggered(AEVK_LBUTTON) && !s->isInteracting)
-	//		{
-	//			if (collider->OnMouseDown) collider->OnMouseDown();
-	//			s->isInteracting = true;
-	//		}
-	//		else if (s->isInteracting)
-	//		{
-	//			if (AEInputCheckCurr(AEVK_LBUTTON))
-	//			{
-	//				if (collider->OnClick) collider->OnClick();
-	//			}
-	//			else if (AEInputCheckReleased(AEVK_LBUTTON))
-	//			{
-	//				if (collider->OnMouseUp) collider->OnMouseUp();
-	//				s->isInteracting = false;
-	//			}
-	//		}
-	//	}
-	//	//if(isHover && s->blockCollision) 
-
-	//}
-}
 
 void AddSpriteToArray(std::vector<Sprite*>& spriteArr, Sprite*& s)
 {
@@ -380,15 +300,15 @@ void Sprite::RenderLine()
 
 		AEVec2 normal = { -dir.y, dir.x };
 
-		AEVec2 offset;
-		AEVec2Scale(&offset, &normal, half);
+		AEVec2 lineOffset;
+		AEVec2Scale(&lineOffset, &normal, half);
 
 		AEVec2 v0, v1, v2, v3;
 
-		AEVec2Sub(&v0, &p0, &offset);
-		AEVec2Add(&v1, &p0, &offset);
-		AEVec2Add(&v2, &p1, &offset);
-		AEVec2Sub(&v3, &p1, &offset);
+		AEVec2Sub(&v0, &p0, &lineOffset);
+		AEVec2Add(&v1, &p0, &lineOffset);
+		AEVec2Add(&v2, &p1, &lineOffset);
+		AEVec2Sub(&v3, &p1, &lineOffset);
 
 
 		AEGfxTriAdd(

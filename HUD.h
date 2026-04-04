@@ -5,6 +5,7 @@
 #include "GameObjectManager.h"
 #include "CameraSystem.h"
 #include "SingletonTemplate.h"
+#include "UiButton.h"
 
 #include <vector>
 
@@ -27,9 +28,12 @@ struct HUD : Singleton<HUD>{
 	void Update(f64 dt);
 	void Render();
 	void Free();
+
+	void ShowDeathPanel();
 private:
 	bool showHUD = true;
 	std::vector<GameObject* > HUDGameObjects;
+	std::vector<GameObject* > deathHUDGameObject;
 
 	PlayerUI* shieldPlayerUI = nullptr;
 
@@ -45,6 +49,17 @@ private:
 
 	std::vector<GameObject*> healthBarsBG;
 	std::vector<GameObject*> healthBars;
+
+	bool showDeathPanel = false;
+	GameObject* deathPanelBG = nullptr;
+	GameObject* deathPanelTitle = nullptr;
+	GameObject* deathReloadBtn = nullptr;
+	GameObject* deathMainMenuBtn = nullptr;
+	bool showDeathConfirm = false;
+	GameObject* deathConfirmBG = nullptr;
+	GameObject* deathConfirmLabel = nullptr;
+	GameObject* deathConfirmYesBtn = nullptr;
+	GameObject* deathConfirmNoBtn = nullptr;
 
 	GameObject* sHintQ = nullptr;
 	GameObject* rHintQ = nullptr;

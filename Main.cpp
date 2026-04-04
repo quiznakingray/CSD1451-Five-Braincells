@@ -1,6 +1,5 @@
 // ---------------------------------------------------------------------------
 // includes
-
 #include <crtdbg.h> // To check for memory leaks
 #include <vector>
 #include <iostream>
@@ -13,46 +12,13 @@
 #include "TextManager.h"
 #include "PauseMenu.h"
 #include "MainMenu.h"
-#include <filesystem>
 #include "EnemyGameObject.h"
 #include "EnemyManager.h"
 #include "AudioManager.h"
 #include "CameraSystem.h"
+#include "LoadingScreen.h"
 
 int gGameRunning = 1;
-//AEGfxVertexList* pMesh = 0;
-//AEGfxTexture* pTex = 0;
-
-MapManager mapManager;
-//TextManager textManager;
-
-
-//std::vector<GameObject*> gameObjects{};
-
-#pragma region tempFuncs
-// temporary functions
-void RenderGraphics() {
-
-	// Your own rendering logic goes here
-	// Set the background to black.
-	AEGfxSetBackgroundColor(0.5f, 0.5f, 0.5f);
-	mapManager.DrawMapSprite();
-
-	// check if forcing the application to quit
-	if (AEInputCheckCurr(AEVK_ESCAPE) || 0 == AESysDoesWindowExist())
-		gGameRunning = 0;
-
-	if (AEInputCheckCurr(AEVK_1))
-		AESysSetFullScreen(1);
-	if (AEInputCheckCurr(AEVK_2))
-		AESysSetFullScreen(0);
-}
-void GameUpdate() {
-	double dt = AEFrameRateControllerGetFrameTime();
-	//UpdateGameObjects(gameObjects);
-	RenderGraphics();
-}
-#pragma endregion
 
 // ---------------------------------------------------------------------------
 // main
@@ -82,7 +48,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	printf("Hello LEVEL1\n");
 
-	GameStateManager::GetInstance().Initialize(GAME_STATE_TYPE::MENU);
+	GameStateManager::GetInstance().Initialize(GAME_STATE_TYPE::SPLASH);
 	CameraSystem::Init();
 
 	// Game Loop
@@ -128,27 +94,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			if (AEInputCheckCurr(AEVK_2))
 				AESysSetFullScreen(0);
 
-			//if (AEInputCheckCurr(AEVK_3)) {
-			//	if (mapManager.mapCurrLevel != GAME_STATE_TYPE::LEVEL1) {
-			//		gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL2);
-			//		gameStateManager.Update();
-			//		mapManager.ChangeMap(GAME_STATE_TYPE::LEVEL2);
-			//	}
-
-			//}
-			//if (AEInputCheckCurr(AEVK_4)) {
-			//	if (mapManager.mapCurrLevel != GAME_STATE_TYPE::LEVEL2) {
-			//		gameStateManager.ChangeState(GAME_STATE_TYPE::LEVEL1);
-			//		gameStateManager.Update();
-			//		mapManager.ChangeMap(GAME_STATE_TYPE::LEVEL1);
-			//	}
-			//}
+			// to quickly switch between levels
+			if (AEInputCheckCurr(AEVK_3)) {
+				if (current != GAME_STATE_TYPE::LEVEL1) {
+					LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
+					GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+				}
+			}
+			if (AEInputCheckCurr(AEVK_4)) {
+				if (current != GAME_STATE_TYPE::LEVEL2) {
+					LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL2;
+					GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+				}
+			}
+			if (AEInputCheckCurr(AEVK_5)) {
+				if (current != GAME_STATE_TYPE::LEVEL3) {
+					LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL3;
+					GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+				}
+			}
 			// Informing the system about the loop's end
 
 			AESysFrameEnd();
 		}
-		//GameUpdate();
-
 		fpFree();
 		if (next != GAME_STATE_TYPE::RESTART)
 		{
@@ -158,8 +126,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		previous = current;
 		current = next;
 	}
-	//mapManager.FreeMap();
-	//AEGfxDestroyFont(textManager.pFont);
+	AudioManager::GetInstance().Exit();
 	// free the system
 	AESysExit();
 }

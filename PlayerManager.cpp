@@ -7,7 +7,7 @@
 #include <fstream>
 #include <direct.h>
 
-Arrow* PlayerManager::rangePlayerArrow = nullptr;
+//Arrow* PlayerManager::rangePlayerArrow = nullptr;
 
 
 void PlayerManager::Init()
@@ -16,17 +16,30 @@ void PlayerManager::Init()
 	AEVec2Set(&meleePlayer->pos, MapManager::GetPlayerSpawnPos().x, MapManager::GetPlayerSpawnPos().y + 200.f);
 	rangedPlayer = new RangePlayer;
 	AEVec2Set(&rangedPlayer->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
-	rangePlayerArrow = new Arrow;
-	AEVec2Set(&rangePlayerArrow->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
-
-	currentPlayer = meleePlayer;
+	//rangePlayerArrow = new Arrow;
+	//AEVec2Set(&rangePlayerArrow->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
+	for (size_t i = 0; i < maxArrowPoolSize; i++)
+	{
+		Arrow* a = new Arrow;
+		AEVec2Set(&a->pos, MapManager::GetPlayerSpawnPos().x + MapManager::tileSize, MapManager::GetPlayerSpawnPos().y + 200.f);
+		arrowGameObjectPool.push_back(a);
+	}
+	currentPlayer = PlayerStats::GetInstance().GetPlayerType() == PLAYER_TYPE::MELEE
+		? static_cast<Player*>(meleePlayer)
+		: static_cast<Player*>(rangedPlayer);
 	CameraSystem::SetCameraPos(meleePlayer->pos);
+
+	if (!SaveManager::GetInstance().HasSaveData()) {
+		PlayerStats::GetInstance().ResetHealthStamina();
+	}
 }
 
 void PlayerManager::Update(){
 	if (!currentPlayer) return;
 	double dt = AEFrameRateControllerGetFrameTime();
-	currentPlayer->PlayerInput();
+	if (PlayerStats::GetInstance().GetPlayerHealth() > 0) {
+		currentPlayer->PlayerInput();
+	}
 	//currentPlayer->PlayerAction();
 	
 	if (currentPlayer != meleePlayer) {
@@ -36,23 +49,22 @@ void PlayerManager::Update(){
 	}
 	if (currentPlayer != rangedPlayer) {
 		rangedPlayer->ApplyDeceleration();
-		rangedPlayer->aiming = false;
+		rangedPlayer->inAimingAnim = false;
 	}
-
-	if (AEInputCheckCurr(AEVK_E) && currentPlayer != meleePlayer)
-	{
-		ChangePlayer(PLAYER_TYPE::MELEE);
+	if (PlayerStats::GetInstance().GetPlayerHealth() > 0) {
+		if (AEInputCheckCurr(AEVK_E) && currentPlayer != meleePlayer)
+		{
+			ChangePlayer(PLAYER_TYPE::MELEE);
+		}
+		else if (AEInputCheckCurr(AEVK_R) && currentPlayer != rangedPlayer)
+		{
+			ChangePlayer(PLAYER_TYPE::RANGE);
+		}
+		rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PLAYER_ACTION::AIMING;
 	}
-	else if (AEInputCheckCurr(AEVK_R) && currentPlayer != rangedPlayer)
-	{
-		ChangePlayer(PLAYER_TYPE::RANGE);
-
-	}
-	rangedPlayer->line->isActive = currentPlayer == rangedPlayer && currentPlayer->currentAction == PLAYER_ACTION::AIMING;
-
 	//regen stamina
 
-	PlayerStats::Get().RegenStamina(dt); 
+	PlayerStats::GetInstance().RegenStamina(dt);
 	
 
 	if (!canChangePlayer)
@@ -66,9 +78,14 @@ void PlayerManager::Update(){
 
 }
 void PlayerManager::Render(){
+	if (!currentPlayer) return;
 	meleePlayer->Render();
 	rangedPlayer->Render();
-	rangePlayerArrow->Render();
+	//rangePlayerArrow->Render();
+	for (Arrow* a : arrowGameObjectPool)
+	{
+		a->Render();
+	}
 }
 
 void PlayerManager::Free() {
@@ -82,11 +99,18 @@ void PlayerManager::Free() {
 		delete rangedPlayer;
 		rangedPlayer = nullptr;
 	}
-	if (rangePlayerArrow) {
-		rangePlayerArrow->Free();
-		delete rangePlayerArrow;
-		rangePlayerArrow = nullptr;
+	//if (rangePlayerArrow) {
+	//	rangePlayerArrow->Free();
+	//	delete rangePlayerArrow;
+	//	rangePlayerArrow = nullptr;
+	//}
+	for (Arrow* a : arrowGameObjectPool)
+	{
+		if (!a) continue;
+		a->Free();
+		delete a;
 	}
+	arrowGameObjectPool.clear();
 	currentPlayer = nullptr;
 }
 
@@ -99,7 +123,7 @@ void PlayerManager::SavePlayerData()
 	if (rangedPlayer) save.playerSaveData.rangedPos = rangedPlayer->pos;
 
 	// copy persistent stats from PlayerStats singleton
-	PlayerStats& stats = PlayerStats::Get();
+	PlayerStats& stats = PlayerStats::GetInstance();
 	save.playerSaveData.health = stats.health;
 	save.playerSaveData.maxHealth = stats.maxHealth;
 	save.playerSaveData.damage = stats.damage;
@@ -111,6 +135,9 @@ void PlayerManager::SavePlayerData()
 
 	save.playerSaveData.deathCount = stats.deathCount;
 	save.playerSaveData.killCount = stats.killCount;
+	save.playerSaveData.totalSeconds = stats.totalSeconds;
+
+	save.playerSaveData.currentPlayerType = stats.playerType;
 
 	save.playerSaveData.hasSavedData = true;
 }
@@ -129,7 +156,8 @@ void PlayerManager::Load()
 	}
 
 	// restore stats into PlayerStats singleton
-	PlayerStats& stats = PlayerStats::Get();
+	PlayerStats& stats = PlayerStats::GetInstance();
+	
 	stats.health = data.health;
 	stats.maxHealth = data.maxHealth;
 	stats.damage = data.damage;
@@ -141,6 +169,13 @@ void PlayerManager::Load()
 
 	stats.deathCount = data.deathCount;
 	stats.killCount = data.killCount;
+	stats.totalSeconds = data.totalSeconds;
+
+	stats.playerType = data.currentPlayerType;
+	currentPlayer = PlayerStats::GetInstance().GetPlayerType() == PLAYER_TYPE::MELEE
+		? static_cast<Player*>(meleePlayer)
+		: static_cast<Player*>(rangedPlayer);
+	currentPlayerType = PlayerStats::GetInstance().GetPlayerType();
 }
 
 
@@ -151,6 +186,7 @@ void PlayerManager::ChangePlayer(PLAYER_TYPE type)
 	currentPlayer = type == PLAYER_TYPE::MELEE
 		? static_cast<Player*>(meleePlayer)
 		: static_cast<Player*>(rangedPlayer);
+	PlayerStats::GetInstance().SetPlayerType(currentPlayerType);
 	canChangePlayer = false;
 }
 

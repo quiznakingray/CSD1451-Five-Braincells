@@ -8,7 +8,7 @@
 class UISlider
 {
 public:
-    float value; // slider value
+    float value{}; // slider value
 
     void Init(float posX, float posY, float w, float h,
         float minVal, float maxVal, float startVal,
@@ -19,11 +19,11 @@ public:
     void Free();
 
 private:
-    s8 font;
+    s8 font{};
     const f32 fontSize = 80.0f;
 
     // Slider value text
-    int prevValue;
+    int prevValue{};
     bool showValue = false; // show slider value
 
     float displayTimer = 0.0f; // how long to show text
@@ -37,21 +37,21 @@ private:
     bool IsMouseOverHandle(); // check if mouse cursor over slider handle
 
     // Slider bar
-    float barX, barY;
-    float barWidth, barHeight;
+    float barX{}, barY{};
+    float barWidth{}, barHeight{};
 
     // Slider handle
-    float handleX, handleY;
-    float handleWidth, handleHeight;
+    float handleX{}, handleY{};
+    float handleWidth{}, handleHeight{};
 
     // Slider value
-    float minValue;
-    float maxValue;
+    float minValue{};
+    float maxValue{};
     bool isDragging = false; // check if slider handle is being dragged
 
-    AEGfxTexture* barTex;
-    AEGfxTexture* handleTex;
-    AEGfxVertexList* mesh;
+    AEGfxTexture* barTex = nullptr;
+    AEGfxTexture* handleTex = nullptr;
+    AEGfxVertexList* mesh = nullptr;
 };
 
 #endif

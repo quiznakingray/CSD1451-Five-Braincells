@@ -35,11 +35,11 @@ void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float
     bool isRangedType = (enemy.type == EnemyType::BASIC_RANGED ||
         enemy.type == EnemyType::MINI_BOSS_RANGED);
 
-    enemy.currentState = EnemyState::ATTACK;
+    enemy.currentState = EnemyState::ATTACKING;
 
     if (isRangedType)
     {
-        if (enemy.projectile && distanceSq > 0.0001f)
+        if (enemy.projectile && distanceSq > 0.0001f && !enemy.projectile->isActive)
         {
             float distance = sqrtf(distanceSq);
             AEVec2 dir = { dx / distance, dy / distance };
@@ -47,7 +47,7 @@ void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float
 
             enemy.projectile->damage = enemy.stats.damage;
             enemy.projectile->isEnemyProjectile = true;
-            enemy.projectile->isActive = true;
+            //enemy.projectile->isActive = true;
             enemy.projectile->ShootArrow(enemyPos, dir);
 
             std::cout << "[EnemyCombat]["
@@ -87,13 +87,22 @@ void EnemyTakeDamage(EnemyGameObject& enemy, int damage)
     // show damage number
     Text* t = enemy.AddComponent(new Text());
     t->SetText("-" + std::to_string(damage));
+    t->SetColor(Color{1.f, 0.f, 0.f, 1.f}); // red color
     t->center = { (-0.5f + AERandFloat() ) * enemy.scale.x  , 0};
     enemy.hurtTexts.push_back({ t, 0.f });
 
     std::cout << "[EnemyCombat] Enemy took " << damage << " dmg, health now " << enemy.base.stats.health << "\n";
     if (IsEnemyDead(enemy.base))
     {
+        if (enemy.base.type == EnemyType::BASIC_MELEE ||
+            enemy.base.type == EnemyType::BASIC_RANGED)
+        {
+            AudioManager::GetInstance().PlaySFX("enemyDie");
+        }
+        else {
+            AudioManager::GetInstance().PlaySFX("minibossDie");
+        }
         std::cout << "[EnemyCombat] Enemy died!\n";
-        PlayerStats::Get().killCount++;
+        PlayerStats::GetInstance().killCount++;
     }
 }

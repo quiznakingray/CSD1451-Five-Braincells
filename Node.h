@@ -5,7 +5,7 @@
 #include <vector>
 
 struct Node {
-    AEVec2 position;
+    AEVec2 position{};
     std::vector<Node*> neighbors;
 
     // A* costs
@@ -31,8 +31,8 @@ struct Node {
         return totalCost;
     }
 
-    // Reset node before a new A* run
-    void Reset() {
+    // ResetAll node before a new A* run
+    void ResetAll() {
         actualCost = 0.0f;
         estimatedCost = 0.0f;
         totalCost = 0.0f;

@@ -28,7 +28,7 @@ public:
 
     void RenderEnemies();
 
-    AEVec2 GetClosestPlayerPos(const AEVec2& enemyPos);
+    AEVec3 GetClosestPlayerPos(const AEVec2& enemyPos);
     void SaveEnemyStates();
     void LoadEnemyStates();
 

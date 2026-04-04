@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "AEEngine.h"
-#include "Utils.h"
+#include "AEVec3.h"
 #include "CollisionManager.h"
 #include "GameObjectManager.h"
 #include "ComponentBase.h"
@@ -96,11 +96,6 @@ struct Sprite : ComponentBase{
 
 };
 
-//void RenderSprite(Sprite sprite, AEGfxVertexList* mesh);
-
-void HandleSpriteInteraction(std::vector<Sprite*>& spriteArr);
-
-void UpdateSpriteArray(std::vector<Sprite*>& spriteArr);
 
 void AddSpriteToArray(std::vector<Sprite*>& spriteArr, Sprite*& s);
 

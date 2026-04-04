@@ -15,9 +15,10 @@ void EnemyManager::Init(MeleePlayer* p1, RangePlayer* p2) {
 }
 
 void EnemyManager::FreeEnemies() {
-    //for (EnemyGameObject* enemy : enemies) {
-    //    delete enemy;
-    //}
+    for (EnemyGameObject* enemy : enemies) {
+        enemy->Free();
+        delete enemy;
+    }
     enemies.clear();
     registeredEnemies.clear();
 }
@@ -28,8 +29,8 @@ void EnemyManager::RegisterEnemy(EnemyGameObject* enemy) {
     registeredEnemies.insert(enemy);
 }
 
-AEVec2 EnemyManager::GetClosestPlayerPos(const AEVec2& enemyPos) {
-    if (!player1 && !player2) return { 0,0 };
+AEVec3 EnemyManager::GetClosestPlayerPos(const AEVec2& enemyPos) {
+    if (!player1 && !player2) return AEVec3{ 0.f, 0.f, 0.f };
     if (!player1) return player2->pos;
     if (!player2) return player1->pos;
 
@@ -105,6 +106,8 @@ void EnemyManager::SpawnEnemy(EnemyType type, Tile* tile, std::vector<GameObject
     EnemyGameObject* enemy = new EnemyGameObject();
     enemy->Init(type, tile);
     gameObjects.push_back(enemy);
+    if (enemy->base.projectile)
+		gameObjects.push_back(enemy->base.projectile);
     RegisterEnemy(enemy);
 }
 
@@ -112,10 +115,10 @@ void EnemyManager::SpawnEnemies(std::vector<GameObject*>& goVec) {
     std::unordered_set<Tile*> occupied;
 
     // Get tiles for each enemy type
-    auto basicMeleeTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMY);
-    auto basicRangedTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMY);
-    auto miniBossMeleeTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMY);
-    auto miniBossRangedTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMY);
+    auto basicMeleeTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMYMELEE);
+    auto basicRangedTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::ENEMYRANGE);
+    auto miniBossMeleeTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::MINIBOSSMELEE);
+    auto miniBossRangedTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::MINIBOSSRANGE);
 
     //// Spawn BASIC MELEE
     //for (Tile* tile : basicMeleeTiles)

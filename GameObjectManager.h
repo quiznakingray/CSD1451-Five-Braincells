@@ -5,7 +5,7 @@
 
 #include <vector>
 #include "ComponentBase.h"
-#include "Utils.h"
+#include "AeVec3.h"
 #include "SpriteManager.h"
 
 enum class STATE

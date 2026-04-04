@@ -5,7 +5,8 @@
 #include "PhysicsManager.h"
 #include "AnimatorComponent.h"
 #include "ParticleEffects.h"
-
+#include "TextComponent.h"
+#include "PlayerStats.h"
 enum class PLAYER_ACTION {
 	IDLE,
 	RUNNING,
@@ -15,14 +16,13 @@ enum class PLAYER_ACTION {
 	AIMING,
 	SHIELDING,
 };
-
 struct Player : GameObject {
 
 	Player() :GameObject()
 	{
 	}
 
-
+	
 	//STATE playerState = STATE::IDLE;
 	f32 speed{};
 	RigidBody* rb = nullptr;
@@ -36,13 +36,27 @@ struct Player : GameObject {
 	Animation* runningAnim = nullptr;
 	Animation* jumpAnim = nullptr;
 
+	// action
 	PLAYER_ACTION currentAction = PLAYER_ACTION::IDLE;
 	PLAYER_ACTION prevAction = PLAYER_ACTION::IDLE;
 
+	bool canJump = true;
+
+	// take damage
 	ParticleSystem hurtParticles;
 	bool gotHurt = false;
 	float hurtTimer = 0.0f;
 	float hurtDuration = 2.0f;
+	virtual void TakeDamage(int amount);
+
+	// ability timer & indicator
+	GameObject* abilityBarBG = nullptr;
+	GameObject* abilityBarFG = nullptr;
+	std::vector<GameObject*> abilityBarObjects;
+	Text* abilityText = nullptr;
+	void InitAbilityBar();
+	virtual void UpdateAbilityBar(float currentValue, float max);
+
 	~Player();
 	void Init() override;
 	void Update() override;
@@ -50,12 +64,9 @@ struct Player : GameObject {
 	void Free() override;
 
 	virtual void PlayerInput();
-	void ReducePlayerHealth();
 	virtual void PlayerAction();
 	void ApplyDeceleration();
 
-	virtual void TakeDamage(int amount);
-	static void IncrementKills();
 	virtual Animation* PlayerAnimation();
 private:
 
@@ -82,6 +93,7 @@ struct MeleePlayer : Player {
 	void Init() override;
 	~MeleePlayer();
 	void Update() override;
+	void Render() override;
 	void PlayerInput() override;
 	void PlayerAction() override;
 	Animation* PlayerAnimation() override;
@@ -98,17 +110,19 @@ struct RangePlayer : Player {
 	
 	~RangePlayer();
 
-	float arrowTimer = 0.0f; // no. of seconds since last shot
-	bool aiming = false;
-
+	float arrowTimer = PlayerStats::GetInstance().GetAttackCooldown(); // no. of seconds since last shot
+	bool inAimingAnim = false;
+	bool canShoot = true;
 	std::vector<Particle> particlePool;
 	void Init() override;
 	void Update() override;
 
 	void PlayerInput() override;
-	//void Render() override;
+	void Render() override;
 	void PlayerAction() override;
 	Animation* PlayerAnimation() override;
+
+	void ShootArrow();
 
 };
 
@@ -125,6 +139,7 @@ struct Arrow : GameObject {
 	void Init() override;
 	void Update() override;
 	void Render() override;
+	void Free() override;
 	void ShootArrow(AEVec2 startPos, AEVec2 dir);
 };
 

@@ -6,12 +6,12 @@ typedef void(*FP)(void);
 extern FP fpLoad , fpInitialize , fpUpdate , fpRender , fpFree , fpUnload ;
 
 enum class GAME_STATE_TYPE {
+	SPLASH,
 	MENU,
+	LOADING,
 	INSTRUCTIONS,
 	LEVEL1,
-	LEVEL1BOSS,
 	LEVEL2,
-	LEVEL2BOSS,
 	LEVEL3,
 	SETTING,
 	//PAUSE,
@@ -36,6 +36,7 @@ struct GameState {
 struct GameStateManager :Singleton<GameStateManager>{
 
 	bool showPauseMenu = false;
+	bool gamePaused = false;
 	void Initialize(GAME_STATE_TYPE type);
 
 	GAME_STATE_TYPE GetCurrentState();
