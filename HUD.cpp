@@ -62,7 +62,7 @@ void HUD::Init()
 	AEVec2 playerUIScale;
 	AEVec2Set(&playerUIScale, 200, 200);
 	AEVec2Set(&playerUIStartPos,
-		-AEGfxGetWindowWidth() / 2.0f + playerUIScale.x/ 2.0f + 30,
+		-AEGfxGetWindowWidth() / 2.0f + playerUIScale.x / 2.0f + 30,
 		-AEGfxGetWindowHeight() / 2.0f + playerUIScale.y / 2.0f + 30);
 	playerUIStartPos.z = 0;
 	// shield player UI Border
@@ -80,12 +80,12 @@ void HUD::Init()
 	sCollider->canInteract = true;
 	sCollider->OnClick = [] {
 		PlayerManager::GetInstance().ChangePlayer(PLAYER_TYPE::MELEE);
-		};	
+		};
 
 	Sprite* sButtonSprite = shieldPlayer->AddComponent(new Sprite);
 	sButtonSprite->meshColor = 0xFF000000;
 	sButtonSprite->offset = { 0, playerUIScale.y / 2.f };
-	sButtonSprite->size = { 0.25f, 0.25f};
+	sButtonSprite->size = { 0.25f, 0.25f };
 
 	Text* sText = shieldPlayer->AddComponent(new Text());
 	sText->inWorldSpace = false;
@@ -96,7 +96,7 @@ void HUD::Init()
 	GameObject* shieldPlayerCooldown = new GameObject(playerUIScale.x, playerUIScale.y, playerUIStartPos.x, playerUIStartPos.y, playerUIStartPos.z, 0, true);
 	Sprite* sSpriteCooldown = shieldPlayerCooldown->AddComponent(new Sprite());
 	sSpriteCooldown->meshColor = 0xAA000000;
-	
+
 	shieldPlayerUI = new PlayerUI(shieldPlayerUIBorder, shieldPlayer, shieldPlayerCooldown);
 	Text* shieldCooldown = shieldPlayerCooldown->AddComponent(new Text());
 	shieldCooldown->inWorldSpace = false;
@@ -105,11 +105,11 @@ void HUD::Init()
 
 
 	// range player UI Border
-	GameObject* rangePlayerUIBorder = new GameObject(playerUIScale.x + 20, playerUIScale.y + 20, 
+	GameObject* rangePlayerUIBorder = new GameObject(playerUIScale.x + 20, playerUIScale.y + 20,
 		playerUIStartPos.x + playerUIScale.x + 70, playerUIStartPos.y, playerUIStartPos.z, 0, true);
 	Sprite* rBorderSprite = rangePlayerUIBorder->AddComponent(new Sprite());
 	rBorderSprite->meshColor = 0xFFFF0000;
-	
+
 
 	// range player UI
 	GameObject* rangePlayer = new GameObject(playerUIScale.x, playerUIScale.y,
@@ -121,7 +121,7 @@ void HUD::Init()
 	c->canInteract = true;
 	c->OnClick = [] {
 		PlayerManager::GetInstance().ChangePlayer(PLAYER_TYPE::RANGE);
-		};	
+		};
 	Sprite* rButtonSprite = rangePlayer->AddComponent(new Sprite);
 	rButtonSprite->meshColor = 0xFF000000;
 	rButtonSprite->offset = { 0, playerUIScale.y / 2.f };
@@ -137,7 +137,7 @@ void HUD::Init()
 	rSpriteCooldown->meshColor = 0xAA000000;
 	Text* rangeCooldown = rangePlayerCooldown->AddComponent(new Text());
 	rangeCooldown->inWorldSpace = false;
-	
+
 	rangePlayerUI = new PlayerUI(rangePlayerUIBorder, rangePlayer, rangePlayerCooldown);
 
 	rangePlayerUI->Init(HUDGameObjects);
@@ -160,7 +160,7 @@ void HUD::Init()
 		AddGameObjectToVector(barBG, HUDGameObjects);
 
 		// bar
-		GameObject* bar = new GameObject(staminaBarScale.x, staminaBarScale.y, posX,staminaBarStartPos.y, 1, 0, true);
+		GameObject* bar = new GameObject(staminaBarScale.x, staminaBarScale.y, posX, staminaBarStartPos.y, 1, 0, true);
 		Sprite* sBar = bar->AddComponent(new Sprite());
 		sBar->meshColor = 0xFFFFDD00;
 		staminaBars.push_back(bar);
@@ -182,7 +182,7 @@ void HUD::Init()
 		AddGameObjectToVector(barBG, HUDGameObjects);
 
 		// bar
-		GameObject* bar = new GameObject(healthBarScale.x, healthBarScale.y, posX,healthBarStartPos.y, 1, 0, true);
+		GameObject* bar = new GameObject(healthBarScale.x, healthBarScale.y, posX, healthBarStartPos.y, 1, 0, true);
 		Sprite* sBar = bar->AddComponent(new Sprite());
 		sBar->meshColor = 0xFFdb0b0b;
 		healthBars.push_back(bar);
@@ -191,7 +191,7 @@ void HUD::Init()
 	}
 
 	// --- SHIELD PLAYER ACTION HINTS ---
-	AEVec2 sHintPos = {AEGfxGetWindowWidth() / 2.f - 200, playerUIStartPos.y };
+	AEVec2 sHintPos = { AEGfxGetWindowWidth() / 2.f - 200, playerUIStartPos.y };
 
 	// Q - Hold hint
 	sHintQ = new GameObject(400, 50, sHintPos.x, sHintPos.y, playerUIStartPos.z, 0, true);
@@ -202,7 +202,7 @@ void HUD::Init()
 	AddGameObjectToVector(sHintQ, HUDGameObjects);
 
 	// --- RANGE PLAYER ACTION HINTS ---
-	AEVec2 rHintPos = { sHintPos.x, playerUIStartPos.y};
+	AEVec2 rHintPos = { sHintPos.x, playerUIStartPos.y };
 
 	// Q - Hold hint
 	rHintQ = new GameObject(400, 50, rHintPos.x, rHintPos.y, playerUIStartPos.z, 0, true);
@@ -303,9 +303,12 @@ void HUD::Init()
 
 	Collider* menuCol = deathMainMenuBtn->AddComponent(new Collider());
 	menuCol->canInteract = true;
-	menuCol->OnClick = [] {
-		LoadingScreen::targetState = GAME_STATE_TYPE::MENU;
-		GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+	menuCol->OnMouseUp = [] {
+		HUD::GetInstance().showDeathConfirm = true;
+		HUD::GetInstance().deathConfirmBG->isActive = true;
+		HUD::GetInstance().deathConfirmLabel->isActive = true;
+		HUD::GetInstance().deathConfirmYesBtn->isActive = true;
+		HUD::GetInstance().deathConfirmNoBtn->isActive = true;
 		};
 
 	Text* menuText = deathMainMenuBtn->AddComponent(new Text());
@@ -314,6 +317,53 @@ void HUD::Init()
 
 	deathMainMenuBtn->isActive = false;
 	AddGameObjectToVector(deathMainMenuBtn, HUDGameObjects);
+
+	// confirmation to go to main menu after clicking on main menu option
+	deathConfirmBG = new GameObject(panelW, panelH, panelX, panelY, 3, 0, true);
+	deathConfirmBG->AddComponent(new Sprite())->meshColor = 0xEE111111;
+	deathConfirmBG->isActive = false;
+	AddGameObjectToVector(deathConfirmBG, HUDGameObjects);
+
+	deathConfirmLabel = new GameObject(panelW - 20.f, 60.f, panelX, panelY + 90.f, 3, 0, true);
+	deathConfirmLabel->AddComponent(new Sprite())->meshColor = 0x00000000;
+	Text* confirmLabelText = deathConfirmLabel->AddComponent(new Text());
+	confirmLabelText->inWorldSpace = false;
+	confirmLabelText->SetText("GO TO MAIN MENU?");
+	deathConfirmLabel->isActive = false;
+	AddGameObjectToVector(deathConfirmLabel, HUDGameObjects);
+
+	// NO - go back to the death panel
+	deathConfirmNoBtn = new GameObject(200.f, 55.f, panelX - 120.f, panelY - 60.f, 3, 0, true);
+	deathConfirmNoBtn->AddComponent(new Sprite())->meshColor = 0xFF6B6B6B;
+	Collider* confirmNoCol = deathConfirmNoBtn->AddComponent(new Collider());
+	confirmNoCol->canInteract = true;
+	confirmNoCol->OnMouseUp = [] {
+		HUD::GetInstance().showDeathConfirm = false;
+		HUD::GetInstance().deathConfirmBG->isActive = false;
+		HUD::GetInstance().deathConfirmLabel->isActive = false;
+		HUD::GetInstance().deathConfirmYesBtn->isActive = false;
+		HUD::GetInstance().deathConfirmNoBtn->isActive = false;
+		};
+	Text* confirmNoText = deathConfirmNoBtn->AddComponent(new Text());
+	confirmNoText->inWorldSpace = false;
+	confirmNoText->SetText("NO");
+	deathConfirmNoBtn->isActive = false;
+	AddGameObjectToVector(deathConfirmNoBtn, HUDGameObjects);
+
+	// YES - confirmed, go to main menu
+	deathConfirmYesBtn = new GameObject(200.f, 55.f, panelX + 120.f, panelY - 60.f, 3, 0, true);
+	deathConfirmYesBtn->AddComponent(new Sprite())->meshColor = 0xFF6B1A1A;
+	Collider* confirmYesCol = deathConfirmYesBtn->AddComponent(new Collider());
+	confirmYesCol->canInteract = true;
+	confirmYesCol->OnMouseUp = [] {
+		LoadingScreen::targetState = GAME_STATE_TYPE::MENU;
+		GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+		};
+	Text* confirmYesText = deathConfirmYesBtn->AddComponent(new Text());
+	confirmYesText->inWorldSpace = false;
+	confirmYesText->SetText("YES");
+	deathConfirmYesBtn->isActive = false;
+	AddGameObjectToVector(deathConfirmYesBtn, HUDGameObjects);
 
 	InitGameObjects(HUDGameObjects);
 }
@@ -324,6 +374,11 @@ void HUD::Update(f64 dt)
 		{
 			healthBars[i]->isActive = (PlayerStats::GetInstance().health >= i + 1);
 		}
+
+		// hide the death panel buttons so they can't be clicked through the overlay
+		deathReloadBtn->isActive = !showDeathConfirm;
+		deathMainMenuBtn->isActive = !showDeathConfirm;
+
 		UpdateGameObjects(HUDGameObjects);
 		return;
 	}
@@ -336,7 +391,7 @@ void HUD::Update(f64 dt)
 	rangePlayerUI->border->isActive = isRange;
 
 	shieldPlayerUI->cooldown->isActive = rangePlayerUI->cooldown->isActive = !PlayerManager::GetInstance().canChangePlayer;
-	
+
 	shieldPlayerUI->SetCooldownText(PlayerManager::GetInstance().playerSwitchingCooldown);
 	rangePlayerUI->SetCooldownText(PlayerManager::GetInstance().playerSwitchingCooldown);
 	//update stamina
@@ -410,5 +465,10 @@ void HUD::Free() {
 	deathPanelTitle = nullptr;
 	deathReloadBtn = nullptr;
 	deathMainMenuBtn = nullptr;
+	deathConfirmBG = nullptr;
+	deathConfirmLabel = nullptr;
+	deathConfirmYesBtn = nullptr;
+	deathConfirmNoBtn = nullptr;
 	showDeathPanel = false;
+	showDeathConfirm = false;
 }

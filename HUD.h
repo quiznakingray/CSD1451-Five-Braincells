@@ -54,6 +54,11 @@ private:
 	GameObject* deathPanelTitle = nullptr;
 	GameObject* deathReloadBtn = nullptr;
 	GameObject* deathMainMenuBtn = nullptr;
+	bool showDeathConfirm = false;
+	GameObject* deathConfirmBG = nullptr;
+	GameObject* deathConfirmLabel = nullptr;
+	GameObject* deathConfirmYesBtn = nullptr;
+	GameObject* deathConfirmNoBtn = nullptr;
 
 	GameObject* sHintQ = nullptr;
 	GameObject* rHintQ = nullptr;
