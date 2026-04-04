@@ -429,8 +429,8 @@ void MeleePlayer::Init()
 		);
 	shieldCollider->isTrigger = true;
 
-	shieldCollider->OnTriggerEnter = [this](Collider* other, int)
-		{
+	//shieldCollider->OnTriggerEnter = [this](Collider* other, int)
+	//	{
 			//if (!shieldActive) return;   // shield is down = do nothing
 
 			//if (Arrow* arrow = dynamic_cast<Arrow*>(other->owner))
@@ -443,7 +443,7 @@ void MeleePlayer::Init()
 			//	}
 			//}
 			// add enemy projectile types!!
-	};
+	//};
 	
 
 	 //shielding

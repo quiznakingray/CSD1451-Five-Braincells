@@ -416,7 +416,7 @@ void HUD::Update(f64 dt)
 		UpdateGameObjects(deathHUDGameObject);
 		return;
 	}
-
+	if (GameStateManager::GetInstance().gamePaused) return;
 	// update players
 	bool isMelee = PlayerManager::GetInstance().currentPlayerType == PLAYER_TYPE::MELEE;
 	bool isRange = PlayerManager::GetInstance().currentPlayerType == PLAYER_TYPE::RANGE;

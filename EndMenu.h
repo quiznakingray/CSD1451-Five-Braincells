@@ -3,20 +3,29 @@
 
 #include "SingletonTemplate.h"
 
-struct EndMenu  {
-    bool isActive = true;    // Is the pop-up currently showing?
-    bool isWin = false;       // True for "Congrats", False for "You Are Dead"
+struct EndMenu
+{
+    static EndMenu& GetInstance()
+    {
+        static EndMenu instance;
+        return instance;
+    }
+    EndMenu(const EndMenu&) = delete;
+    EndMenu& operator=(const EndMenu&) = delete;
 
-    // Stats Placeholders
-    int score = 0;
+    bool  isActive = false;
+    int   score = 0;
     float timeTaken = 0.0f;
-    int deathCounter = 0;
+    int   deathCounter = 0;
+
 
     void Init();
     void Update();
     void Render();
     void Free();
 
+private:
+    EndMenu() = default;
 };
 
-#endif
+#endif  

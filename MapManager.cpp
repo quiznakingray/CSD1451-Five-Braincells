@@ -8,6 +8,7 @@
 #include "Node.h"
 #include "EnemyMovement.h"
 #include "LoadingScreen.h"
+#include "EndMenu.h"
 #include <array>
 #include <algorithm>
 #include <iostream>
@@ -1190,6 +1191,8 @@ void GoalTile::Init() {
                     break;
                 case GAME_STATE_TYPE::LEVEL3:
                     // put end menu here
+					EndMenu::GetInstance().isActive = true;
+					GameStateManager::GetInstance().gamePaused = true;
                     break;
                 default:
                     next = GAME_STATE_TYPE::LEVEL1;

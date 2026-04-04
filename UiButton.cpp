@@ -64,10 +64,10 @@ void UIButton::Update()
     }
 }
 
-void UIButton::Update(float x, float y)
+void UIButton::Update(float newX, float newY)
 {
-    this->x = x;
-    this->y = y;
+    x = newX;
+    y = newY;
 	Update(); // check hover and click with new position
 }
 

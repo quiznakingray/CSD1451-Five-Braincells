@@ -2,74 +2,178 @@
 #include "AEEngine.h"
 #include "GameStateManager.h"
 #include "TextManager.h"
-#include <iostream>
-#include <cstdio> // For sprintf_s
+#include "LoadingScreen.h"
+#include "PlayerStats.h"
+#include <cstdio>
 
+static AEGfxVertexList* pMesh;
+static AEGfxTexture* pPanelTex;
+struct EndButton {
+    f32 x, y, w, h;
+    bool isHovered;
+};
+static EndButton tryAgainBtn;
+static EndButton mainMenuBtn;
 
-
-AEGfxVertexList* pMesh;
-
-void EndMenu::Init() {
-    // Create a simple rectangular mesh for buttons
+void EndMenu::Init()
+{
     AEGfxMeshStart();
-    AEGfxTriAdd(-100.0f, -25.0f, 0xFFFFFFFF, 0.0f, 0.0f,
-        100.0f, -25.0f, 0xFFFFFFFF, 0.0f, 0.0f,
-        -100.0f, 25.0f, 0xFFFFFFFF, 0.0f, 0.0f);
-    AEGfxTriAdd(100.0f, -25.0f, 0xFFFFFFFF, 0.0f, 0.0f,
-        100.0f, 25.0f, 0xFFFFFFFF, 0.0f, 0.0f,
-        -100.0f, 25.0f, 0xFFFFFFFF, 0.0f, 0.0f);
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 1,
+        0.5f, -0.5f, 0xFFFFFFFF, 1, 1,
+        0.5f, 0.5f, 0xFFFFFFFF, 1, 0);
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 1,
+        0.5f, 0.5f, 0xFFFFFFFF, 1, 0,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
     pMesh = AEGfxMeshEnd();
+
+    tryAgainBtn = { -150.f, -200.f, 250.f, 55.f, false };
+    mainMenuBtn = { 150.f, -200.f, 250.f, 55.f, false };
+
+    pPanelTex = AEGfxTextureLoad("Assets/TEMP_Sprites/audio_panel.png");
 }
 
-void EndMenu::Update() {
+void EndMenu::Update()
+{
     if (!isActive) return;
 
-    s32 mouseX, mouseY;
-    AEInputGetCursorPosition(&mouseX, &mouseY);
-    // Convert to world coordinates (assuming 1600x900)
-    float worldX = (float)mouseX - 800.0f;
-    float worldY = 450.0f - (float)mouseY;
+    s32 mx, my;
+    AEInputGetCursorPosition(&mx, &my);
+    float halfW = AEGfxGetWindowWidth() * 0.5f;
+    float halfH = AEGfxGetWindowHeight() * 0.5f;
+    float px = mx - halfW;
+    float py = halfH - my;
 
-    // Check for "Play/Try Again" Button (Y offset: -50)
-    if (worldX > -100 && worldX < 100 && worldY > -75 && worldY < -25) {
-        if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-            isActive = false;
-            GameStateManager gsm;
-            gsm.ChangeState(GAME_STATE_TYPE::LEVEL1); // Restart from beginning
-        }
+    auto checkHover = [&](EndButton& btn) {
+        btn.isHovered = (px > btn.x - btn.w * 0.5f && px < btn.x + btn.w * 0.5f &&
+            py > btn.y - btn.h * 0.5f && py < btn.y + btn.h * 0.5f);
+        };
+
+    checkHover(tryAgainBtn);
+    checkHover(mainMenuBtn);
+
+    if (tryAgainBtn.isHovered && AEInputCheckTriggered(AEVK_LBUTTON))
+    {
+        isActive = false;
+        LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
+        GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+        GameStateManager::GetInstance().gamePaused = false;
+
     }
-
-    // Check for "Main Menu" Button (Y offset: -120)
-    if (worldX > -100 && worldX < 100 && worldY > -145 && worldY < -95) {
-        if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-            isActive = false;
-            GameStateManager gsm;
-            gsm.ChangeState(GAME_STATE_TYPE::MENU);
-        }
+    if (mainMenuBtn.isHovered && AEInputCheckTriggered(AEVK_LBUTTON))
+    {
+        isActive = false;
+        GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::MENU);
+        GameStateManager::GetInstance().gamePaused = false;
     }
 }
 
-void EndMenu::Render() {
+void EndMenu::Render()
+{
     if (!isActive) return;
 
-    char scoreText[50], timeText[50], deathText[50];
-    sprintf_s(scoreText, "Your Score: %d", score);
-    sprintf_s(timeText, "Time Taken: %.2f", timeTaken);
-    sprintf_s(deathText, "Death Counter: %d", deathCounter);
+    AEVec2 cam;
+    AEGfxGetCamPosition(&cam.x, &cam.y);
 
-    // Corrected: AEGfxPrint takes 7 arguments, removed the leading '1'
-    if (isWin) {
-        AEGfxPrint(TextManager::pFont, (char*)"Congrats, You Win!", -0.2f, 0.4f, 1.5f, 1.0f, 1.0f, 0.0f, 1.0f);
-        AEGfxPrint(TextManager::pFont,deathText, -0.15f, 0.2f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
-    }
-    else {
-        AEGfxPrint(TextManager::pFont, (char*)"You Are Dead, Yikes!", -0.2f, 0.4f, 1.5f, 1.0f, 0.0f, 0.0f, 1.0f);
-    }
+    AEMtx33 scale, trans, final, identity;
+    AEMtx33Identity(&identity);
 
-    AEGfxPrint(TextManager::pFont, scoreText, -0.15f, 0.1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
-    AEGfxPrint(TextManager::pFont, timeText, -0.15f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    // --- Black translucent background (full screen) ---
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetColorToAdd(0, 0, 0, 0);
+    AEGfxSetColorToMultiply(0.0f, 0.0f, 0.0f, 0.6f); // black, 60% opacity
+
+    AEMtx33Scale(&scale, (f32)AEGfxGetWindowWidth(), (f32)AEGfxGetWindowHeight());
+    AEMtx33Trans(&trans, cam.x, cam.y);
+    AEMtx33Concat(&final, &trans, &scale);
+    AEGfxSetTransform(final.m);
+    AEGfxMeshDraw(pMesh, AE_GFX_MDM_TRIANGLES);
+
+    AEGfxSetTransform(identity.m);
+    AEGfxSetColorToMultiply(1, 1, 1, 1);
+    AEGfxSetColorToAdd(0, 0, 0, 0);
+
+    // --- Panel texture (centered) ---
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
+    AEGfxSetColorToMultiply(1, 1, 1, 1);
+    AEGfxSetColorToAdd(0, 0, 0, 0);
+    AEGfxTextureSet(pPanelTex, 0, 0);
+
+    AEMtx33Scale(&scale, 700.f, 500.f);          // panel size
+    AEMtx33Trans(&trans, cam.x, cam.y);           // screen center
+    AEMtx33Concat(&final, &trans, &scale);
+    AEGfxSetTransform(final.m);
+    AEGfxMeshDraw(pMesh, AE_GFX_MDM_TRIANGLES);
+
+    AEGfxSetTransform(identity.m);
+    AEGfxSetColorToMultiply(1, 1, 1, 1);
+    AEGfxSetColorToAdd(0, 0, 0, 0);
+
+    // --- Title ---
+    AEGfxPrint(TextManager::pFont, "YOU WIN!",
+        -0.15f, 0.45f, 1.4f, 1.0f, 1.f, 1.0f, 1.0f);
+
+    // --- Stats ---
+    char scoreText[50], timeText[50], deathText[50], killCount[50];
+    int totalSeconds = static_cast<int>(PlayerStats::GetInstance().GetTotalSeconds());
+    int minutes = totalSeconds / 60;
+    int seconds = totalSeconds % 60;
+    int timeBonus = max(0, 1000 - totalSeconds);
+
+    score = PlayerStats::GetInstance().killCount * 100
+        - PlayerStats::GetInstance().deathCount * 50
+        + timeBonus;
+
+    sprintf_s(scoreText, "Score: %d", score);
+    sprintf_s(timeText, "Time: %d:%02d", minutes, seconds);
+    sprintf_s(deathText, "Deaths: %d", PlayerStats::GetInstance().deathCount);
+    sprintf_s(killCount, "Kills: %d", PlayerStats::GetInstance().killCount);
+
+    AEGfxPrint(TextManager::pFont, scoreText, -0.15f, 0.30f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxPrint(TextManager::pFont, timeText, -0.15f, 0.18f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxPrint(TextManager::pFont, deathText, -0.15f, 0.06f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxPrint(TextManager::pFont, killCount, -0.15f, -0.06f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+
+    // --- Buttons ---
+    auto drawBtn = [&](EndButton& btn, const char* label) {
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+        AEGfxSetColorToAdd(0, 0, 0, 0);
+        AEGfxSetColorToMultiply(
+            btn.isHovered ? 0.6f : 0.3f,
+            btn.isHovered ? 0.6f : 0.3f,
+            btn.isHovered ? 0.6f : 0.3f, 1.0f);
+
+        AEMtx33Scale(&scale, btn.w, btn.h);
+        AEMtx33Trans(&trans, btn.x + cam.x, btn.y + cam.y);
+        AEMtx33Concat(&final, &trans, &scale);
+        AEGfxSetTransform(final.m);
+        AEGfxMeshDraw(pMesh, AE_GFX_MDM_TRIANGLES);
+
+        AEGfxSetTransform(identity.m);
+        AEGfxSetColorToMultiply(1, 1, 1, 1);
+        AEGfxSetColorToAdd(0, 0, 0, 0);
+
+        float nx = btn.x / (AEGfxGetWindowWidth() * 0.5f);
+        float ny = btn.y / (AEGfxGetWindowHeight() * 0.5f);
+        f32 tw, th;
+        AEGfxGetPrintSize(TextManager::pFont, label, 1.0f, &tw, &th);
+        AEGfxPrint(TextManager::pFont, label,
+            nx - tw * 0.5f, ny - th * 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+        };
+
+    drawBtn(tryAgainBtn, "TRY AGAIN");
+    drawBtn(mainMenuBtn, "MAIN MENU");
 }
 
-void EndMenu::Free() {
-    if (pMesh) AEGfxMeshFree(pMesh);
+void EndMenu::Free()
+{
+    if (pMesh)
+    {
+        AEGfxMeshFree(pMesh);
+        pMesh = nullptr;
+    }
+    if (pPanelTex) { AEGfxTextureUnload(pPanelTex); pPanelTex = nullptr; }
 }
