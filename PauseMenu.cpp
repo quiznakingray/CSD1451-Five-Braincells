@@ -7,6 +7,7 @@
 #include "TextComponent.h"
 #include "CollisionManager.h"
 #include "LoadingScreen.h"
+#include "AudioMenu.h"
 #include <string>
 
 // Logic flags
@@ -49,14 +50,22 @@ bool IsButtonClicked(float btnX, float btnY, float btnWidth, float btnHeight) {
 
 }
 GameObject* PauseButton(float w, float h, float x, float y,
-    const char* label, std::vector<GameObject*>& vec, std::function<void()> onClick)
+    const char* label, std::vector<GameObject*>& vec, std::function<void()> onClick, Color multiply = {1.f, 1.f, 1.f, 1.f})
 {
     GameObject* btn = new GameObject(w, h, x, y, 1, 0, true);
-    btn->AddComponent(new Sprite())->meshColor = 0xFF757575;
 
+	Sprite* sprite = btn->AddComponent(new Sprite());
+	sprite->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
+    sprite->multiplyColor = multiply;
     Collider* col = btn->AddComponent(new Collider());
     col->canInteract = true;
     col->OnMouseUp = onClick;
+	col->OnMouseEnter = [btn]() { 
+		btn->GetComponent<Sprite>()->textureFileName = "Assets/TEMP_Sprites/button_hover.png";
+    };
+	col->OnMouseExit = [btn]() { 
+		btn->GetComponent<Sprite>()->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
+    };
 
     Text* text = btn->AddComponent(new Text());
     text->inWorldSpace = false;
@@ -72,32 +81,39 @@ void PauseMenu::Init()
     GameObject* bg = new GameObject(static_cast<f32>(AEGfxGetWindowWidth()), static_cast<f32>(AEGfxGetWindowHeight()), 0, 0, 0, 0, true);
     Sprite* bgSprite = bg->AddComponent(new Sprite());
     bgSprite->meshColor = 0x77000000;
-    AddGameObjectToVector(bg, gameObjectVector);
+	
+    AddGameObjectToVector(bg, pauseGameObjectVector);
 
     // Panel
     GameObject* panel = new GameObject(AEGfxGetWindowWidth() / 2.f, AEGfxGetWindowHeight() - 100.f, 0, 0, 0, 0, true);
     Sprite* panelSprite = panel->AddComponent(new Sprite());
-    panelSprite->meshColor = 0xFF000000;
-    AddGameObjectToVector(panel, gameObjectVector);
+    //panelSprite->meshColor = 0xFF000000;
+    panelSprite->textureFileName = "Assets/TEMP_Sprites/audio_panel.png";
+    AddGameObjectToVector(panel, pauseGameObjectVector);
 
-    PauseButton(300, 60, 0, 100, "RESUME", gameObjectVector, [] {
+    PauseButton(300, 60, 0, 100, "RESUME", pauseGameObjectVector, [] {
         GameStateManager::GetInstance().showPauseMenu = false;
+        GameStateManager::GetInstance().gamePaused = false;
         });
-    PauseButton(300, 60, 0, 0, "RESTART", gameObjectVector, [] {
+    PauseButton(300, 60, 0, 0, "RESTART", pauseGameObjectVector, [] {
         isRestartConfirm = true;
         PauseMenu::GetInstance().showConfirmation = true;
         ConfirmationMenu::GetInstance().Init();
         });
-    PauseButton(300, 60, 0, -100, "AUDIO", gameObjectVector, [] {
-        // audio logic
+    PauseButton(300, 60, 0, -100, "AUDIO", pauseGameObjectVector, [] {
+            if (!AudioMenu::GetInstance().IsOpen())
+            {
+				AudioMenu::GetInstance().Toggle();
+
+            }
         });
-    PauseButton(300, 60, 0, -200, "MAIN MENU", gameObjectVector, [] {
+    PauseButton(300, 60, 0, -200, "MAIN MENU", pauseGameObjectVector, [] {
         isRestartConfirm = false;
         PauseMenu::GetInstance().showConfirmation = true;
         ConfirmationMenu::GetInstance().Init();
         });
 
-    InitGameObjects(gameObjectVector);
+    InitGameObjects(pauseGameObjectVector);
     ConfirmationMenu::GetInstance().Init();
     ConfirmationMenu::GetInstance().Hide();
 }
@@ -122,20 +138,21 @@ void PauseMenu::Update() {
     //    isRestartConfirm = false;
     //    //next = GAME_STATE_TYPE::CONFIRMATION;
     //}
-    if (!showConfirmation)
-        UpdateGameObjects(gameObjectVector);
-    else
+    if (!showConfirmation && !AudioMenu::GetInstance().IsOpen())
+        UpdateGameObjects(pauseGameObjectVector);
+    
+	if (showConfirmation)
         ConfirmationMenu::GetInstance().Update();
 }
 
 void PauseMenu::Render() {
-    RenderGameObjects(gameObjectVector);
+    RenderGameObjects(pauseGameObjectVector);
     //AEGfxPrint(TextManager::pFont, "help", -1, 0, 1, 1, 1, 1, 1);
     //AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     //AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     //AEGfxSetTransparency(1.0f);
     //// 1. Draw Title
-    TextManager::DrawText("GAME PAUSED", -100.0f, 300.0f, 1.5f);
+    TextManager::DrawText("GAME PAUSED", -155.0f, 320.0f, 1.5f);
 
     //// Helper to draw the rectangular button outline
     //auto DrawBtn = [](float x, float y, const char* label) {
@@ -164,11 +181,11 @@ void PauseMenu::Render() {
 
 void PauseMenu::Free() {
     ConfirmationMenu::GetInstance().Free();
-    FreeGameObjects(gameObjectVector);
-    for (GameObject* g : gameObjectVector) {
+    FreeGameObjects(pauseGameObjectVector);
+    for (GameObject* g : pauseGameObjectVector) {
         delete g;
     }
-    gameObjectVector.clear();
+    pauseGameObjectVector.clear();
     if (pButtonMesh) {
         AEGfxMeshFree(pButtonMesh);
         pButtonMesh = nullptr;
@@ -182,24 +199,32 @@ void PauseMenu::Unload() {
 // --- Confirmation Logic ---
 void ConfirmationMenu::Init()
 {
-    if (!gameObjectVector.empty())
+    if (!confirmationGameObjectVector.empty())
     {
-        SetActiveGameObjects(gameObjectVector, true);
+        SetActiveGameObjects(confirmationGameObjectVector, true);
         return;
     }
+    GameObject* bg = new GameObject(static_cast<f32>(AEGfxGetWindowWidth()), static_cast<f32>(AEGfxGetWindowHeight()), 0, 0, 0, 0, true);
+    Sprite* bgSprite = bg->AddComponent(new Sprite());
+    bgSprite->meshColor = 0x77000000;
 
-    GameObject* panel = new GameObject(AEGfxGetWindowWidth() / 2.f, AEGfxGetWindowHeight() - 100.f, 0, 0, 0, 0, true);
-    panel->AddComponent(new Sprite())->meshColor = 0xFF000000;
-    AddGameObjectToVector(panel, gameObjectVector);
+    AddGameObjectToVector(bg, confirmationGameObjectVector);
 
-    PauseButton(200, 60, -150, -100, "NO", gameObjectVector, [] {
+    GameObject* panel = new GameObject(AEGfxGetWindowWidth() / 3.f, AEGfxGetWindowHeight() - 500.f, 0, 0, 0, 0, true);
+    panel->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/audio_panel.png";
+    AddGameObjectToVector(panel, confirmationGameObjectVector);
+
+    PauseButton(200, 60, -150, 0, "NO", confirmationGameObjectVector, [] {
         PauseMenu::GetInstance().showConfirmation = false;
         ConfirmationMenu::GetInstance().Hide();
-        });
+        },
+        { 1.0f, 1.0f, 1.2f, 1.f });
 
-    PauseButton(200, 60, 150, -100, "YES", gameObjectVector, [] {
+    PauseButton(200, 60, 150, 0, "YES", confirmationGameObjectVector, [] {
         PauseMenu::GetInstance().showConfirmation = false;
         GameStateManager::GetInstance().showPauseMenu = false;
+        GameStateManager::GetInstance().gamePaused = false;
+
 
         if (isRestartConfirm)
         {
@@ -213,14 +238,15 @@ void ConfirmationMenu::Init()
             LoadingScreen::targetState = GAME_STATE_TYPE::MENU;
             GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
         }
-        });
+        }
+    );
 
-    InitGameObjects(gameObjectVector);
+    InitGameObjects(confirmationGameObjectVector);
 }
 
 void ConfirmationMenu::Hide()
 {
-    SetActiveGameObjects(gameObjectVector, false);
+    SetActiveGameObjects(confirmationGameObjectVector, false);
     PauseMenu::GetInstance().showConfirmation = false;
 }
 
@@ -229,7 +255,7 @@ void ConfirmationMenu::Update() {
     //if (IsButtonClicked(150, -100, 150, 60)) { // YES option
     //    next = isRestartConfirm ? previous : GAME_STATE_TYPE::MENU;
     //}
-    UpdateGameObjects(gameObjectVector);
+    UpdateGameObjects(confirmationGameObjectVector);
 }
 
 void ConfirmationMenu::Render() {
@@ -247,15 +273,15 @@ void ConfirmationMenu::Render() {
 
     DrawConfirmBtn(-150, -100, "NO");
     DrawConfirmBtn(150, -100, "YES");*/
-    RenderGameObjects(gameObjectVector);
+    RenderGameObjects(confirmationGameObjectVector);
     TextManager::DrawText("ARE YOU SURE?", -150.0f, 150.0f, 1.2f);
 }
 
 void ConfirmationMenu::Free()
 {
-    FreeGameObjects(gameObjectVector);
-    for (GameObject* g : gameObjectVector) {
+    FreeGameObjects(confirmationGameObjectVector);
+    for (GameObject* g : confirmationGameObjectVector) {
         delete g;
     }
-    gameObjectVector.clear();
+    confirmationGameObjectVector.clear();
 }

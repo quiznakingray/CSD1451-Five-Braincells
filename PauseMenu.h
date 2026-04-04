@@ -8,7 +8,7 @@
 struct PauseMenu : Singleton<PauseMenu>{
 	//GameObject* bg = nullptr;
 
-	std::vector<GameObject*> gameObjectVector;
+	std::vector<GameObject*> pauseGameObjectVector;
 	bool showConfirmation = false;
 	void Load();
 	void Init();
@@ -19,7 +19,7 @@ struct PauseMenu : Singleton<PauseMenu>{
 };
 
 struct ConfirmationMenu : Singleton<ConfirmationMenu>{
-	std::vector<GameObject*> gameObjectVector;
+	std::vector<GameObject*> confirmationGameObjectVector;
 	void Init();
 	void Hide();
 	void Update();

@@ -3,8 +3,9 @@
 
 #include "UIButton.h"
 #include "UISlider.h"
+#include "SingletonTemplate.h"
 
-class AudioMenu
+class AudioMenu : public Singleton<AudioMenu>
 {
 public:
     void Init();
@@ -26,7 +27,7 @@ private:
     float NormalizeScreenY(float py) const;
 
     // Audio panel
-    const float panelX = 0.0f, panelY = 0.0f;
+    float panelX = 0.0f, panelY = 0.0f;
     const float panelW = 700.0f, panelH = 700.0f;
 
     AEGfxTexture* panelTex = nullptr;

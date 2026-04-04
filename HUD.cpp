@@ -258,8 +258,13 @@ void HUD::Init()
 	float panelX = 0.f, panelY = 0.f; // screen centre
 
 	// Dark backdrop
+	GameObject* deathBG = new GameObject(AEGfxGetWindowWidth(), AEGfxGetWindowHeight(), panelX, panelY, 2, 0, true);
+	deathBG->AddComponent(new Sprite())->meshColor = 0x77000000;
+	AddGameObjectToVector(deathBG, deathHUDGameObject);
+
+	// Dark panel
 	deathPanelBG = new GameObject(panelW, panelH, panelX, panelY, 2, 0, true);
-	deathPanelBG->AddComponent(new Sprite())->meshColor = 0xEE111111;
+	deathPanelBG->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/audio_panel.png";
 	AddGameObjectToVector(deathPanelBG, deathHUDGameObject);
 
 	// "YOU DIED" title
@@ -272,7 +277,7 @@ void HUD::Init()
 
 	// RELOAD SAVE button
 	deathReloadBtn = new GameObject(200.f, 55.f, panelX - 120.f, panelY - 60.f, 2, 0, true);
-	deathReloadBtn->AddComponent(new Sprite())->meshColor = 0xFF1A6B1A;
+	deathReloadBtn->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
 
 	Collider* reloadCol = deathReloadBtn->AddComponent(new Collider());
 	reloadCol->canInteract = true;
@@ -292,6 +297,12 @@ void HUD::Init()
 			HUD::GetInstance().showDeathPanel = false;
 		}
 		};
+	reloadCol->OnMouseEnter = [this]() {
+		deathReloadBtn->GetComponent<Sprite>()->textureFileName = "Assets/TEMP_Sprites/button_hover.png";
+		};
+	reloadCol->OnMouseExit = [this]() {
+		deathReloadBtn->GetComponent<Sprite>()->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
+		};
 
 	Text* reloadText = deathReloadBtn->AddComponent(new Text());
 	reloadText->inWorldSpace = false;
@@ -300,7 +311,7 @@ void HUD::Init()
 
 	// MAIN MENU button
 	deathMainMenuBtn = new GameObject(200.f, 55.f, panelX + 120.f, panelY - 60.f, 2, 0, true);
-	deathMainMenuBtn->AddComponent(new Sprite())->meshColor = 0xFF6B1A1A;
+	deathMainMenuBtn->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
 
 	Collider* menuCol = deathMainMenuBtn->AddComponent(new Collider());
 	menuCol->canInteract = true;
@@ -311,6 +322,12 @@ void HUD::Init()
 		HUD::GetInstance().deathConfirmYesBtn->isActive = true;
 		HUD::GetInstance().deathConfirmNoBtn->isActive = true;
 		};
+	menuCol->OnMouseEnter = [this]() {
+		deathMainMenuBtn->GetComponent<Sprite>()->textureFileName = "Assets/TEMP_Sprites/button_hover.png";
+		};
+	menuCol->OnMouseExit = [this]() {
+		deathMainMenuBtn->GetComponent<Sprite>()->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
+		};
 
 	Text* menuText = deathMainMenuBtn->AddComponent(new Text());
 	menuText->inWorldSpace = false;
@@ -320,12 +337,12 @@ void HUD::Init()
 
 	// confirmation to go to main menu after clicking on main menu option
 	deathConfirmBG = new GameObject(panelW, panelH, panelX, panelY, 3, 0, true);
-	deathConfirmBG->AddComponent(new Sprite())->meshColor = 0xEE111111;
+	deathConfirmBG->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/audio_panel.png";
 	deathConfirmBG->isActive = false;
 	AddGameObjectToVector(deathConfirmBG, deathHUDGameObject);
 
 	deathConfirmLabel = new GameObject(panelW - 20.f, 60.f, panelX, panelY + 90.f, 3, 0, true);
-	deathConfirmLabel->AddComponent(new Sprite())->meshColor = 0x00000000;
+	//deathConfirmLabel->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
 	Text* confirmLabelText = deathConfirmLabel->AddComponent(new Text());
 	confirmLabelText->inWorldSpace = false;
 	confirmLabelText->SetText("GO TO MAIN MENU?");
@@ -334,7 +351,7 @@ void HUD::Init()
 
 	// NO - go back to the death panel
 	deathConfirmNoBtn = new GameObject(200.f, 55.f, panelX - 120.f, panelY - 60.f, 3, 0, true);
-	deathConfirmNoBtn->AddComponent(new Sprite())->meshColor = 0xFF6B6B6B;
+	deathConfirmNoBtn->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
 	Collider* confirmNoCol = deathConfirmNoBtn->AddComponent(new Collider());
 	confirmNoCol->canInteract = true;
 	confirmNoCol->OnMouseUp = [] {
@@ -344,6 +361,13 @@ void HUD::Init()
 		HUD::GetInstance().deathConfirmYesBtn->isActive = false;
 		HUD::GetInstance().deathConfirmNoBtn->isActive = false;
 		};
+	confirmNoCol->OnMouseEnter = [this]() {
+		deathConfirmNoBtn->GetComponent<Sprite>()->textureFileName = "Assets/TEMP_Sprites/button_hover.png";
+		};
+	confirmNoCol->OnMouseExit = [this]() {
+		deathConfirmNoBtn->GetComponent<Sprite>()->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
+		};
+
 	Text* confirmNoText = deathConfirmNoBtn->AddComponent(new Text());
 	confirmNoText->inWorldSpace = false;
 	confirmNoText->SetText("NO");
@@ -352,7 +376,7 @@ void HUD::Init()
 
 	// YES - confirmed, go to main menu
 	deathConfirmYesBtn = new GameObject(200.f, 55.f, panelX + 120.f, panelY - 60.f, 3, 0, true);
-	deathConfirmYesBtn->AddComponent(new Sprite())->meshColor = 0xFF6B1A1A;
+	deathConfirmYesBtn->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
 	Collider* confirmYesCol = deathConfirmYesBtn->AddComponent(new Collider());
 	confirmYesCol->canInteract = true;
 	confirmYesCol->OnMouseUp = [] {
@@ -360,6 +384,12 @@ void HUD::Init()
 		GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
 		GameStateManager::GetInstance().gamePaused = false;
 		HUD::GetInstance().showDeathPanel = false;
+		};
+	confirmYesCol->OnMouseEnter = [this]() {
+		deathConfirmYesBtn->GetComponent<Sprite>()->textureFileName = "Assets/TEMP_Sprites/button_hover.png";
+		};
+	confirmYesCol->OnMouseExit = [this]() {
+		deathConfirmYesBtn->GetComponent<Sprite>()->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
 		};
 	Text* confirmYesText = deathConfirmYesBtn->AddComponent(new Text());
 	confirmYesText->inWorldSpace = false;

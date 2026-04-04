@@ -1,4 +1,6 @@
 ﻿#include "AudioMenu.h"
+#include "CameraSystem.h"
+#include <iostream>
 
 void AudioMenu::Toggle()
 {
@@ -44,13 +46,13 @@ void AudioMenu::Init()
     // Mesh
     AEGfxMeshStart();
 
-    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 1,
-        0.5f, -0.5f, 0xFFFFFFFF, 1, 1,
-        0.5f, 0.5f, 0xFFFFFFFF, 1, 0);
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFF000000, 0, 1,
+        0.5f, -0.5f, 0xFF000000, 1, 1,
+        0.5f, 0.5f, 0xFF000000, 1, 0);
 
-    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0, 1,
-        0.5f, 0.5f, 0xFFFFFFFF, 1, 0,
-        -0.5f, 0.5f, 0xFFFFFFFF, 0, 0);
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFF000000, 0, 1,
+        0.5f, 0.5f, 0xFF000000, 1, 0,
+        -0.5f, 0.5f, 0xFF000000, 0, 0);
 
     panelMesh = AEGfxMeshEnd();
 
@@ -118,15 +120,19 @@ void AudioMenu::Init()
 
 void AudioMenu::Update()
 {
-    backButton.Update();
+    panelX = CameraSystem::GetCameraPos().x;
+    panelY = CameraSystem::GetCameraPos().y;
+
+    backButton.Update(panelX, panelY + panelH * -0.4f);
+
 
     // Close audio panel if back button clicked
     if (backButton.IsClicked() && IsOpen())
         Toggle();
 
-    masterSlider.Update();
-    musicSlider.Update();
-    sfxSlider.Update();
+    masterSlider.Update(panelX, panelY + masterPos);
+    musicSlider.Update(panelX, panelY + musicPos);
+    sfxSlider.Update(panelX, panelY + sfxPos);
 
     // Only update audio when values change
     static int prevMaster = -1;
@@ -163,12 +169,12 @@ void AudioMenu::Update()
         prevSFX = currSFX;
     }
 
-    masterMinus.Update();
-    masterPlus.Update();
-    musicMinus.Update();
-    musicPlus.Update();
-    sfxMinus.Update();
-    sfxPlus.Update();
+    masterMinus.Update(panelX - panelW * 0.8f * 0.57f, panelY + masterPos);
+    masterPlus.Update(panelX + panelW * 0.8f * 0.57f, panelY + masterPos);
+    musicMinus.Update(panelX - panelW * 0.8f * 0.57f, panelY + musicPos);
+    musicPlus.Update(panelX + panelW * 0.8f * 0.57f, panelY + musicPos);
+    sfxMinus.Update(panelX - panelW * 0.8f * 0.57f, panelY + sfxPos);
+    sfxPlus.Update(panelX + panelW * 0.8f * 0.57f, panelY + sfxPos);
 
     // Update master volume based on master +/- button
     if (masterMinus.IsClicked())
@@ -206,21 +212,33 @@ void AudioMenu::Render()
     if (IsOpen())
     {
         // MUST RESET EVERYTHING FIRST
-        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
         AEGfxSetColorToMultiply(1, 1, 1, 1);
         AEGfxSetColorToAdd(0, 0, 0, 0);
         AEGfxSetTransparency(1.0f);
 
-        // Audio panel
-        AEGfxTextureSet(panelTex, 0, 0);
 
+        AEMtx33 scaleBg, transBg, finalBg;
+        AEMtx33Scale(&scaleBg, AEGfxGetWindowWidth(), AEGfxGetWindowHeight());
+        AEMtx33Trans(&transBg, panelX, panelY);
+        AEMtx33Concat(&finalBg, &transBg, &scaleBg);
+
+        AEGfxSetTransparency(0.5f);
+        AEGfxSetTransform(finalBg.m);
+        AEGfxMeshDraw(panelMesh, AE_GFX_MDM_TRIANGLES);
+
+        // Audio panel
+
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxSetTransparency(1.0f);
         AEMtx33 scale, trans, final;
         AEMtx33Scale(&scale, panelW, panelH);
         AEMtx33Trans(&trans, panelX, panelY);
         AEMtx33Concat(&final, &trans, &scale);
 
         AEGfxSetTransform(final.m);
+        AEGfxTextureSet(panelTex, 0, 0);
         AEGfxMeshDraw(panelMesh, AE_GFX_MDM_TRIANGLES);
 
         // RESET
@@ -260,14 +278,13 @@ void AudioMenu::Render()
         AEGfxPrint(font, "+", NormalizeScreenX(panelW * 0.44f), NormalizeScreenY(sfxPos + -10.7f), fontSize * 0.006f, 1, 1, 1, 1);
 
         // Back button text
-        float backTextX = NormalizeScreenX(panelX - 40.0f); // button center X
+        float backTextX = NormalizeScreenX(-40.0f); // button center X
         float backTextY = NormalizeScreenY(panelH * -0.42f); // button center Y
         AEGfxPrint(font, "Back", backTextX, backTextY, fontSize * 0.006f, 1, 1, 1, 1);
 
         // Top center title
-        float titleX = panelX - 70.0f; // center
         float titleY = panelH * 0.4f; // top of panel
-        float nx = NormalizeScreenX(titleX);
+        float nx = NormalizeScreenX(- 70.0f);
         float ny = NormalizeScreenY(titleY);
         AEGfxPrint(font, "AUDIO", nx, ny, fontSize * 0.007f, 1, 1, 1, 1);
 

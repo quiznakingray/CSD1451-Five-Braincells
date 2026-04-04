@@ -18,8 +18,13 @@ bool UIButton::IsMouseOver() const
     float px = mx - halfW; // convert pixel X to centered X
     float py = halfH - my; // convert pixel Y to centered Y
 
-    return (px > x - width * 0.5f && px < x + width * 0.5f &&
-        py > y - height * 0.5f && py < y + height * 0.5f);
+    AEVec2 camPos;
+    AEGfxGetCamPosition(&camPos.x, &camPos.y);
+    float screenX = x - camPos.x;
+    float screenY = y - camPos.y;
+
+    return (px > screenX - width * 0.5f && px < screenX + width * 0.5f &&
+        py > screenY - height * 0.5f && py < screenY + height * 0.5f);
 }
 
 void UIButton::Init(float posX, float posY, float w, float h,
@@ -57,6 +62,13 @@ void UIButton::Update()
         isClicked = true;
         AudioManager::GetInstance().PlaySFX("uiButtonClick"); // play button click sfx
     }
+}
+
+void UIButton::Update(float x, float y)
+{
+    this->x = x;
+    this->y = y;
+	Update(); // check hover and click with new position
 }
 
 void UIButton::Render()

@@ -56,10 +56,10 @@ void PlayerStats::ReducePlayerHealth(int amount)
         IncreaseDeathCounter();
         SaveManager::GetInstance().SavePlayerTime(totalSeconds);
         
-        if (deathCount >= 10)
-        {
+        //if (deathCount >= 10)
+        //{
             HUD::GetInstance().ShowDeathPanel();
-        }
+        //}
     }
 }
 

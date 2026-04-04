@@ -814,16 +814,18 @@ void Arrow::Init()
 					isActive = false;
 					timer = 0.0f;
 					AudioManager::GetInstance().PlaySFX("arrowHit");
+					return;
 				}
 
 				if (isEnemyProjectile)
 				{
 					if (Player* player = dynamic_cast<Player*>(other->owner))
 					{
+						if (other->isTrigger) return; // ignore if it's the player's shield collider
 						player->TakeDamage(damage);
 						isActive = false;
 						AudioManager::GetInstance().PlaySFX("arrowHit");
-
+						return;
 					}
 				}
 				else {
@@ -835,6 +837,7 @@ void Arrow::Init()
 						isActive = false;
 						EnemyTakeDamage(*enemy, damage);
 						AudioManager::GetInstance().PlaySFX("arrowHit");
+						return;
 					}
 				}
 

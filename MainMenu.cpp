@@ -15,7 +15,7 @@ extern int gGameRunning;
 static s8 menuFont;
 static AEGfxVertexList* pRectMesh;
 
-static AudioMenu audioMenu;
+//static AudioMenu audioMenu;
 static AEGfxTexture* pBackgroundTex; // Background variable
 static int highScore = 1500;         // Example high score
 
@@ -96,7 +96,7 @@ void MainMenu_Init() {
         if (strcmp(btn.text, "LOAD GAME") == 0)
             btn.disabled = !SaveManager::GetInstance().HasSaveData();
     }
-    audioMenu.Init(); // initialize audio panel
+    //audioMenu.Init(); // initialize audio panel
 
     // Play main menu bgm
     AudioManager::GetInstance().PlayMusic("mainMenu");
@@ -107,17 +107,17 @@ void MainMenu_Update() {
     AEInputGetCursorPosition(&mX, &mY);
 
     // Checks if audio panel is open
-    if (audioMenu.IsOpen())
-    {
-        audioMenu.Update();
+    //if (audioMenu.IsOpen())
+    //{
+    //    audioMenu.Update();
 
-        // Escape button closes audio panel
-        if (AEInputCheckTriggered(AEVK_ESCAPE) && audioMenu.IsOpen())
-        {
-            audioMenu.Toggle();
-        }
-        return; // stop main menu interaction when audio panel is open
-    }
+    //    // Escape button closes audio panel
+    //    if (AEInputCheckTriggered(AEVK_ESCAPE) && audioMenu.IsOpen())
+    //    {
+    //        audioMenu.Toggle();
+    //    }
+    //    return; // stop main menu interaction when audio panel is open
+    //}
 
     // Get current dimensions dynamically
     f32 halfWidth = AEGfxGetWindowWidth() / 2.0f;
@@ -186,9 +186,9 @@ void MainMenu_Update() {
             if (strcmp(btn.text, "CREDITS") == 0) next = GAME_STATE_TYPE::CREDITS;
             if (strcmp(btn.text, "EXIT") == 0) gGameRunning = 0;
             // Checks if settings button is clicked
-            if (strcmp(btn.text, "SETTING") == 0 && !audioMenu.IsOpen())
+            if (strcmp(btn.text, "SETTING") == 0 && !AudioMenu::GetInstance().IsOpen())
             {
-                audioMenu.Toggle(); // open audio panel
+                AudioMenu::GetInstance().Toggle(); // open audio panel
             }
         }
     }
@@ -203,11 +203,11 @@ void MainMenu_Draw() {
     AEGfxPrint(menuFont, "DUNGEON & PUZZLE", -0.4f, 0.6f, 1.1f, 1.0f * titleA, 0.8f * titleA, 0.0f, titleA);
 
     // Checks if audio panel is open
-    if (audioMenu.IsOpen())
-    {
-        audioMenu.Render(); // renders audio panel
-        return;
-    }
+    //if (audioMenu.IsOpen())
+    //{
+    //    audioMenu.Render(); // renders audio panel
+    //    return;
+    //}
 
     // Draw Buttons: Centralized and equally separated
     // 2. Draw Highest Score (Added this part)
@@ -254,7 +254,7 @@ void MainMenu_Free() {
     AEGfxDestroyFont(menuFont);
     AEGfxMeshFree(pRectMesh);
 
-    audioMenu.Free(); // free audio panel
+    //audioMenu.Free(); // free audio panel
     buttons.clear();
 	warnButtons.clear();
 }

@@ -15,6 +15,7 @@ public:
         const char* barPath, const char* handlePath);
 
     void Update();
+    void Update(float newX, float newY);
     void Render();
     void Free();
 
