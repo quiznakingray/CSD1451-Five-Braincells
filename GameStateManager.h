@@ -36,6 +36,7 @@ struct GameState {
 struct GameStateManager :Singleton<GameStateManager>{
 
 	bool showPauseMenu = false;
+	bool gamePaused = false;
 	void Initialize(GAME_STATE_TYPE type);
 
 	GAME_STATE_TYPE GetCurrentState();

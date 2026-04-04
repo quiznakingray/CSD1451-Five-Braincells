@@ -15,9 +15,10 @@ void EnemyManager::Init(MeleePlayer* p1, RangePlayer* p2) {
 }
 
 void EnemyManager::FreeEnemies() {
-    //for (EnemyGameObject* enemy : enemies) {
-    //    delete enemy;
-    //}
+    for (EnemyGameObject* enemy : enemies) {
+        enemy->Free();
+        delete enemy;
+    }
     enemies.clear();
     registeredEnemies.clear();
 }
@@ -105,6 +106,8 @@ void EnemyManager::SpawnEnemy(EnemyType type, Tile* tile, std::vector<GameObject
     EnemyGameObject* enemy = new EnemyGameObject();
     enemy->Init(type, tile);
     gameObjects.push_back(enemy);
+    if (enemy->base.projectile)
+		gameObjects.push_back(enemy->base.projectile);
     RegisterEnemy(enemy);
 }
 

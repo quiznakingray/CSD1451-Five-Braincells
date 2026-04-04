@@ -16,11 +16,11 @@ void InitEnemyBase(EnemyBase& enemy, EnemyType type)
         break;
 
     case EnemyType::BASIC_RANGED:
-        enemy.stats = { 60.f, 3, 3, 1, 600.f, 2.f };
+        enemy.stats = { 60.f, 3, 3, 1, 600.f, 7.f };
         enemy.canMove = true;
         enemy.currentState = EnemyState::PATROL;
         enemy.projectile = new Arrow();
-        enemy.projectile->Init();
+
         break;
 
     case EnemyType::MINI_BOSS_MELEE:
@@ -34,7 +34,6 @@ void InitEnemyBase(EnemyBase& enemy, EnemyType type)
         enemy.canMove = false;
         enemy.currentState = EnemyState::IDLE;
         enemy.projectile = new Arrow();
-        enemy.projectile->Init();
         break;
     }
 

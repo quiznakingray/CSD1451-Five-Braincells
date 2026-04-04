@@ -49,7 +49,7 @@ void PlayerManager::Update(){
 	}
 	if (currentPlayer != rangedPlayer) {
 		rangedPlayer->ApplyDeceleration();
-		rangedPlayer->aiming = false;
+		rangedPlayer->inAimingAnim = false;
 	}
 	if (PlayerStats::GetInstance().GetPlayerHealth() > 0) {
 		if (AEInputCheckCurr(AEVK_E) && currentPlayer != meleePlayer)

@@ -55,7 +55,11 @@ void PlayerStats::ReducePlayerHealth(int amount)
         AudioManager::GetInstance().PlaySFX("playerDie");
         IncreaseDeathCounter();
         SaveManager::GetInstance().SavePlayerTime(totalSeconds);
-        HUD::GetInstance().ShowDeathPanel();
+        
+        if (deathCount >= 10)
+        {
+            HUD::GetInstance().ShowDeathPanel();
+        }
     }
 }
 
@@ -91,7 +95,7 @@ void PlayerStats::SetPlayerHealth(int h)
             if (deathCount < 10) {
                 SaveManager::GetInstance().SaveHighScore(highScore);
             }
-            HUD::GetInstance().ShowDeathPanel();
+            //HUD::GetInstance().ShowDeathPanel();
             SaveManager::GetInstance().toContinue = true;
             //GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
             //current = GAME_STATE_TYPE::MENU;

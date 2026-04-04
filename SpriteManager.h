@@ -96,11 +96,6 @@ struct Sprite : ComponentBase{
 
 };
 
-//void RenderSprite(Sprite sprite, AEGfxVertexList* mesh);
-
-void HandleSpriteInteraction(std::vector<Sprite*>& spriteArr);
-
-void UpdateSpriteArray(std::vector<Sprite*>& spriteArr);
 
 void AddSpriteToArray(std::vector<Sprite*>& spriteArr, Sprite*& s);
 

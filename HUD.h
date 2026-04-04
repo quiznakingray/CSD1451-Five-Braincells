@@ -33,6 +33,7 @@ struct HUD : Singleton<HUD>{
 private:
 	bool showHUD = true;
 	std::vector<GameObject* > HUDGameObjects;
+	std::vector<GameObject* > deathHUDGameObject;
 
 	PlayerUI* shieldPlayerUI = nullptr;
 
