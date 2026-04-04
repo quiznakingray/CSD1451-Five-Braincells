@@ -289,7 +289,7 @@ void HUD::Init()
 			LoadingScreen::targetState = respawnLevel;
 			GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
 			GameStateManager::GetInstance().gamePaused = false;
-
+			HUD::GetInstance().showDeathPanel = false;
 		}
 		};
 
@@ -322,7 +322,7 @@ void HUD::Init()
 	deathConfirmBG = new GameObject(panelW, panelH, panelX, panelY, 3, 0, true);
 	deathConfirmBG->AddComponent(new Sprite())->meshColor = 0xEE111111;
 	deathConfirmBG->isActive = false;
-	AddGameObjectToVector(deathConfirmBG, HUDGameObjects);
+	AddGameObjectToVector(deathConfirmBG, deathHUDGameObject);
 
 	deathConfirmLabel = new GameObject(panelW - 20.f, 60.f, panelX, panelY + 90.f, 3, 0, true);
 	deathConfirmLabel->AddComponent(new Sprite())->meshColor = 0x00000000;
@@ -330,7 +330,7 @@ void HUD::Init()
 	confirmLabelText->inWorldSpace = false;
 	confirmLabelText->SetText("GO TO MAIN MENU?");
 	deathConfirmLabel->isActive = false;
-	AddGameObjectToVector(deathConfirmLabel, HUDGameObjects);
+	AddGameObjectToVector(deathConfirmLabel, deathHUDGameObject);
 
 	// NO - go back to the death panel
 	deathConfirmNoBtn = new GameObject(200.f, 55.f, panelX - 120.f, panelY - 60.f, 3, 0, true);
@@ -348,7 +348,7 @@ void HUD::Init()
 	confirmNoText->inWorldSpace = false;
 	confirmNoText->SetText("NO");
 	deathConfirmNoBtn->isActive = false;
-	AddGameObjectToVector(deathConfirmNoBtn, HUDGameObjects);
+	AddGameObjectToVector(deathConfirmNoBtn, deathHUDGameObject);
 
 	// YES - confirmed, go to main menu
 	deathConfirmYesBtn = new GameObject(200.f, 55.f, panelX + 120.f, panelY - 60.f, 3, 0, true);
@@ -358,12 +358,14 @@ void HUD::Init()
 	confirmYesCol->OnMouseUp = [] {
 		LoadingScreen::targetState = GAME_STATE_TYPE::MENU;
 		GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+		GameStateManager::GetInstance().gamePaused = false;
+		HUD::GetInstance().showDeathPanel = false;
 		};
 	Text* confirmYesText = deathConfirmYesBtn->AddComponent(new Text());
 	confirmYesText->inWorldSpace = false;
 	confirmYesText->SetText("YES");
 	deathConfirmYesBtn->isActive = false;
-	AddGameObjectToVector(deathConfirmYesBtn, HUDGameObjects);
+	AddGameObjectToVector(deathConfirmYesBtn, deathHUDGameObject);
 
 	InitGameObjects(HUDGameObjects);
 	InitGameObjects(deathHUDGameObject);
@@ -381,7 +383,7 @@ void HUD::Update(f64 dt)
 		deathReloadBtn->isActive = !showDeathConfirm;
 		deathMainMenuBtn->isActive = !showDeathConfirm;
 
-		UpdateGameObjects(HUDGameObjects);
+		UpdateGameObjects(deathHUDGameObject);
 		return;
 	}
 
@@ -446,7 +448,12 @@ void HUD::Free() {
 	for (GameObject* go : HUDGameObjects) {
 		delete go;
 	}
+	FreeGameObjects(deathHUDGameObject);
+	for (GameObject* go : deathHUDGameObject) {
+		delete go;
+	}
 	HUDGameObjects.clear();
+	deathHUDGameObject.clear();
 	staminaBarsBG.clear();   // non-owning, just clear
 	staminaBars.clear();     // non-owning, just clear
 	healthBarsBG.clear();    // non-owning, just clear
