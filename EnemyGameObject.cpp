@@ -115,7 +115,7 @@ void EnemyGameObject::Update() {
     if (!EnemyManager::GetInstance().player1 && !EnemyManager::GetInstance().player2) {
         UpdateAnimation();
         GameObject::Update();
-        if (base.projectile) base.projectile->Update(); // Update arrow
+        //if (base.projectile) base.projectile->Update(); // Update arrow
         return;
     }
 
@@ -158,7 +158,7 @@ void EnemyGameObject::Update() {
         EnemyAttackPlayer(base, *targetPlayer, pos, dt);
     }
     else if (distSq < detectionRangeSq && base.canMove) {
-        if (isMelee) FollowPlayer(static_cast<AEVec2>(playerPos));
+        if (isMelee) FollowPlayer(playerPos);
         else if (isRanged) {
             const float tooClose = 150.f;
             if (distSq < tooClose * tooClose) rb->velocity.x = (dx > 0 ? -1 : 1) * base.stats.movementSpeed;
@@ -169,7 +169,7 @@ void EnemyGameObject::Update() {
     else {
         if (rb) rb->velocity.x = 0.f;
         base.currentState = EnemyState::PATROL;
-        if (base.canMove) Patrol(dt);
+        if (base.canMove) Patrol();
     }
 
     //damage number 
@@ -200,13 +200,13 @@ void EnemyGameObject::Update() {
     GameObject::Update();
 }
 
-void EnemyGameObject::Patrol(f64 dt) {
+void EnemyGameObject::Patrol() {
     if (!base.canMove) return;
     EnemyMovement::UpdateEnemyPatrol(this);
     base.currentState = EnemyState::PATROL;
 }
 
-void EnemyGameObject::FollowPlayer(AEVec2 playerPos) {
+void EnemyGameObject::FollowPlayer(AEVec3 playerPos) {
     if (!base.canMove) return;
 
     if (!EnemyMovement::allNodes.empty()) {
@@ -326,4 +326,5 @@ void EnemyGameObject::Free()
         delete base.projectile;
 		base.projectile = nullptr;
     }
+	GameObject::Free();
 }

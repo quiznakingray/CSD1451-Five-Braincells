@@ -81,10 +81,16 @@ void ParkourLevel::Init()
 
 void ParkourLevel::Update()
 {
+	double dt = AEFrameRateControllerGetFrameTime();
 	InputManager::GetInstance().Update();
-	if (GameStateManager::GetInstance().showPauseMenu) {
 
-		PauseMenu::GetInstance().Update();
+	HUD::GetInstance().Update(dt);
+	if (GameStateManager::GetInstance().gamePaused) {
+		if (GameStateManager::GetInstance().showPauseMenu) {
+
+			PauseMenu::GetInstance().Update();
+			
+		}
 		return;
 	}
 	
@@ -102,10 +108,8 @@ void ParkourLevel::Update()
 
 	//CheckPlayerDeath(); // Check if player is dead
 
-	double dt = AEFrameRateControllerGetFrameTime();
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
-	HUD::GetInstance().Update(dt);
 }
 
 void ParkourLevel::Render()
@@ -132,16 +136,20 @@ void ParkourLevel::Free()
 		// skip players PlayerManager owns and deletes them
 		if (obj == PlayerManager::GetInstance().meleePlayer) continue;
 		if (obj == PlayerManager::GetInstance().rangedPlayer) continue;
-		bool isArrow = false;
-		for (int i = 0; i < PlayerManager::GetInstance().arrowGameObjectPool.size(); i++)
-		{
-			if (obj == PlayerManager::GetInstance().arrowGameObjectPool[i])
-			{
-				isArrow = true;
-				break;
-			}
-		}
-		if (isArrow) continue;
+		//bool isArrow = false;
+		if (Arrow* tile = dynamic_cast<Arrow*>(obj)) continue;
+		if (EnemyGameObject* tile = dynamic_cast<EnemyGameObject*>(obj)) continue;
+		//for (int i = 0; i < PlayerManager::GetInstance().arrowGameObjectPool.size(); i++)
+		//{
+		//	if (obj == PlayerManager::GetInstance().arrowGameObjectPool[i])
+		//	{
+		//		isArrow = true;
+		//		break;
+		//	}
+		//}
+		//if (isArrow) continue;
+
+
 		if (dynamic_cast<Tile*>(obj)) continue;
 		obj->Free();
 		delete obj;

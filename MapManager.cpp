@@ -197,8 +197,8 @@ void MapManager::FreeMap()
 {
     AEGfxMeshFree(mesh);
     size_t cCount = (map.GetRow<std::string>(0)).size();
-    size_t rowCount = (map.GetColumn<std::string>(0)).size();
-    for (size_t uiRow = 0; uiRow < rowCount; uiRow++)
+    size_t rCount = (map.GetColumn<std::string>(0)).size();
+    for (size_t uiRow = 0; uiRow < rCount; uiRow++)
     {
         for (size_t uiCol = 0; uiCol < cCount; uiCol++)
         {

@@ -1,6 +1,7 @@
 #include "HUD.h"
 #include "SpriteManager.h"
 #include "GameObjectManager.h"  
+#include "GameStateManager.h"  
 #include "CollisionManager.h"
 #include "PlayerManager.h"
 #include "PlayerStats.h"
@@ -35,13 +36,15 @@ void PlayerUI::SetCooldownText(f32 value)
 
 void HUD::ShowDeathPanel()
 {
+
 	showDeathPanel = true;
+	GameStateManager::GetInstance().gamePaused = true;
 
-	deathPanelBG->isActive = true;
-	deathPanelTitle->isActive = true;
+	//deathPanelBG->isActive = true;
+	//deathPanelTitle->isActive = true;
 
-	deathReloadBtn->isActive = true;
-	deathMainMenuBtn->isActive = true;
+	//deathReloadBtn->isActive = true;
+	//deathMainMenuBtn->isActive = true;
 }
 
 void PlayerUI::Init(std::vector<GameObject*>& go)
@@ -257,8 +260,7 @@ void HUD::Init()
 	// Dark backdrop
 	deathPanelBG = new GameObject(panelW, panelH, panelX, panelY, 2, 0, true);
 	deathPanelBG->AddComponent(new Sprite())->meshColor = 0xEE111111;
-	deathPanelBG->isActive = false;
-	AddGameObjectToVector(deathPanelBG, HUDGameObjects);
+	AddGameObjectToVector(deathPanelBG, deathHUDGameObject);
 
 	// "YOU DIED" title
 	deathPanelTitle = new GameObject(panelW - 20.f, 60.f, panelX, panelY + 90.f, 2, 0, true);
@@ -266,8 +268,7 @@ void HUD::Init()
 	Text* titleText = deathPanelTitle->AddComponent(new Text());
 	titleText->inWorldSpace = false;
 	titleText->SetText("YOU DIED");
-	deathPanelTitle->isActive = false;
-	AddGameObjectToVector(deathPanelTitle, HUDGameObjects);
+	AddGameObjectToVector(deathPanelTitle, deathHUDGameObject);
 
 	// RELOAD SAVE button
 	deathReloadBtn = new GameObject(200.f, 55.f, panelX - 120.f, panelY - 60.f, 2, 0, true);
@@ -287,15 +288,15 @@ void HUD::Init()
 			current = GAME_STATE_TYPE::MENU;
 			LoadingScreen::targetState = respawnLevel;
 			GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+			GameStateManager::GetInstance().gamePaused = false;
+
 		}
 		};
 
 	Text* reloadText = deathReloadBtn->AddComponent(new Text());
 	reloadText->inWorldSpace = false;
 	reloadText->SetText("RELOAD SAVE");
-
-	deathReloadBtn->isActive = false;
-	AddGameObjectToVector(deathReloadBtn, HUDGameObjects);
+	AddGameObjectToVector(deathReloadBtn, deathHUDGameObject);
 
 	// MAIN MENU button
 	deathMainMenuBtn = new GameObject(200.f, 55.f, panelX + 120.f, panelY - 60.f, 2, 0, true);
@@ -315,8 +316,7 @@ void HUD::Init()
 	menuText->inWorldSpace = false;
 	menuText->SetText("MAIN MENU");
 
-	deathMainMenuBtn->isActive = false;
-	AddGameObjectToVector(deathMainMenuBtn, HUDGameObjects);
+	AddGameObjectToVector(deathMainMenuBtn, deathHUDGameObject);
 
 	// confirmation to go to main menu after clicking on main menu option
 	deathConfirmBG = new GameObject(panelW, panelH, panelX, panelY, 3, 0, true);
@@ -366,9 +366,11 @@ void HUD::Init()
 	AddGameObjectToVector(deathConfirmYesBtn, HUDGameObjects);
 
 	InitGameObjects(HUDGameObjects);
+	InitGameObjects(deathHUDGameObject);
 }
 void HUD::Update(f64 dt)
 {
+
 	if (showDeathPanel) {
 		for (int i = 0; i < healthBars.size(); i++)
 		{
@@ -434,6 +436,7 @@ void HUD::Update(f64 dt)
 void HUD::Render() {
 	if (!showHUD) return;
 	RenderGameObjects(HUDGameObjects);
+	if(showDeathPanel) RenderGameObjects(deathHUDGameObject);
 	//AEGfxPrint(TextManager::pFont, "help", -1, 0, 1, 1, 1, 1, 1);
 }
 

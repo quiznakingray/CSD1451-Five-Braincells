@@ -39,7 +39,7 @@ void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float
 
     if (isRangedType)
     {
-        if (enemy.projectile && distanceSq > 0.0001f)
+        if (enemy.projectile && distanceSq > 0.0001f && !enemy.projectile->isActive)
         {
             float distance = sqrtf(distanceSq);
             AEVec2 dir = { dx / distance, dy / distance };
@@ -47,7 +47,7 @@ void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float
 
             enemy.projectile->damage = enemy.stats.damage;
             enemy.projectile->isEnemyProjectile = true;
-            enemy.projectile->isActive = true;
+            //enemy.projectile->isActive = true;
             enemy.projectile->ShootArrow(enemyPos, dir);
 
             std::cout << "[EnemyCombat]["

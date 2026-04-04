@@ -26,6 +26,7 @@ struct PlayerStats; // forward declaration
 
 enum class TILE_ID {
 	EMPTY = 0,
+	//EMPTYWITHFIRE =1,
 	GRASSCENTER = 100,
 	SPIKEDOWN = 101,
 	SPIKEUP = 102,

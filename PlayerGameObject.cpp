@@ -25,36 +25,36 @@ void Player::PlayerInput()
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	//std::cout << "On GRASSCENTER: " << (onGround ? "--" : "___________________________ ") << std::endl;
 
-		if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing && canJump
-			&& PlayerStats::GetInstance().jumpStamina != 0)
+	if (AEInputCheckTriggered(AEVK_SPACE) && rb->onCollider && !isGrabbing && canJump
+		&& PlayerStats::GetInstance().jumpStamina != 0)
+	{
+		if (PlayerStats::GetInstance().ConsumeJumpStamina())
 		{
-			if (PlayerStats::GetInstance().ConsumeJumpStamina())
-			{
-				float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * jumpHeight);
-				rb->velocity.y = jumpVelocity;
-			}
-			else
-			{
-				std::cout << "[Jump] no stamina!\n";
-			}
-			//std::cout << "onCollider: " << rb->onCollider << std::endl;
-		}
-
-		if (AEInputCheckCurr(AEVK_A))
-		{
-			//moveDir.x -= 1.f;
-			rb->velocity.x -= static_cast<f32>(accel * dt);
-		}
-		else if (AEInputCheckCurr(AEVK_D))
-		{
-			//moveDir.x += 1.f;
-			rb->velocity.x += static_cast<f32>(accel * dt);
+			float jumpVelocity = sqrtf(2.0f * fabs(rb->gravity) * jumpHeight);
+			rb->velocity.y = jumpVelocity;
 		}
 		else
 		{
-			ApplyDeceleration();
-
+			std::cout << "[Jump] no stamina!\n";
 		}
+		//std::cout << "onCollider: " << rb->onCollider << std::endl;
+	}
+
+	if (AEInputCheckCurr(AEVK_A))
+	{
+		//moveDir.x -= 1.f;
+		rb->velocity.x -= static_cast<f32>(accel * dt);
+	}
+	else if (AEInputCheckCurr(AEVK_D))
+	{
+		//moveDir.x += 1.f;
+		rb->velocity.x += static_cast<f32>(accel * dt);
+	}
+	else
+	{
+		ApplyDeceleration();
+
+	}
 
 
 
@@ -105,7 +105,7 @@ void Player::ApplyDeceleration()
 	if (!rb) return;
 	f64 dt = AEFrameRateControllerGetFrameTime();
 	bool isGrabbing = currentAction == PLAYER_ACTION::CRATEINTERACT;
-	float decel = isGrabbing ? 300.0f : 400.0f;
+	float decel = isGrabbing ? 300.0f : 500.0f;
 
 	if (rb->velocity.x > 0)
 	{
@@ -120,6 +120,57 @@ void Player::ApplyDeceleration()
 
 	//if (rb->velocity.x > maxSpeed)  rb->velocity.x = maxSpeed;
 	//if (rb->velocity.x < -maxSpeed) rb->velocity.x = -maxSpeed;
+}
+
+void Player::InitAbilityBar()
+{
+	float barW = 10.f;
+	float barH = scale.y * 0.8f;
+	float offsetX = scale.x / 2.f + 20.f; // float to the left
+
+	// Background (dark red)
+	abilityBarBG = new GameObject(barW, barH, pos.x - offsetX, pos.y, pos.z + 0.1f, 0, false);
+	abilityBarBG->AddComponent(new Sprite())->meshColor = 0xFF440000;
+
+	// Foreground (bright green)
+	abilityBarFG = new GameObject(barW, barH, pos.x - offsetX, pos.y, pos.z + 0.2f, 0, false);
+	abilityBarFG->AddComponent(new Sprite())->meshColor = 0xFF00FF00;
+
+	abilityBarObjects.push_back(abilityBarBG);
+	abilityBarObjects.push_back(abilityBarFG);
+	InitGameObjects(abilityBarObjects);
+
+}
+
+void Player::UpdateAbilityBar(float currentValue, float max)
+{
+	if (!abilityBarBG || !abilityBarFG) return;
+
+	float barH = scale.y * 0.8f;
+	float offsetX = scale.x / 2.f + 20.f;
+
+	float ratio = currentValue / max;
+	ratio = ratio < 0.f ? 0.f : ratio > 1.f ? 1.f : ratio;
+
+	// Follow enemy position
+	abilityBarBG->pos.x = pos.x - offsetX;
+	abilityBarBG->pos.y = pos.y;
+
+	// Shrink 
+	abilityBarFG->pos.x = pos.x - offsetX;
+	abilityBarFG->pos.y = pos.y - (barH * (1.f - ratio)) / 2.f;
+	abilityBarFG->scale.y = barH * ratio;
+
+	
+	abilityBarBG->isActive = (currentValue <= max);
+	abilityBarFG->isActive = (currentValue <= max);
+
+	// Color shifts green -> yellow -> red as health drops
+	if (ratio > 0.5f)       abilityBarFG->GetComponent<Sprite>()->meshColor = 0xFF00FF00;
+	else if (ratio > 0.25f) abilityBarFG->GetComponent<Sprite>()->meshColor = 0xFF00FFFF;
+	else                    abilityBarFG->GetComponent<Sprite>()->meshColor = 0xFF0000FF;
+
+	UpdateGameObjects(abilityBarObjects);
 }
 
 Player::~Player()
@@ -193,26 +244,26 @@ void Player::Init()
 	animator = AddComponent(
 		new Animator(idleAnim)
 	);
-	showColliders = true;
+	//showColliders = true;
 	Collider* c = AddComponent(
 		new Collider(COLLIDER_TYPE::BOX_COLLIDER, 0.f, 0.f, 0.8f, 1.f)
 	);
-	c->OnClick = [] {
-		std::cout << "Clicking" << std::endl;
-		};
-	c->OnMouseDown = [] {
-		std::cout << "Mouse Down" << std::endl;
-		};
-	c->OnMouseUp = [] {
-		std::cout << "Mouse Up" << std::endl;
-		};
+	//c->OnClick = [] {
+	//	std::cout << "Clicking" << std::endl;
+	//	};
+	//c->OnMouseDown = [] {
+	//	std::cout << "Mouse Down" << std::endl;
+	//	};
+	//c->OnMouseUp = [] {
+	//	std::cout << "Mouse Up" << std::endl;
+	//	};
 
 	//c->OnMouseEnter = [] {	
 	//	std::cout << "Mouse Enter" << std::endl;
 	//	};
-	c->OnMouseOver = [] {
-		std::cout << "Mouse Over" << std::endl;
-		};	
+	//c->OnMouseOver = [] {
+	//	std::cout << "Mouse Over" << std::endl;
+	//	};	
 	//c->OnMouseExit = [] {
 	//	std::cout << "Mouse Exit" << std::endl;
 	//	};
@@ -257,7 +308,7 @@ void Player::Init()
 				this->rb->onCollider = false;  
 				if (std::find(noJumpTiles.begin(), noJumpTiles.end(), tile->currID) != noJumpTiles.end()) {
 					canJump = true;
-					std::cout << "can jump\n";
+					//std::cout << "can jump\n";
 				}
 			}
 
@@ -274,7 +325,7 @@ void Player::Init()
 	speed = static_cast<f32>(200.0);
 	//AEVec2Set(&velocity, 0.f, 0.f);
 	hurtParticles.Init(5);
-
+	InitAbilityBar();
 	GameObject::Init();
 }
 
@@ -315,15 +366,20 @@ void Player::Update(){
 
 void Player::Render()
 {
-	GameObject::Render();
 	if (gotHurt)
 		hurtParticles.Draw();
+	GameObject::Render();
 }
 
 void Player::Free()
 {
 	GameObject::Free();
 	hurtParticles.Exit();
+
+	FreeGameObjects(abilityBarObjects);
+	for (GameObject* go : abilityBarObjects)
+		delete go;
+	abilityBarObjects.clear();
 }
 
 void Player::TakeDamage(int amount)
@@ -333,11 +389,6 @@ void Player::TakeDamage(int amount)
 
 }
 
-void Player::IncrementKills()
-{
-	PlayerStats::GetInstance().killCount++;
-	std::cout << "[Player] Total kills: " << PlayerStats::GetInstance().killCount << "\n";
-}
 
 void MeleePlayer::Init()
 {
@@ -380,21 +431,20 @@ void MeleePlayer::Init()
 
 	shieldCollider->OnTriggerEnter = [this](Collider* other, int)
 		{
-			if (!shieldActive) return;   // shield is down = do nothing
+			//if (!shieldActive) return;   // shield is down = do nothing
 
-			if (Arrow* arrow = dynamic_cast<Arrow*>(other->owner))
-			{
-				if (arrow->isEnemyProjectile)
-				{
-					arrow->isActive = false;
-					arrow->timer = 0.f;
-					std::cout << "[Shield] blocked incoming projectile!\n";
-				}
-			}
+			//if (Arrow* arrow = dynamic_cast<Arrow*>(other->owner))
+			//{
+			//	if (arrow->isEnemyProjectile)
+			//	{
+			//		arrow->isActive = false;
+			//		arrow->timer = 0.f;
+			//		std::cout << "[Shield] blocked incoming projectile!\n";
+			//	}
+			//}
 			// add enemy projectile types!!
 	};
 	
-	Player::Init();
 
 	 //shielding
 	Sprite* shielding = new Sprite();
@@ -420,6 +470,8 @@ void MeleePlayer::Init()
 	 //shield animation 
 	shieldBubbleAnimation = AddComponent(new Animator(shieldAmin));
 	shieldBubbleAnimation->Init();
+	
+	Player::Init();
 }
 MeleePlayer::~MeleePlayer()
 {
@@ -441,8 +493,17 @@ void MeleePlayer::Update()
 	
 	shieldCollider->isActive = shieldActive;
 	shieldBubbleAnimation->isActive = shieldActive;
-	std::cout << "Shield Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x << "  " << rb->velocity.y << std::endl;
+	//std::cout << "Shield Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x << "  " << rb->velocity.y << std::endl;
 	Player::Update();
+}
+
+void MeleePlayer::Render()
+{
+	GameObject::Render();
+	if (inShieldAction)
+	{
+		RenderGameObjects(abilityBarObjects);
+	}
 }
 
 void MeleePlayer::PlayerInput()
@@ -452,6 +513,7 @@ void MeleePlayer::PlayerInput()
 	bool qHeld = AEInputCheckCurr(AEVK_Q);
 	if (qHeld)
 	{
+		ApplyDeceleration();
 		inShieldAction = true;
 		if (!shieldDepleted)
 		{
@@ -470,21 +532,21 @@ void MeleePlayer::PlayerInput()
 			{
 				shieldActive = true;
 			}
-			return;
 		}
-
+		UpdateAbilityBar(PlayerStats::GetInstance().GetMaxShieldDuration() - shieldTimer, PlayerStats::GetInstance().GetMaxShieldDuration());
+		return;
 	}
 	else {
 
 	
 		shieldActive = false;
 
-		// reset stamina when Q released
-		if (!qHeld)
-		{
+		//// reset stamina when Q released
+		//if (!qHeld)
+		//{
 			shieldTimer = 0.0f;
 			shieldDepleted = false;
-		}
+		//}
 		
 		inShieldAction = false;
 	}
@@ -607,7 +669,7 @@ void RangePlayer::Update()
 	// cooldown timer
 	double dt = AEFrameRateControllerGetFrameTime();
 	arrowTimer += static_cast<float>(dt);
-
+	canShoot = arrowTimer >= PlayerStats::GetInstance().GetAttackCooldown();
 	s32 screenX, screenY;
 	//f32 camPosX, camPosY;
 	f32 worldPosX, worldPosY;
@@ -625,6 +687,8 @@ void RangePlayer::Update()
 
 	//ParticleSystem::CreateBloodEffect(pos.x, pos.y + 100, particlePool);
 	//ParticleSystem::Update(dt, particlePool);
+	if (!canShoot)
+		UpdateAbilityBar(arrowTimer, PlayerStats::GetInstance().GetAttackCooldown());
 	Player::Update();
 }
 
@@ -639,13 +703,13 @@ void RangePlayer::PlayerInput()
 
 	if (AEInputCheckCurr(AEVK_Q))
 	{
-		aiming = true;
+		inAimingAnim = true;
 		if (AEInputCheckTriggered(AEVK_LBUTTON))
 		{
 			// shoot if cooldown has passed
-			float cooldown = PlayerStats::GetInstance().GetAttackCooldown();
+			//float cooldown = PlayerStats::GetInstance().GetAttackCooldown();
 
-			if (arrowTimer >= cooldown)
+			if (canShoot)
 			{
 				// fire arrow
 				AEVec2 dir;
@@ -662,15 +726,22 @@ void RangePlayer::PlayerInput()
 			}
 			else
 			{
-				std::cout << "[Bow] still on cooldown!" << (cooldown - arrowTimer) << "s remaining\n";
+				//std::cout << "[Bow] still on cooldown!" << (cooldown - arrowTimer) << "s remaining\n";
 			}
 		}
 		return;
 	}
 	else {
-		aiming = false;
+		inAimingAnim = false;
 	}
 	Player::PlayerInput();
+}
+
+void RangePlayer::Render()
+{
+	if (!canShoot)
+		RenderGameObjects(abilityBarObjects);
+	Player::Render();
 }
 
 void RangePlayer::PlayerAction()
@@ -680,7 +751,7 @@ void RangePlayer::PlayerAction()
 	//	prevAction = currentAction;
 	//	currentAction = rb->velocity.y != 0 ? PLAYER_ACTION::JUMPING : PLAYER_ACTION::RUNNING;
 	//}
-	if (aiming)
+	if (inAimingAnim)
 	{
 		currentAction = PLAYER_ACTION::AIMING;
 		return;
@@ -717,7 +788,7 @@ void RangePlayer::ShootArrow()
 	}
 
 	// else if no available arrows in pool
-	std::cout << "[Bow] no arrows available in pool!\n";
+	//std::cout << "[Bow] no arrows available in pool!\n";
 }
 
 void Arrow::Init()
@@ -745,15 +816,28 @@ void Arrow::Init()
 					AudioManager::GetInstance().PlaySFX("arrowHit");
 				}
 
-				if (EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(other->owner))
+				if (isEnemyProjectile)
 				{
-					damage = PlayerStats::GetInstance().GetPlayerDamage();
-					std::cout << "Hit enemy for " << damage << " damage!\n";
+					if (Player* player = dynamic_cast<Player*>(other->owner))
+					{
+						player->TakeDamage(damage);
+						isActive = false;
+						AudioManager::GetInstance().PlaySFX("arrowHit");
 
-					isActive = false;
-					EnemyTakeDamage(*enemy, damage);
-					AudioManager::GetInstance().PlaySFX("arrowHit");
+					}
 				}
+				else {
+					if (EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(other->owner))
+					{
+						damage = PlayerStats::GetInstance().GetPlayerDamage();
+						//std::cout << "Hit enemy for " << damage << " damage!\n";
+
+						isActive = false;
+						EnemyTakeDamage(*enemy, damage);
+						AudioManager::GetInstance().PlaySFX("arrowHit");
+					}
+				}
+
 			//}
 		};
 	c->isTrigger = true;
