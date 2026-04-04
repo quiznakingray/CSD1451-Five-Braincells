@@ -120,7 +120,7 @@ void EnemyManager::SpawnEnemies(std::vector<GameObject*>& goVec) {
     auto miniBossMeleeTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::MINIBOSSMELEE);
     auto miniBossRangedTiles = MapManager::GetInstance().GetTilesWithID(TILE_ID::MINIBOSSRANGE);
 
-    //// Spawn BASIC MELEE
+    // Spawn BASIC MELEE
     for (Tile* tile : basicMeleeTiles)
     {
         if (!tile || occupied.count(tile)) continue;

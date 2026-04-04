@@ -54,6 +54,7 @@ struct TileStateData {
     bool isCurrActive{};
     bool colliderCanCollide{};
     AEVec3 pos{};
+    bool checkpointActivated = false;
 };
 
 struct MapSaveData {

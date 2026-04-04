@@ -59,6 +59,7 @@ void EnemyAttackPlayer(EnemyBase& enemy, Player& player, AEVec2& enemyPos, float
     else
     {
         player.TakeDamage(enemy.stats.damage);
+        AudioManager::GetInstance().PlaySFX("zap");
 
         std::cout << "[EnemyCombat]["
             << (enemy.type == EnemyType::BASIC_MELEE ? "BASIC_MELEE" : "MINI_BOSS_MELEE")

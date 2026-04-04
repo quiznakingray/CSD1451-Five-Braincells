@@ -40,24 +40,36 @@ void Player::PlayerInput()
 		//std::cout << "onCollider: " << rb->onCollider << std::endl;
 	}
 
+	static float walkTimer = 0.0f; // timer for walking sfx
+	bool isWalking = false;
+
 	if (AEInputCheckCurr(AEVK_A))
 	{
 		//moveDir.x -= 1.f;
 		rb->velocity.x -= static_cast<f32>(accel * dt);
+		isWalking = true;
 	}
 	else if (AEInputCheckCurr(AEVK_D))
 	{
 		//moveDir.x += 1.f;
 		rb->velocity.x += static_cast<f32>(accel * dt);
+		isWalking = true;
 	}
 	else
 	{
 		ApplyDeceleration();
-
 	}
 
-
-
+	const float walkInterval = 0.3f; // play every 0.3s while walking
+	if (isWalking && rb->onCollider) // only when colliding with wall, floor, player, etc.
+	{
+		walkTimer -= static_cast<float>(dt);
+		if (walkTimer <= 0.0f)
+		{
+			AudioManager::GetInstance().PlaySFX("walk");
+			walkTimer = walkInterval;
+		}
+	}
 }
 
 void Player::PlayerAction()
@@ -700,6 +712,8 @@ void RangePlayer::Update()
 
 void RangePlayer::PlayerInput()
 {
+	if (AEInputCheckTriggered(AEVK_Q))
+		AudioManager::GetInstance().PlaySFX("aimBow");
 
 	if (AEInputCheckCurr(AEVK_Q))
 	{
@@ -918,4 +932,5 @@ void Arrow::ShootArrow(AEVec2 startPos, AEVec2 dir)
 	// flip sprite if moving left
 	Sprite* s = GetComponent<Sprite>();
 	s->size.x = fabs(s->size.x);
+	AudioManager::GetInstance().PlaySFX("shootArrow");
 }

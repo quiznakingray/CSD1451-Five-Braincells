@@ -21,9 +21,7 @@ void EnemyMovement::UpdateEnemyPatrol(EnemyGameObject* enemy) {
         enemy->movement.movingRight = true;
 }
 
-// ----------------------------
 // Node helpers
-// ----------------------------
 Node* EnemyMovement::GetClosestNode(AEVec2 pos) {
     Node* closest = nullptr;
     float minDist = FLT_MAX;
@@ -51,9 +49,7 @@ Node* EnemyMovement::GetClosestNode(AEVec2 pos) {
     return closest;
 }
 
-// ----------------------------
-// A* Pathfinding
-// ----------------------------
+// Pathfinding
 std::vector<AEVec2> EnemyMovement::FindPath(AEVec2 start, AEVec2 target) {
     std::vector<AEVec2> path;
 
@@ -64,7 +60,7 @@ std::vector<AEVec2> EnemyMovement::FindPath(AEVec2 start, AEVec2 target) {
 
     if (!startNode || !endNode || startNode == endNode) return path;
 
-    // ResetAll all nodes using Node's ResetAll()
+    // Reset all nodes
     for (Node* n : allNodes) n->ResetAll();
 
     startNode->actualCost = 0.f;

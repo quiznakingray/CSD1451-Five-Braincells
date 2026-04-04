@@ -245,6 +245,9 @@ void MapManager::SaveMapState()
             data.colliderCanCollide = tile->collider ? tile->collider->canCollide : true;
             data.pos = tile->pos;
 
+            if (CheckpointTile* checkpoint = dynamic_cast<CheckpointTile*>(tile))
+                data.checkpointActivated = checkpoint->isActivated;
+
             SaveManager::GetInstance().mapSaveData.tileStates.push_back(data);
         }
     }
@@ -266,11 +269,12 @@ void MapManager::LoadMapState()
         tile->pos = data.pos;
         if (tile->collider)
             tile->collider->canCollide = data.colliderCanCollide;
+        if (CheckpointTile* checkpoint = dynamic_cast<CheckpointTile*>(tile))
+            checkpoint->isActivated = data.checkpointActivated;
         if (LeverTile* lever = dynamic_cast<LeverTile*>(tile))
             lever->SetTexture();
         else if (ButtonTile* button = dynamic_cast<ButtonTile*>(tile))
             button->SetTexture();
-
     }
 }
 #pragma endregion
@@ -1217,6 +1221,11 @@ void CheckpointTile::Init() {
         Player* player = dynamic_cast<Player*>(other->owner);
         if (player)
         {
+            if (!isActivated)
+            {
+                isActivated = true;
+                AudioManager::GetInstance().PlaySFX("checkpoint");
+            }
             this->interactionTextBox->isActive = true;
             interactionTextBox->SetText("Saved!");
             SaveManager::GetInstance().SaveAll();
@@ -1243,7 +1252,8 @@ void CrateTile::Init()
 
         int hitSides = collider->GetSidesForCollider(other);
         if (hitSides & COLLISION_SIDE::BOTTOM) {
-            AudioManager::GetInstance().PlaySFX("crateLanding");
+            if (isOnCamera)
+                AudioManager::GetInstance().PlaySFX("crateLanding");
 
             // Check if crate landed on an enemy while falling
             EnemyGameObject* enemy = dynamic_cast<EnemyGameObject*>(other->owner);
@@ -1291,6 +1301,7 @@ void CrateTile::Init()
                     grabbedPlayer->currentAction = PLAYER_ACTION::CRATEINTERACT;
                     grabbedSide = playerOnLeft ? COLLISION_SIDE::LEFT : COLLISION_SIDE::RIGHT;
                     interactionTextBox->isActive = false;
+                    AudioManager::GetInstance().PlaySFX("cratePickUp");
                 }
                 else {
                     grabbedPlayer->currentAction = PLAYER_ACTION::IDLE;
