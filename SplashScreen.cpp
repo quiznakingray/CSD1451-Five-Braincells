@@ -14,7 +14,7 @@ static const float SPLASH_FADEOUT = 1.0f;
 
 void SplashScreen::Load()
 {
-    splashTexture = AEGfxTextureLoad("Assets/DigiPen_BLACK.png"); // adjust path as needed
+    splashTexture = AEGfxTextureLoad("Assets/DigiPen_BLACK.png");
 }
 
 void SplashScreen::Init()
@@ -53,7 +53,6 @@ void SplashScreen::Update()
         }
     }
 
-    // Still allow skipping — jumps straight to menu
     if (AEInputCheckTriggered(AEVK_RETURN) || AEInputCheckTriggered(AEVK_SPACE))
         GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::MENU);
 }
@@ -64,7 +63,7 @@ void SplashScreen::Render()
 
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-    AEGfxSetColorToMultiply(1, 1, 1, alpha); // drives the fade
+    AEGfxSetColorToMultiply(1, 1, 1, alpha); 
     AEGfxSetColorToAdd(0, 0, 0, 0);
     AEGfxSetTransparency(alpha);
 
@@ -96,7 +95,7 @@ void SplashScreen::Render()
 
     AEMtx33 scale{}, trans{}, final{};
     AEMtx33Scale(&scale, drawW, drawH);
-    AEMtx33Trans(&trans, 0.f, 0.f); // centered at screen origin
+    AEMtx33Trans(&trans, 0.f, 0.f); 
     AEMtx33Concat(&final, &trans, &scale);
 
     AEGfxSetTransform(final.m);

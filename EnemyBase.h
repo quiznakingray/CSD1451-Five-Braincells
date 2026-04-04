@@ -62,5 +62,4 @@ struct EnemyBase
 // Functions
 void InitEnemyBase(EnemyBase& enemy, EnemyType type);
 void PrintEnemyStats(const EnemyBase& enemy);
-
 #endif
