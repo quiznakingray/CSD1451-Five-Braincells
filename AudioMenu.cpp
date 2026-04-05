@@ -28,9 +28,9 @@ void AudioMenu::ApplyAudio()
     float music = musicSlider.value / 100.0f;
     float sfx = sfxSlider.value / 100.0f;
 
-    AudioManager::GetInstance().GetInstance().SetMasterVolume(master);
-    AudioManager::GetInstance().GetInstance().SetMusicVolume(music);
-    AudioManager::GetInstance().GetInstance().SetSFXVolume(sfx);
+    AudioManager::GetInstance().SetMasterVolume(master);
+    AudioManager::GetInstance().SetMusicVolume(music);
+    AudioManager::GetInstance().SetSFXVolume(sfx);
 }
 
 void AudioMenu::Init()
@@ -84,9 +84,9 @@ void AudioMenu::Init()
     const char* bar = "Assets/TEMP_Sprites/slider_bar.png";
     const char* handle = "Assets/TEMP_Sprites/slider_button.png";
 
-    masterSlider.Init(0.0f, masterPos, sliderWidth, sliderHeight, 0, 100, 100, bar, handle);
-    musicSlider.Init(0.0f, musicPos, sliderWidth, sliderHeight, 0, 100, 100, bar, handle);
-    sfxSlider.Init(0.0f, sfxPos, sliderWidth, sliderHeight, 0, 100, 100, bar, handle);
+    masterSlider.Init(0.0f, masterPos, sliderWidth, sliderHeight, 0, 100, AudioManager::GetInstance().GetMasterVolume() * 100, bar, handle);
+    musicSlider.Init(0.0f, musicPos, sliderWidth, sliderHeight, 0, 100, AudioManager::GetInstance().GetMusicVolume() * 100, bar, handle);
+    sfxSlider.Init(0.0f, sfxPos, sliderWidth, sliderHeight, 0, 100, AudioManager::GetInstance().GetSFXVolume() * 100, bar, handle);
 
     float offsetX = sliderWidth * 0.57f; // distance from slider center
 
@@ -146,11 +146,11 @@ void AudioMenu::Update()
     // Update master volume based on master slider
     if (currMaster != prevMaster)
     {
-        AudioManager::GetInstance().GetInstance().SetMasterVolume(currMaster / 100.0f);
+        AudioManager::GetInstance().SetMasterVolume(currMaster / 100.0f);
 
         // Update music and sfx volumes based on master slider
-        AudioManager::GetInstance().GetInstance().SetMusicVolume(currMusic / 100.0f);
-        AudioManager::GetInstance().GetInstance().SetSFXVolume(currSFX / 100.0f);
+        AudioManager::GetInstance().SetMusicVolume(currMusic / 100.0f);
+        AudioManager::GetInstance().SetSFXVolume(currSFX / 100.0f);
 
         prevMaster = currMaster;
     }
@@ -158,14 +158,14 @@ void AudioMenu::Update()
     // Update music volume based on music slider
     if (currMusic != prevMusic)
     {
-        AudioManager::GetInstance().GetInstance().SetMusicVolume(currMusic / 100.0f);
+        AudioManager::GetInstance().SetMusicVolume(currMusic / 100.0f);
         prevMusic = currMusic;
     }
 
     // Update sfx volume based on sfx slider
     if (currSFX != prevSFX)
     {
-        AudioManager::GetInstance().GetInstance().SetSFXVolume(currSFX / 100.0f);
+        AudioManager::GetInstance().SetSFXVolume(currSFX / 100.0f);
         prevSFX = currSFX;
     }
 

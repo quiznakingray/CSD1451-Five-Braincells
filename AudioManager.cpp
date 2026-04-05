@@ -79,6 +79,10 @@ void AudioManager::Init()
     sfxGroup = AEAudioCreateGroup();
 
     LoadAllAudio(); // load all audio files
+
+    SetMasterVolume(GetMasterVolume());
+    SetMusicVolume(GetMusicVolume());
+    SetSFXVolume(GetSFXVolume());
 }
 
 void AudioManager::Update()
