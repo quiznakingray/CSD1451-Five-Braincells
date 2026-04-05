@@ -19,6 +19,7 @@
 #include "CameraSystem.h"
 #include "LoadingScreen.h"
 #include "AudioMenu.h"
+#include "FadeManager.h"
 
 int gGameRunning = 1;
 
@@ -78,13 +79,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		while (next == current && gGameRunning)
 		{
 			AESysFrameStart();
+
+			
 			// Update game logic for the current frame
 			fpUpdate();
+			FadeManager::GetInstance().Update();
+
 			double dt = AEFrameRateControllerGetFrameTime();
 			CameraSystem::Update(dt);
 			if (AudioMenu::GetInstance().IsOpen()) AudioMenu::GetInstance().Update();
 			// Render graphics for the current frame
 			fpRender();
+			
 			if (AudioMenu::GetInstance().IsOpen()) AudioMenu::GetInstance().Render();
 			// check if forcing the application to quit
 			//if (AEInputCheckCurr(AEVK_RETURN)) {
@@ -99,26 +105,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				AESysSetFullScreen(0);
 
 			// to quickly switch between levels
-			if (AEInputCheckCurr(AEVK_3)) {
-				if (current != GAME_STATE_TYPE::LEVEL1) {
+			if (AEInputCheckTriggered(AEVK_3)) {
+				// Only trigger if we aren't already in Level 1 AND not currently loading
+				if (current != GAME_STATE_TYPE::LEVEL1 && current != GAME_STATE_TYPE::LOADING) {
 					LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
-					GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+					FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::LOADING);
 				}
 			}
-			if (AEInputCheckCurr(AEVK_4)) {
-				if (current != GAME_STATE_TYPE::LEVEL2) {
-					LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL2;
-					GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
-				}
-			}
-			if (AEInputCheckCurr(AEVK_5)) {
-				if (current != GAME_STATE_TYPE::LEVEL3) {
-					LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL3;
-					GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
-				}
-			}
-			// Informing the system about the loop's end
 
+			if (AEInputCheckTriggered(AEVK_4)) {
+				if (current != GAME_STATE_TYPE::LEVEL2 && current != GAME_STATE_TYPE::LOADING) {
+					LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL2;
+					FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::LOADING);
+				}
+			}
+
+			if (AEInputCheckTriggered(AEVK_5)) {
+				if (current != GAME_STATE_TYPE::LEVEL3 && current != GAME_STATE_TYPE::LOADING) {
+					LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL3;
+					FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::LOADING);
+				}
+			}
+			FadeManager::GetInstance().Render();
+			// Informing the system about the loop's end
 			AESysFrameEnd();
 		}
 		fpFree();

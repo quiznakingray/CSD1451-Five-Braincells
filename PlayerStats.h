@@ -67,8 +67,6 @@ struct PlayerStats : public Singleton<PlayerStats>
 
     int GetPlayerMaxHealth() const;
 
-    void SetPlayerHealth(int h);
-
     void SetPlayerMaxHealth(int mh);
 
     // Damage helpers (new)

@@ -4,6 +4,7 @@
 #include "TextManager.h"
 #include "LoadingScreen.h"
 #include "PlayerStats.h"
+#include "FadeManager.h"
 #include <cstdio>
 
 static AEGfxVertexList* pMesh;
@@ -30,11 +31,15 @@ void EndMenu::Init()
     mainMenuBtn = { 150.f, -200.f, 250.f, 55.f, false };
 
     pPanelTex = AEGfxTextureLoad("Assets/TEMP_Sprites/audio_panel.png");
+
 }
 
 void EndMenu::Update()
 {
     if (!isActive) return;
+
+    // Block button input while a fade is already in progress
+    if (FadeManager::GetInstance().IsFading()) return;
 
     s32 mx, my;
     AEInputGetCursorPosition(&mx, &my);
@@ -55,14 +60,13 @@ void EndMenu::Update()
     {
         isActive = false;
         LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
-        GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+        FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::LOADING);
         GameStateManager::GetInstance().gamePaused = false;
-
     }
     if (mainMenuBtn.isHovered && AEInputCheckTriggered(AEVK_LBUTTON))
     {
         isActive = false;
-        GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::MENU);
+        FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::MENU);
         GameStateManager::GetInstance().gamePaused = false;
     }
 
@@ -128,7 +132,6 @@ void EndMenu::Render()
         AEGfxPrint(TextManager::pFont, "YOU LOST!",
             -0.18f, 0.45f, 1.4f, 1.0f, 0.0f, 0.0f, 1.0f);
 
-
     // --- Stats ---
     char scoreText[50], timeText[50], deathText[50], killCount[50];
 
@@ -178,6 +181,9 @@ void EndMenu::Render()
 
     drawBtn(tryAgainBtn, "TRY AGAIN");
     drawBtn(mainMenuBtn, "MAIN MENU");
+
+    // FadeManager::Render() is called by ParkourLevel::Render() which owns
+    // this menu, so do not call it here to avoid rendering the overlay twice
 }
 
 void EndMenu::Free()

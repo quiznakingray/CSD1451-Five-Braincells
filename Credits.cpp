@@ -2,6 +2,7 @@
 #include "GameStateManager.h"
 #include "TextManager.h"
 #include "AEEngine.h"
+#include "FadeManager.h"
 
 static AEGfxVertexList* pMesh;
 static AEGfxTexture* pDigipenLogo;
@@ -27,10 +28,17 @@ void CreditsMenu::Credits_Init()
     pDigipenLogo = AEGfxTextureLoad("Assets/DigiPen_Singapore_WEB_RED.png");
     pBackground = AEGfxTextureLoad("Assets/Environment/bg_castle.png");
     backBtn = { 0.f, 370.f, 200.f, 55.f, false };
+
+    FadeManager::GetInstance().BeginFadeIn();
 }
 
 void CreditsMenu::Credits_Update()
 {
+    FadeManager::GetInstance().Update();
+
+    // Block button input while a fade is already in progress
+    if (FadeManager::GetInstance().IsFading()) return;
+
     s32 mx, my;
     AEInputGetCursorPosition(&mx, &my);
     float halfW = AEGfxGetWindowWidth() * 0.5f;
@@ -161,6 +169,9 @@ void CreditsMenu::Credits_Draw()
     AEGfxGetPrintSize(TextManager::pFont, "BACK", 1.0f, &tw, &th);
     AEGfxPrint(TextManager::pFont, "BACK",
         nx - tw * 0.5f, ny - th * 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+
+    // fade manager render must always be last
+    FadeManager::GetInstance().Render();
 }
 
 void CreditsMenu::Credits_Free()

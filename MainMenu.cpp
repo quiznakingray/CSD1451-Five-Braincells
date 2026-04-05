@@ -5,6 +5,7 @@
 #include "LoadingScreen.h"
 #include "SaveManager.h"
 #include "AEEngine.h"
+#include "FadeManager.h"
 
 extern int gGameRunning;
 
@@ -39,12 +40,12 @@ static GameObject* MakeButton(float w, float h, float x, float y,
     if (disabled)
     {
         // grey out
-        text->SetColor({1.f, 1.f, 1.f, 0.5f});
-        sprite->multiplyColor = {0.75f, 0.75f, 0.75f, 1.0f};
+        text->SetColor({ 1.f, 1.f, 1.f, 0.5f });
+        sprite->multiplyColor = { 0.75f, 0.75f, 0.75f, 1.0f };
     }
     else {
 
-        text->SetColor({1.f, 1.f, 1.f, 1.f});
+        text->SetColor({ 1.f, 1.f, 1.f, 1.f });
     }
 
     AddGameObjectToVector(btn, vec);
@@ -72,7 +73,10 @@ void MainMenu_Init()
     //titleText->SetText("Just Two Guys");
     //titleText->size = 2.f;
     //AddGameObjectToVector(title, menuObjects);
-  
+
+
+    FadeManager::GetInstance().BeginFadeIn();
+
     // highscore
     SaveManager::GetInstance().LoadPlayerData();
     int highScore = SaveManager::GetInstance().playerSaveData.highScore;
@@ -83,16 +87,17 @@ void MainMenu_Init()
     scoreObj->AddComponent(new Sprite())->meshColor = 0x00000000;
     Text* scoreText = scoreObj->AddComponent(new Text());
     scoreText->inWorldSpace = false;
-	scoreText->size = 1.5f;
+    scoreText->size = 1.5f;
     scoreText->SetText(scoreBuffer);
-    scoreText->SetColor({ 1.f, 0.8f, 0.f, 1.0f }); 
+    scoreText->SetColor({ 1.f, 0.8f, 0.f, 1.0f });
     AddGameObjectToVector(scoreObj, menuObjects);
 
 
-	GameObject* bg = new GameObject(winW, winH, 0, 0, 0, 0, true);
-	Sprite* bgSprite = bg->AddComponent(new Sprite());
+    GameObject* bg = new GameObject(winW, winH, 0, 0, 0, 0, true);
+    Sprite* bgSprite = bg->AddComponent(new Sprite());
     bgSprite->textureFileName = "Assets/Environment/bg_grasslands.png";
-	AddGameObjectToVector(bg, menuObjects);
+    AddGameObjectToVector(bg, menuObjects);
+
     // NEW GAME
     MakeButton(btnW, btnH, cx, startY, "NEW GAME", menuObjects, []() {
         if (SaveManager::GetInstance().HasSaveData())
@@ -100,7 +105,7 @@ void MainMenu_Init()
         else {
             SaveManager::GetInstance().ResetSave();
             LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
-            GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+            FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::LOADING);
         }
         });
 
@@ -112,13 +117,13 @@ void MainMenu_Init()
             SaveManager::GetInstance().LoadEnemyData();
             SaveManager::GetInstance().toContinue = true;
             LoadingScreen::targetState = SaveManager::GetInstance().mapSaveData.savedLevel;
-            GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+            FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::LOADING);
         }
         }, !hasSave);
 
     // INSTRUCTIONS
     MakeButton(btnW, btnH, cx, startY - gap * 2, "INSTRUCTIONS", menuObjects, []() {
-        next = GAME_STATE_TYPE::CONTROLS;
+        FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::CONTROLS);
         });
 
     // SETTINGS
@@ -129,7 +134,7 @@ void MainMenu_Init()
 
     // CREDITS
     MakeButton(btnW, btnH, cx, startY - gap * 4, "CREDITS", menuObjects, []() {
-        next = GAME_STATE_TYPE::CREDITS;
+        FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::CREDITS);
         });
 
     // EXIT
@@ -139,8 +144,7 @@ void MainMenu_Init()
 
     InitGameObjects(menuObjects);
 
-    // --- WARNING PANEL ---
-    // Dark backdrop
+    // WARNING PANEL
     GameObject* warnBG = new GameObject(1100.f, 500.f, cx, 0.f, 0, 0, true);
     warnBG->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
     AddGameObjectToVector(warnBG, warningObjects);
@@ -164,7 +168,7 @@ void MainMenu_Init()
     MakeButton(300.f, 55.f, cx - 200.f, -80.f, "YES, OVERWRITE", warningObjects, []() {
         SaveManager::GetInstance().ResetSave();
         LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
-        GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+        FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::LOADING);
         showOverwriteWarning = false;
         });
 
@@ -180,6 +184,11 @@ void MainMenu_Init()
 
 void MainMenu_Update()
 {
+    FadeManager::GetInstance().Update();
+
+    // Block all interaction while fading out
+    if (FadeManager::GetInstance().IsFading()) return;
+
     // toggle warning panel objects
     for (GameObject* go : warningObjects)
         go->isActive = showOverwriteWarning;
@@ -194,7 +203,7 @@ void MainMenu_Update()
     if (AEInputCheckTriggered(AEVK_ESCAPE) && showOverwriteWarning)
         showOverwriteWarning = false;
 
-    if (!AudioMenu::GetInstance().IsOpen() )UpdateGameObjects(menuObjects);
+    if (!AudioMenu::GetInstance().IsOpen())UpdateGameObjects(menuObjects);
     if (showOverwriteWarning)
         UpdateGameObjects(warningObjects);
 }
@@ -205,6 +214,9 @@ void MainMenu_Draw()
     RenderGameObjects(menuObjects);
     if (showOverwriteWarning)
         RenderGameObjects(warningObjects);
+
+    // fade manager render must always be last
+    FadeManager::GetInstance().Render();
 }
 
 void MainMenu_Free()
