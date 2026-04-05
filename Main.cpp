@@ -3,6 +3,7 @@
 #include <crtdbg.h> // To check for memory leaks
 #include <vector>
 #include <iostream>
+#include <Windows.h>
 #include "AEEngine.h"
 #include "MapManager.h"
 #include "PlayerGameObject.h"
@@ -17,6 +18,7 @@
 #include "AudioManager.h"
 #include "CameraSystem.h"
 #include "LoadingScreen.h"
+#include "AudioMenu.h"
 
 int gGameRunning = 1;
 
@@ -39,9 +41,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// Initialization of your own variables go here
 
 	// Using custom window procedure
-	AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
+	AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, true, NULL);
 	AudioManager::GetInstance().Init();
-
+	AudioMenu::GetInstance().Init();
+	TextManager::Init();
 	// Changing the window title
 	AESysSetWindowTitle("My New Demo!");
 
@@ -79,19 +82,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			fpUpdate();
 			double dt = AEFrameRateControllerGetFrameTime();
 			CameraSystem::Update(dt);
-
+			if (AudioMenu::GetInstance().IsOpen()) AudioMenu::GetInstance().Update();
 			// Render graphics for the current frame
 			fpRender();
+			if (AudioMenu::GetInstance().IsOpen()) AudioMenu::GetInstance().Render();
 			// check if forcing the application to quit
-			if (AEInputCheckCurr(AEVK_RETURN)) {
-				next = GAME_STATE_TYPE::RESTART;
-			}
+			//if (AEInputCheckCurr(AEVK_RETURN)) {
+			//	next = GAME_STATE_TYPE::RESTART;
+			//}
 			if (0 == AESysDoesWindowExist())
 				gGameRunning = 0;
 
-			if (AEInputCheckCurr(AEVK_1))
+			if (AEInputCheckTriggered(AEVK_1))
 				AESysSetFullScreen(1);
-			if (AEInputCheckCurr(AEVK_2))
+			if (AEInputCheckTriggered(AEVK_2))
 				AESysSetFullScreen(0);
 
 			// to quickly switch between levels
@@ -127,6 +131,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		current = next;
 	}
 	AudioManager::GetInstance().Exit();
+	AudioMenu::GetInstance().Free();
 	// free the system
 	AESysExit();
 }

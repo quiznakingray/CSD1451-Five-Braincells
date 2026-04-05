@@ -13,6 +13,7 @@ public:
         const char* idlePath, const char* hoverPath);
 
     void Update();
+    void Update(float newX, float newY);
     void Render();
     void Free();
 

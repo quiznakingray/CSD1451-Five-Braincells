@@ -1,260 +1,221 @@
-﻿#include "MainMenu.h" // Ensure this file exists in your project folder
+﻿#include "MainMenu.h"
 #include "GameStateManager.h"
 #include "AudioManager.h"
 #include "AudioMenu.h"
 #include "LoadingScreen.h"
-#include <vector>
-#include <string> // For strcmp
-#include <cstdio> // For sprintf
+#include "SaveManager.h"
+#include "AEEngine.h"
 
-// If AEEngine.h isn't already included via mainmenu.hpp, 
-// you might need it here for the functions like AEGfxPrint
-#include "AEEngine.h" 
+extern int gGameRunning;
 
-extern int gGameRunning; 
-static s8 menuFont;
-static AEGfxVertexList* pRectMesh;
-
-static AudioMenu audioMenu;
-static AEGfxTexture* pBackgroundTex; // Background variable
-static int highScore = 1500;         // Example high score
-
-struct Button {
-    const char* text;
-    f32 yPos;
-    f32 w, h;
-    bool isHovered;
-    bool disabled = false;
-};
-//static f32 startW, startH, exitW, exitH;
-//static const char* strStart = "START GAME";
-//static const char* strExit = "EXIT";
-
-//static f32 startColorR = 1.0f;
-//static f32 exitColorR = 1.0f;
-
-// Define the buttons
-static std::vector<Button> buttons;
-static std::vector<Button> warnButtons;
+static std::vector<GameObject*> menuObjects;
+static std::vector<GameObject*> warningObjects;
 static bool showOverwriteWarning = false;
 
-static void DrawRect(f32 cx, f32 cy, f32 w, f32 h)
+static GameObject* MakeButton(float w, float h, float x, float y,
+    const char* label, std::vector<GameObject*>& vec, std::function<void()> onClick,
+    bool disabled = false)
 {
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    GameObject* btn = new GameObject(w, h, x, y, 1, 0, true);
+    Sprite* idle = btn->AddComponent(new Sprite());
+    idle->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
 
-    AEMtx33 scale, trans, transform;
-    AEMtx33Scale(&scale, w, h);
-    AEMtx33Trans(&trans, cx, cy);
-    AEMtx33Concat(&transform, &trans, &scale);
-    AEGfxSetTransform(transform.m);
+    Collider* col = btn->AddComponent(new Collider());
+    col->canInteract = !disabled;
 
-    AEGfxMeshDraw(pRectMesh, AE_GFX_MDM_TRIANGLES);
+    Sprite* sprite = idle; // capture for hover
+    col->OnMouseEnter = [sprite]() {
+        sprite->textureFileName = "Assets/TEMP_Sprites/button_hover.png";
+        };
+    col->OnMouseExit = [sprite]() {
+        sprite->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
+        };
+    col->OnMouseUp = onClick;
+
+    Text* text = btn->AddComponent(new Text());
+    text->inWorldSpace = false;
+    text->SetText(label);
+
+    if (disabled)
+    {
+        // grey out
+        text->SetColor({1.f, 1.f, 1.f, 0.5f});
+        sprite->multiplyColor = {0.75f, 0.75f, 0.75f, 1.0f};
+    }
+    else {
+
+        text->SetColor({1.f, 1.f, 1.f, 1.f});
+    }
+
+    AddGameObjectToVector(btn, vec);
+    return btn;
 }
 
-void MainMenu_Init() {
-    // Load font at 60px height
-    menuFont = AEGfxCreateFont("Assets/liberation-mono.ttf", 60);
+void MainMenu_Init()
+{
+    if (!menuObjects.empty()) MainMenu_Free();
+
+    float winW = (float)AEGfxGetWindowWidth();
+    float winH = (float)AEGfxGetWindowHeight();
+    float cx = 0.f;
+    float btnW = 400.f, btnH = 60.f;
+    float startY = 100.f;
+    float gap = 100.f;
+
+    bool hasSave = SaveManager::GetInstance().HasSaveData();
+
+    // Title
+    //GameObject* title = new GameObject(600.f, 80.f, cx, winH / 2.f - 80.f, 1, 0, true);
+    //title->AddComponent(new Sprite())->meshColor = 0x00000000;
+    //Text* titleText = title->AddComponent(new Text());
+    //titleText->inWorldSpace = false;
+    //titleText->SetText("Just Two Guys");
+    //titleText->size = 2.f;
+    //AddGameObjectToVector(title, menuObjects);
+  
+    // highscore
+    SaveManager::GetInstance().LoadPlayerData();
+    int highScore = SaveManager::GetInstance().playerSaveData.highScore;
+    char scoreBuffer[32];
+    sprintf_s(scoreBuffer, "HIGH SCORE: %d", highScore);
+
+    GameObject* scoreObj = new GameObject(400.f, 50.f, cx, startY + gap, 1, 0, true);
+    scoreObj->AddComponent(new Sprite())->meshColor = 0x00000000;
+    Text* scoreText = scoreObj->AddComponent(new Text());
+    scoreText->inWorldSpace = false;
+	scoreText->size = 1.5f;
+    scoreText->SetText(scoreBuffer);
+    scoreText->SetColor({ 1.f, 0.8f, 0.f, 1.0f }); 
+    AddGameObjectToVector(scoreObj, menuObjects);
 
 
-    // Initialize button list
-    buttons = {
-        {"NEW GAME", 0.0f, 0, 0, false},
-        {"LOAD GAME", -0.15f, 0, 0, false},
-        {"INSTRUCTIONS", -0.30f, 0, 0, false},
-        {"SETTING", -0.45f, 0, 0, false},
-        {"CREDITS", -0.60f, 0, 0, false},
-        {"EXIT", -0.75f, 0, 0, false}
-    };
+	GameObject* bg = new GameObject(winW, winH, 0, 0, 0, 0, true);
+	Sprite* bgSprite = bg->AddComponent(new Sprite());
+    bgSprite->textureFileName = "Assets/Environment/bg_grasslands.png";
+	AddGameObjectToVector(bg, menuObjects);
+    // NEW GAME
+    MakeButton(btnW, btnH, cx, startY, "NEW GAME", menuObjects, []() {
+        if (SaveManager::GetInstance().HasSaveData())
+            showOverwriteWarning = true;
+        else {
+            SaveManager::GetInstance().ResetSave();
+            LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
+            GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+        }
+        });
 
-    // overwrite warning buttons
-    warnButtons = {
-       {"YES, OVERWRITE", -0.5f, 0, 0, false},
-       {"CANCEL",         -0.3f, 0, 0, false}
-    };
+    // LOAD GAME
+    MakeButton(btnW, btnH, cx, startY - gap, "LOAD GAME", menuObjects, []() {
+        if (SaveManager::GetInstance().HasSaveData()) {
+            SaveManager::GetInstance().LoadPlayerData();
+            SaveManager::GetInstance().LoadMapData();
+            SaveManager::GetInstance().LoadEnemyData();
+            SaveManager::GetInstance().toContinue = true;
+            LoadingScreen::targetState = SaveManager::GetInstance().mapSaveData.savedLevel;
+            GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+        }
+        }, !hasSave);
 
-    // 1. Create a 1x1 white square mesh centered at origin
-    AEGfxMeshStart();
-    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
-        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-    AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-    pRectMesh = AEGfxMeshEnd();
+    // INSTRUCTIONS
+    MakeButton(btnW, btnH, cx, startY - gap * 2, "INSTRUCTIONS", menuObjects, []() {
+        next = GAME_STATE_TYPE::CONTROLS;
+        });
 
-    // Pre-calculate sizes using the correct 5 arguments
-    for (auto& btn : buttons) {
-        AEGfxGetPrintSize(menuFont, btn.text, 1.0f, &btn.w, &btn.h);
-    }
-    for (auto& btn : warnButtons) {
-        AEGfxGetPrintSize(menuFont, btn.text, 1.0f, &btn.w, &btn.h);
-    }
+    // SETTINGS
+    MakeButton(btnW, btnH, cx, startY - gap * 3, "SETTINGS", menuObjects, []() {
+        if (!AudioMenu::GetInstance().IsOpen())
+            AudioMenu::GetInstance().Toggle();
+        });
 
-    // Dim LOAD GAME if no save exists
-    for (auto& btn : buttons) {
-        if (strcmp(btn.text, "LOAD GAME") == 0)
-            btn.disabled = !SaveManager::GetInstance().HasSaveData();
-    }
-    audioMenu.Init(); // initialize audio panel
+    // CREDITS
+    MakeButton(btnW, btnH, cx, startY - gap * 4, "CREDITS", menuObjects, []() {
+        next = GAME_STATE_TYPE::CREDITS;
+        });
 
-    // Play main menu bgm
+    // EXIT
+    MakeButton(btnW, btnH, cx, startY - gap * 5, "EXIT", menuObjects, []() {
+        gGameRunning = 0;
+        });
+
+    InitGameObjects(menuObjects);
+
+    // --- WARNING PANEL ---
+    // Dark backdrop
+    GameObject* warnBG = new GameObject(1100.f, 500.f, cx, 0.f, 0, 0, true);
+    warnBG->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
+    AddGameObjectToVector(warnBG, warningObjects);
+
+    // Warning text
+    GameObject* warnTitle = new GameObject(460.f, 60.f, cx, 120.f, 0, 0, true);
+    //warnTitle->AddComponent(new Sprite())->meshColor = 0x00000000;
+    Text* warnTitleText = warnTitle->AddComponent(new Text());
+    warnTitleText->inWorldSpace = false;
+    warnTitleText->SetText("SAVE DATA EXISTS!");
+    AddGameObjectToVector(warnTitle, warningObjects);
+
+    GameObject* warnMsg = new GameObject(460.f, 80.f, cx, 20.f, 0, 0, true);
+    //warnMsg->AddComponent(new Sprite())->meshColor = 0x00000000;
+    Text* warnMsgText = warnMsg->AddComponent(new Text());
+    warnMsgText->inWorldSpace = false;
+    warnMsgText->SetText("Starting a new game will erase your existing progress.");
+    AddGameObjectToVector(warnMsg, warningObjects);
+
+    // YES OVERWRITE
+    MakeButton(300.f, 55.f, cx - 200.f, -80.f, "YES, OVERWRITE", warningObjects, []() {
+        SaveManager::GetInstance().ResetSave();
+        LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
+        GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
+        showOverwriteWarning = false;
+        });
+
+    // CANCEL
+    MakeButton(300.f, 55.f, cx + 200.f, -80.f, "CANCEL", warningObjects, []() {
+        showOverwriteWarning = false;
+        });
+
+    InitGameObjects(warningObjects);
+
     AudioManager::GetInstance().PlayMusic("mainMenu");
 }
 
-void MainMenu_Update() {
-    s32 mX, mY;
-    AEInputGetCursorPosition(&mX, &mY);
+void MainMenu_Update()
+{
+    // toggle warning panel objects
+    for (GameObject* go : warningObjects)
+        go->isActive = showOverwriteWarning;
 
-    // Checks if audio panel is open
-    if (audioMenu.IsOpen())
+    // block main menu interaction when warning is open
+    for (GameObject* go : menuObjects)
     {
-        audioMenu.Update();
-
-        // Escape button closes audio panel
-        if (AEInputCheckTriggered(AEVK_ESCAPE) && audioMenu.IsOpen())
-        {
-            audioMenu.Toggle();
-        }
-        return; // stop main menu interaction when audio panel is open
+        Collider* col = go->GetComponent<Collider>();
+        if (col) col->canInteract = !showOverwriteWarning;
     }
 
-    // Get current dimensions dynamically
-    f32 halfWidth = AEGfxGetWindowWidth() / 2.0f;
-    f32 halfHeight = AEGfxGetWindowHeight() / 2.0f;
+    if (AEInputCheckTriggered(AEVK_ESCAPE) && showOverwriteWarning)
+        showOverwriteWarning = false;
 
-    // Convert screen pixels to normalized coordinates (-1 to 1)
-    f32 normX = (static_cast<f32>(mX) / halfWidth) - 1.0f;
-    f32 normY = -((static_cast<f32>(mY) / halfHeight) - 1.0f);
-
-    // Warning panel takes priority over main buttons
-    if (showOverwriteWarning) {
-        if (AEInputCheckTriggered(AEVK_ESCAPE)) {
-            showOverwriteWarning = false;
-            return;
-        }
-
-        for (auto& btn : warnButtons) {
-            // Identical AABB hover check as main buttons
-            btn.isHovered = (normX > -btn.w / 2.0f && normX < btn.w / 2.0f &&
-                normY > btn.yPos - 0.05f && normY < btn.yPos + 0.05f);
-
-            if (btn.isHovered && AEInputCheckTriggered(AEVK_LBUTTON)) {
-                if (strcmp(btn.text, "YES, OVERWRITE") == 0) {
-                    SaveManager::GetInstance().ResetSave();
-                    LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
-                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
-                    showOverwriteWarning = false;
-                }
-                if (strcmp(btn.text, "CANCEL") == 0) {
-                    showOverwriteWarning = false;
-                }
-            }
-        }
-        return; // block main menu while warning is open
-    }
-
-    for (auto& btn : buttons) {
-        // AABB Collision check
-        btn.isHovered = !btn.disabled && (normX > -btn.w / 2.0f && normX < btn.w / 2.0f &&
-            normY > btn.yPos - 0.05f && normY < btn.yPos + 0.05f);
-
-        if (btn.isHovered && AEInputCheckTriggered(AEVK_LBUTTON)) {
-            if (strcmp(btn.text, "NEW GAME") == 0) {
-                if (SaveManager::GetInstance().HasSaveData())
-                {
-                    showOverwriteWarning = true;
-                }
-                else {
-                    SaveManager::GetInstance().ResetSave();
-                    LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
-                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
-                }
-            }
-            if (strcmp(btn.text, "LOAD GAME") == 0) {
-                if (SaveManager::GetInstance().HasSaveData()) {
-                    SaveManager::GetInstance().LoadPlayerData();
-                    SaveManager::GetInstance().LoadMapData();
-                    SaveManager::GetInstance().LoadEnemyData();
-                    SaveManager::GetInstance().toContinue = true;
-                    LoadingScreen::targetState = SaveManager::GetInstance().mapSaveData.savedLevel;
-                    GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
-                }
-            }
-
-            if (strcmp(btn.text, "INSTRUCTIONS") == 0) next = GAME_STATE_TYPE::INSTRUCTIONS;
-            if (strcmp(btn.text, "CREDITS") == 0) next = GAME_STATE_TYPE::CREDITS;
-            if (strcmp(btn.text, "EXIT") == 0) gGameRunning = 0;
-            // Checks if settings button is clicked
-            if (strcmp(btn.text, "SETTING") == 0 && !audioMenu.IsOpen())
-            {
-                audioMenu.Toggle(); // open audio panel
-            }
-        }
-    }
+    if (!AudioMenu::GetInstance().IsOpen() )UpdateGameObjects(menuObjects);
+    if (showOverwriteWarning)
+        UpdateGameObjects(warningObjects);
 }
 
-void MainMenu_Draw() {
-    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
-
-    // Draw Title: Separated at the top
-    // AEGfxPrint takes 9 arguments: font, text, x, y, scale, r, g, b, a
-    f32 titleA = showOverwriteWarning ? 0.15f : 1.0f;
-    AEGfxPrint(menuFont, "DUNGEON & PUZZLE", -0.4f, 0.6f, 1.1f, 1.0f * titleA, 0.8f * titleA, 0.0f, titleA);
-
-    // Checks if audio panel is open
-    if (audioMenu.IsOpen())
-    {
-        audioMenu.Render(); // renders audio panel
-        return;
-    }
-
-    // Draw Buttons: Centralized and equally separated
-    // 2. Draw Highest Score (Added this part)
-    char scoreBuffer[32];
-    // This converts the integer highScore into a "HIGHEST SCORE: 1500" string
-    sprintf_s(scoreBuffer, "HIGHEST SCORE: %d", highScore);
-
-    // Positioned at y = 0.2f (above NEW GAME) with a white/cyan color
-    f32 alpha = showOverwriteWarning ? 0.15f : 1.0f;
-    AEGfxPrint(menuFont, scoreBuffer, -0.35f, 0.2f, 0.8f, 0.5f * alpha, 1.0f * alpha, 1.0f * alpha, alpha);
-
-    // Main buttons — dimmed when warning panel is open
-    for (const auto& btn : buttons) {
-        f32 a = (showOverwriteWarning || btn.disabled) ? 0.15f : 1.0f;
-        f32 r = btn.isHovered ? 1.0f : 0.7f;
-        f32 g = btn.isHovered ? 1.0f : 0.7f;
-        f32 b = btn.isHovered ? 0.0f : 0.7f;
-        AEGfxPrint(menuFont, btn.text, -btn.w / 2.0f, btn.yPos, 1.0f, r * a, g * a, b * a, 1.0f);
-    }
-
-    // Warning panel
-    if (showOverwriteWarning) {
-        // Warning text
-        AEGfxPrint(menuFont, "SAVE DATA EXISTS!", -0.3f, 0.25f, 0.85f, 1.0f, 0.3f, 0.3f, 1.0f);
-        AEGfxPrint(menuFont, "Starting a new game", -0.275f, 0.12f, 0.7f, 1.0f, 1.0f, 1.0f, 1.0f);
-        AEGfxPrint(menuFont, "will erase your", -0.2f, 0.02f, 0.7f, 1.0f, 1.0f, 1.0f, 1.0f);
-        AEGfxPrint(menuFont, "existing progress.", -0.25f, -0.08f, 0.7f, 1.0f, 1.0f, 1.0f, 1.0f);
-
-        // Warning buttons — identical render logic to main buttons
-        for (const auto& btn : warnButtons) {
-            bool isOverwrite = (strcmp(btn.text, "YES, OVERWRITE") == 0);
-
-            // Overwrite = red tones, Cancel = green tones
-            f32 r = isOverwrite ? (btn.isHovered ? 1.0f : 0.8f) : (btn.isHovered ? 0.3f : 0.2f);
-            f32 g = isOverwrite ? (btn.isHovered ? 0.3f : 0.2f) : (btn.isHovered ? 1.0f : 0.8f);
-            f32 b = isOverwrite ? (btn.isHovered ? 0.3f : 0.2f) : (btn.isHovered ? 0.3f : 0.2f);
-
-            AEGfxPrint(menuFont, btn.text, -btn.w / 2.0f, btn.yPos, 1.0f, r, g, b, 1.0f);
-        }
-    }
+void MainMenu_Draw()
+{
+    AEGfxSetBackgroundColor(0.f, 0.f, 0.f);
+    RenderGameObjects(menuObjects);
+    if (showOverwriteWarning)
+        RenderGameObjects(warningObjects);
 }
 
-void MainMenu_Free() {
-    AEGfxDestroyFont(menuFont);
-    AEGfxMeshFree(pRectMesh);
+void MainMenu_Free()
+{
+    FreeGameObjects(menuObjects);
+    for (GameObject* go : menuObjects) delete go;
+    menuObjects.clear();
 
-    audioMenu.Free(); // free audio panel
-    buttons.clear();
-	warnButtons.clear();
+    FreeGameObjects(warningObjects);
+    for (GameObject* go : warningObjects) delete go;
+    warningObjects.clear();
+
+    showOverwriteWarning = false;
 }

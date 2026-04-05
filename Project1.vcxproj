@@ -105,6 +105,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="AudioMenu.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="ComponentBase.cpp" />
+    <ClCompile Include="Controls.cpp" />
     <ClCompile Include="Credits.cpp" />
     <ClCompile Include="EndMenu.cpp" />
     <ClCompile Include="EnemyBase.cpp" />
@@ -112,12 +113,12 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="EnemyGameObject.cpp" />
     <ClCompile Include="EnemyManager.cpp" />
     <ClCompile Include="EnemyMovement.cpp" />
+    <ClCompile Include="FireGameObject.cpp" />
     <ClCompile Include="GameObjectManager.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="CooldownTimer.cpp" />
     <ClCompile Include="HUD.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="Instructions.cpp" />
     <ClCompile Include="LoadingScreen.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainMenu.cpp" />
@@ -148,6 +149,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="AudioMenu.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="ComponentBase.h" />
+    <ClInclude Include="Controls.h" />
     <ClInclude Include="Credits.h" />
     <ClInclude Include="EndMenu.h" />
     <ClInclude Include="EnemyBase.h" />
@@ -155,12 +157,12 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="EnemyGameObject.h" />
     <ClInclude Include="EnemyManager.h" />
     <ClInclude Include="EnemyMovement.h" />
+    <ClInclude Include="FireGameObject.h" />
     <ClInclude Include="GameObjectManager.h" />
     <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="CooldownTimer.h" />
     <ClInclude Include="HUD.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="Instructions.h" />
     <ClInclude Include="Library\rapidcsv.h" />
     <ClInclude Include="LoadingScreen.h" />
     <ClInclude Include="MainMenu.h" />

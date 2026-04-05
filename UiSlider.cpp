@@ -28,10 +28,15 @@ bool UISlider::IsMouseOverHandle()
     // Convert mouse pos to centered pixel space (0, 0)
     float px = mx - halfW; // convert pixel X to centered X
     float py = halfH - my; // convert pixel Y to centered Y
-    float hx = HandleX();
+    AEVec2 cam;
+    AEGfxGetCamPosition(&cam.x, &cam.y);
 
-    return (px > hx - 15 && px < hx + 15 &&
-        py > barY - 15 && py < barY + 15);
+    // barX is already updated to new pos before this is called
+    float screenHX = HandleX() - cam.x;
+    float screenBarY = barY - cam.y;
+
+    return (px > screenHX - 15 && px < screenHX + 15 &&
+        py > screenBarY - 15 && py < screenBarY + 15);
 }
 
 void UISlider::Init(float posX, float posY, float w, float h,
@@ -96,11 +101,16 @@ void UISlider::Update()
     {
         float halfW = AEGfxGetWindowWidth() * 0.5f;
         float px = mx - halfW; // convert mouse X to centered pixels
+        
+        // Convert screen mouse X to world space to match barX
+        AEVec2 cam;
+        AEGfxGetCamPosition(&cam.x, &cam.y);
+        float worldPx = px + cam.x;
 
-        float clamped = AEClamp(px, barX - barWidth / 2, barX + barWidth / 2);
+        float clamped = AEClamp(worldPx, barX - barWidth / 2, barX + barWidth / 2);
         float ratio = (clamped - (barX - barWidth / 2)) / barWidth;
-
         value = minValue + ratio * (maxValue - minValue);
+
     }
 
     // Shows slider value
@@ -127,7 +137,17 @@ void UISlider::Update()
     // Update slider handle pos x every frame
     handleX = HandleX();
 }
+void UISlider::Update(float newX, float newY)
+{
+    barX = newX;
+    barY = newY;
+    // Update slider handle pos and value based on new slider bar pos
+	handleX = HandleX();
+	handleY = barY + 5.0f;
 
+	Update();
+
+}
 void UISlider::Render()
 {
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -140,14 +160,17 @@ void UISlider::Render()
 
         int intValue = static_cast<int>(value);
         sprintf_s(buffer, "%d", intValue);
+        AEVec2 cam;
+        AEGfxGetCamPosition(&cam.x, &cam.y);
 
-        // Test pos relative to slider handle
-        float px = handleX;
-        float py = handleY + handleHeight * 0.5f; // text value directly above slider handle
+        float screenX = handleX - cam.x;
+        float screenY = (handleY + handleHeight * 0.5f) - cam.y;
 
-        // Convert to normalized coords
-        float nx = NormalizeScreenX(px);
-        float ny = NormalizeScreenY(py);
+        f32 textW, textH;
+        AEGfxGetPrintSize(font, buffer, fontSize * 0.005f, &textW, &textH);
+
+        float nx = NormalizeScreenX(screenX) - textW * 0.5f;
+        float ny = NormalizeScreenY(screenY) + textH * 0.5f;
 
         // Draw text
         AEGfxPrint(font, buffer, nx, ny + 0.05f, fontSize * 0.005f, 1.0f, 1.0f, 1.0f, 1.0f);

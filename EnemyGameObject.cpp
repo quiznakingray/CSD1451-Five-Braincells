@@ -50,28 +50,31 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
     base.patrolStart = { spawnTile->pos.x - 100.f * scaleFactor, spawnTile->pos.y - 100.f * scaleFactor };
     base.patrolEnd = { spawnTile->pos.x + 150.f * scaleFactor, spawnTile->pos.y - 100.f * scaleFactor };
 
+    bool isMelee = (base.type == EnemyType::BASIC_MELEE || base.type == EnemyType::MINI_BOSS_MELEE);
+    //bool isRanged = (base.type == EnemyType::BASIC_RANGED || base.type == EnemyType::MINI_BOSS_RANGED);
+
     // Setup animations
     Sprite* s = new Sprite();
-    s->meshColor = (type == EnemyType::BASIC_MELEE) ? 0xFF0000FF : 0xFFFF0000;
-    s->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Idle.png";
+    //s->meshColor = (type == EnemyType::BASIC_MELEE) ? 0xFF0000FF : 0xFFFF0000;
+    s->textureFileName = isMelee ? "Assets/SpriteSheets/Enemy_Basic_Melee_Idle.png" : "Assets/SpriteSheets/Enemy_Basic_Range_Idle.png";
     s->spriteSheet = Sprite::SpriteSheet(2, 7);
     s->spriteSheet.isSpriteSheet = true;
 
     Sprite* walk = new Sprite();
-    walk->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
-    walk->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Walk.png";
+    //walk->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
+    walk->textureFileName = isMelee ? "Assets/SpriteSheets/Enemy_Basic_Melee_Walk.png" : "Assets/SpriteSheets/Enemy_Basic_Range_Walk.png";
     walk->spriteSheet = Sprite::SpriteSheet(2, 7);
     walk->spriteSheet.isSpriteSheet = true;
 
     Sprite* attack = new Sprite();
-    attack->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
-    attack->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Attack.png";
+    //attack->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
+    attack->textureFileName = isMelee ? "Assets/SpriteSheets/Enemy_Basic_Melee_Attack.png" : "Assets/SpriteSheets/Enemy_Basic_Range_Attack.png";
     attack->spriteSheet = Sprite::SpriteSheet(2, 7);
     attack->spriteSheet.isSpriteSheet = true;
 
     Sprite* attacking = new Sprite();
-    attacking->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
-    attacking->textureFileName = "Assets/SpriteSheets/Enemy_Basic_Melee_Attacking.png";
+    //attacking->meshColor = (type == EnemyType::BASIC_RANGED) ? 0xFF0000FF : 0xFFFF0000;
+    attacking->textureFileName = isMelee ? "Assets/SpriteSheets/Enemy_Basic_Melee_Attacking.png" : "Assets/SpriteSheets/Enemy_Basic_Range_Attacking.png";
     attacking->spriteSheet = Sprite::SpriteSheet(2, 7);
     attacking->spriteSheet.isSpriteSheet = true;
 

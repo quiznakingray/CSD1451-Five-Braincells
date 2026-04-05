@@ -4,6 +4,8 @@
 #include "PauseMenu.h"
 #include "LoadingScreen.h"
 #include "SplashScreen.h"
+#include "Credits.h"
+#include "Controls.h"
 
 
 FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpRender = nullptr, fpFree = nullptr, fpUnload = nullptr;
@@ -66,40 +68,24 @@ void GameStateManager::Update()
 		fpUnload = ParkourLevel::Unload;  
 		break;
 ;
-	//case GAME_STATE_TYPE::PAUSE:
-	//	fpLoad = []() {}; // Nothing to load/unload from disk
-	//	fpInitialize = PauseMenu::Init;
-	//	fpUpdate = PauseMenu::Update;
-	//	fpRender = PauseMenu::Render;
-	//	fpFree = PauseMenu::Free;
-	//	fpUnload = []() {};
-	//	break;
+	case GAME_STATE_TYPE::CREDITS:
+		fpLoad = []() {}; // Nothing to load/unload from disk
+		fpInitialize = CreditsMenu::Credits_Init;
+		fpUpdate = CreditsMenu::Credits_Update;
+		fpRender = CreditsMenu::Credits_Draw;
+		fpFree = CreditsMenu::Credits_Free;
+		fpUnload = []() {};
+		break;
 
-	//case GAME_STATE_TYPE::CONFIRMATION:
-	//	fpLoad = []() {};
-	//	fpInitialize = []() {}; // We reuse the mesh from PauseMenu::Init
-	//	fpUpdate = ConfirmationMenu::Update;
-	//	fpRender = ConfirmationMenu::Render;
-	//	fpFree = []() {};     // PauseMenu::Free handles the mesh cleanup
-	//	fpUnload = []() {};
-	//	break;
-	//case GAME_STATE_TYPE::SETTING:
-	//	fpLoad = []() {};
-	//	fpInitialize = Setting_Init; 
-	//	fpUpdate = Setting_Update;
-	//	fpRender = Setting_Draw;
-	//	fpFree = Setting_Free;
-	//	fpUnload = []() {};
-	//	break;
 
-	//case GAME_STATE_TYPE::INSTRUCTIONS:
-	//	fpLoad = []() {};
-	//	fpInitialize = Instructions_Init; 
-	//	fpUpdate = Instructions_Update;
-	//	fpRender = Instructions_Draw;
-	//	fpFree = Instructions_Free;
-	//	fpUnload = []() {};
-	//	break;
+	case GAME_STATE_TYPE::CONTROLS:
+		fpLoad = []() {};
+		fpInitialize = ControlsMenu::Controls_Init;
+		fpUpdate = ControlsMenu::Controls_Update;
+		fpRender = ControlsMenu::Controls_Draw;
+		fpFree = ControlsMenu::Controls_Free;
+		fpUnload = []() {};
+		break;
 	default:
 		break;
 	}

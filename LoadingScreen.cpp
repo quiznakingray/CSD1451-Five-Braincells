@@ -13,7 +13,7 @@ static AEGfxVertexList* mesh = nullptr;
 int frameCount = 0;
 int dotFrame = 0;
 std::string loadingText = "Loading";
-int fontId = 0;
+s8 fontId = 0;
 
 const std::array<std::string, 4> dotStates = {
     "Loading",

@@ -38,7 +38,7 @@ void Text::Render()
 
 
 
-    AEGfxPrint(TextManager::pFont, text, x, y , 1, color.r, color.b, color.g, color.a);
+    AEGfxPrint(TextManager::pFont, text, x, y , size * 1, color.r, color.b, color.g, color.a);
 }
 
 void Text::Free()

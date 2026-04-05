@@ -2,6 +2,7 @@
 #include "SaveManager.h"
 #include "AudioManager.h"
 #include "GameStateManager.h"
+#include "EndMenu.h"
 #include "HUD.h"
 #include <iostream>
 
@@ -54,12 +55,18 @@ void PlayerStats::ReducePlayerHealth(int amount)
     {
         AudioManager::GetInstance().PlaySFX("playerDie");
         IncreaseDeathCounter();
+		health = PlayerStats::GetInstance().maxHealth; // reset health on death
         SaveManager::GetInstance().SavePlayerTime(totalSeconds);
-        
-        if (deathCount >= 10)
-        {
-            HUD::GetInstance().ShowDeathPanel();
-        }
+
+        if (deathCount > 10) {
+			EndMenu::GetInstance().won = false;
+			EndMenu::GetInstance().isActive = true; 
+            GameStateManager::GetInstance().gamePaused = true;
+            return;
+		}
+        HUD::GetInstance().ShowDeathPanel();
+
+
     }
 }
 
@@ -80,33 +87,33 @@ int PlayerStats::GetPlayerMaxHealth() const
     return maxHealth;
 }
 
-void PlayerStats::SetPlayerHealth(int h)
-{
-    health += h;
-    if (h < 0) {
-        if (health > 0) {
-            AudioManager::GetInstance().PlaySFX("playerHurt");
-        }
-        else
-        {
-            AudioManager::GetInstance().PlaySFX("playerDie");
-            IncreaseDeathCounter();
-            SaveManager::GetInstance().SavePlayerTime(totalSeconds);
-            if (deathCount < 10) {
-                SaveManager::GetInstance().SaveHighScore(highScore);
-            }
-            //HUD::GetInstance().ShowDeathPanel();
-            SaveManager::GetInstance().toContinue = true;
-            //GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
-            //current = GAME_STATE_TYPE::MENU;
-            //next = respawnLevel;
-        }
-    }
-    else {
-        if (health > maxHealth)
-            health = maxHealth;
-    }
-}
+//void PlayerStats::SetPlayerHealth(int h)
+//{
+//    health += h;
+//    if (h < 0) {
+//        if (health > 0) {
+//            AudioManager::GetInstance().PlaySFX("playerHurt");
+//        }
+//        else
+//        {
+//            AudioManager::GetInstance().PlaySFX("playerDie");
+//            IncreaseDeathCounter();
+//            SaveManager::GetInstance().SavePlayerTime(totalSeconds);
+//            if (deathCount < 10) {
+//                SaveManager::GetInstance().SaveHighScore(highScore);
+//            }
+//            //HUD::GetInstance().ShowDeathPanel();
+//            SaveManager::GetInstance().toContinue = true;
+//            //GAME_STATE_TYPE respawnLevel = SaveManager::GetInstance().mapSaveData.savedLevel;
+//            //current = GAME_STATE_TYPE::MENU;
+//            //next = respawnLevel;
+//        }
+//    }
+//    else {
+//        if (health > maxHealth)
+//            health = maxHealth;
+//    }
+//}
 
 void PlayerStats::SetPlayerMaxHealth(int mh)
 {

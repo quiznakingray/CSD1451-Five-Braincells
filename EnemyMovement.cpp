@@ -48,9 +48,35 @@ Node* EnemyMovement::GetClosestNode(AEVec2 pos) {
 
     return closest;
 }
+Node* EnemyMovement::GetClosestNode(AEVec3 pos) {
+    Node* closest = nullptr;
+    float minDist = FLT_MAX;
+
+    for (Node* node : allNodes) {
+        if (!node->walkable) continue;
+
+        float dx = node->position.x - pos.x;
+        float dy = node->position.y - pos.y;
+        float dist = sqrtf(dx * dx + dy * dy);
+
+        if (dist < minDist) {
+            minDist = dist;
+            closest = node;
+        }
+    }
+
+#if DEBUG_PATH
+    if (closest)
+        std::cout << "[GetClosestNode] Pos(" << pos.x << "," << pos.y
+        << ") -> Node(" << closest->position.x << "," << closest->position.y
+        << ") dist=" << minDist << "\n";
+#endif
+
+    return closest;
+}
 
 // Pathfinding
-std::vector<AEVec2> EnemyMovement::FindPath(AEVec2 start, AEVec2 target) {
+std::vector<AEVec2> EnemyMovement::FindPath(AEVec2 start, AEVec3 target) {
     std::vector<AEVec2> path;
 
     if (allNodes.empty()) return path;

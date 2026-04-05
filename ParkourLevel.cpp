@@ -10,16 +10,16 @@
 #include "TextManager.h"
 #include "HUD.h"
 #include "PauseMenu.h"
-//#include "EndMenu.h"
+#include "EndMenu.h"
+#include "FireGameObject.h"
 
-//Player* player1 = nullptr;
 
 std::vector<GameObject*> levelGameObjectVector{};
 
 void ParkourLevel::Load()
 {
-	TextManager::Init();
-	AudioManager::GetInstance().Init();
+	//TextManager::Init();
+	//AudioManager::GetInstance().Init();
 }
 
 void ParkourLevel::Init()
@@ -55,11 +55,14 @@ void ParkourLevel::Init()
 	EnemyManager::GetInstance().Init(PlayerManager::GetInstance().meleePlayer, PlayerManager::GetInstance().rangedPlayer);
 	EnemyManager::GetInstance().SpawnEnemies(levelGameObjectVector);
 
+	SpawnFire(levelGameObjectVector);
+
 	InitGameObjects(levelGameObjectVector);
 
 
-	//EndMenu::GetInstance().Init();
+	EndMenu::GetInstance().Init();
 	
+
 
 	if (SaveManager::GetInstance().toContinue)
 	{
@@ -71,7 +74,6 @@ void ParkourLevel::Init()
 		SaveManager::GetInstance().toContinue = false;
 	}
 
-	
 	// HUD
 	HUD::GetInstance().Init();
 
@@ -91,22 +93,11 @@ void ParkourLevel::Update()
 			PauseMenu::GetInstance().Update();
 			
 		}
+		EndMenu::GetInstance().Update();
 		return;
 	}
 	
-	// 1. Check if the player is dead (Example using PlayerStats if available)
-	//if (/* playerHP <= 0 */) { // Placeholder: Replace with your actual HP variable
-	//	EndMenu::GetInstance().isWin = false;
-	//	EndMenu::GetInstance().isActive = true;
-	//}
 
-	// 2. Run Menu Update and skip level logic if active
-	//if (EndMenu::GetInstance().isActive) {
-	//	EndMenu::GetInstance().Update();
-	//	//return;
-	//}
-
-	//CheckPlayerDeath(); // Check if player is dead
 
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
@@ -116,9 +107,11 @@ void ParkourLevel::Render()
 {
 	AEGfxSetBackgroundColor(0.6f, 0.8f, 0.85f);
 	MapManager::GetInstance().DrawMapSprite();
+	RenderFire();
 	PlayerManager::GetInstance().Render();
 	EnemyManager::GetInstance().RenderEnemies();
 	HUD::GetInstance().Render();
+	EndMenu::GetInstance().Render();
 	if (GameStateManager::GetInstance().showPauseMenu) {
 		PauseMenu::GetInstance().Render();
 	}
@@ -159,12 +152,14 @@ void ParkourLevel::Free()
 	HUD::GetInstance().Free();
 	PlayerManager::GetInstance().Free();
 	EnemyManager::GetInstance().FreeEnemies();
+	FreeFire();
 	CameraSystem::ResetCameraPosition();
 	//for (auto* obj : levelGameObjectVector)
 	//{
 	//	obj = nullptr;
 	//}
 	PauseMenu::GetInstance().Free();
+	EndMenu::GetInstance().Free();
 
 	//EndMenu::GetInstance().Free();
 	//EndMenu::GetInstance().isActive = false; // ResetAll for the next time the level loads
