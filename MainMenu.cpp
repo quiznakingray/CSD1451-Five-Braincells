@@ -124,7 +124,7 @@ void MainMenu_Init()
         }, !hasSave);
 
     // INSTRUCTIONS
-    MakeButton(btnW, btnH, cx, startY - gap * 2, "INSTRUCTIONS", menuObjects, []() {
+    MakeButton(btnW, btnH, cx, startY - gap * 2, "CONTROLS", menuObjects, []() {
         FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::CONTROLS);
         });
 
