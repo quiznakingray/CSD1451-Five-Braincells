@@ -87,7 +87,7 @@ void MapManager::GenerateNodes()
 
 void MapManager::InitMap(std::string fileName, GAME_STATE_TYPE currLevel)
 {
-   
+    AudioManager::GetInstance().PlayMusic("level");
     map = rapidcsv::Document(fileName);
     mapCurrLevel = currLevel;
     // Read a row from the CSV file

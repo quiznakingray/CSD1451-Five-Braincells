@@ -372,6 +372,20 @@ void Player::Update(){
 	hurtParticles.CreateHitEffect(pos.x, pos.y);
 	hurtParticles.Update(dt);
 
+	bool isOnGround = rb->onCollider;
+
+	// Detect from air to ground
+	if (!wasOnGround && isOnGround)
+	{
+		if (rb->velocity.y < -50.0f)
+		{
+			AudioManager::GetInstance().PlaySFX("land");
+		}
+	}
+
+	// Store state for next frame
+	wasOnGround = isOnGround;
+
 	GameObject::Update();
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
 }

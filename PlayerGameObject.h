@@ -41,6 +41,7 @@ struct Player : GameObject {
 	PLAYER_ACTION prevAction = PLAYER_ACTION::IDLE;
 
 	bool canJump = true;
+	bool wasOnGround = false;
 
 	// take damage
 	ParticleSystem hurtParticles;
