@@ -88,6 +88,10 @@ void AudioMenu::Init()
     const char* bar = "Assets/TEMP_Sprites/slider_bar.png";
     const char* handle = "Assets/TEMP_Sprites/slider_button.png";
 
+    if (SaveManager::GetInstance().HasSaveData()) {
+        SaveManager::GetInstance().LoadAudioData();
+    }
+
     masterSlider.Init(0.0f, masterPos, sliderWidth, sliderHeight, 0, 100, AudioManager::GetInstance().GetMasterVolume() * 100, bar, handle);
     musicSlider.Init(0.0f, musicPos, sliderWidth, sliderHeight, 0, 100, AudioManager::GetInstance().GetMusicVolume() * 100, bar, handle);
     sfxSlider.Init(0.0f, sfxPos, sliderWidth, sliderHeight, 0, 100, AudioManager::GetInstance().GetSFXVolume() * 100, bar, handle);
