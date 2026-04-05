@@ -76,6 +76,9 @@ void EndMenu::Update()
     score = PlayerStats::GetInstance().killCount * 100
         - PlayerStats::GetInstance().deathCount * 50
         + timeBonus;
+    if (score < 0) {
+        score = minScore;
+    }
 }
 
 void EndMenu::Render()
