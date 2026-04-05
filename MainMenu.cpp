@@ -12,6 +12,8 @@ extern int gGameRunning;
 static std::vector<GameObject*> menuObjects;
 static std::vector<GameObject*> warningObjects;
 static bool showOverwriteWarning = false;
+static std::vector<GameObject*> exitConfirmObjects;
+static bool showExitConfirm = false;
 
 static GameObject* MakeButton(float w, float h, float x, float y,
     const char* label, std::vector<GameObject*>& vec, std::function<void()> onClick,
@@ -139,7 +141,7 @@ void MainMenu_Init()
 
     // EXIT
     MakeButton(btnW, btnH, cx, startY - gap * 5, "EXIT", menuObjects, []() {
-        gGameRunning = 0;
+		showExitConfirm = true;
         });
 
     InitGameObjects(menuObjects);
@@ -183,6 +185,29 @@ void MainMenu_Init()
     //    SaveManager::GetInstance().LoadAudioData();
     //}
     //AudioManager::GetInstance().PlayMusic("mainMenu");
+
+    // --- EXIT CONFIRM PANEL ---
+    GameObject* exitBG = new GameObject(600.f, 300.f, cx, 0.f, 0, 0, true);
+    exitBG->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
+    AddGameObjectToVector(exitBG, exitConfirmObjects);
+
+    GameObject* exitTitle = new GameObject(460.f, 60.f, cx, 80.f, 0, 0, true);
+    Text* exitTitleText = exitTitle->AddComponent(new Text());
+    exitTitleText->inWorldSpace = false;
+    exitTitleText->SetText("ARE YOU SURE YOU WANT TO EXIT?");
+    AddGameObjectToVector(exitTitle, exitConfirmObjects);
+
+    // YES
+    MakeButton(200.f, 55.f, cx - 150.f, -60.f, "YES", exitConfirmObjects, []() {
+        gGameRunning = 0;
+        });
+
+    // NO
+    MakeButton(200.f, 55.f, cx + 150.f, -60.f, "NO", exitConfirmObjects, []() {
+        showExitConfirm = false;
+        });
+
+    InitGameObjects(exitConfirmObjects);
 }
 
 void MainMenu_Update()
@@ -196,19 +221,26 @@ void MainMenu_Update()
     for (GameObject* go : warningObjects)
         go->isActive = showOverwriteWarning;
 
+    for (GameObject* go : exitConfirmObjects)
+        go->isActive = showExitConfirm;
+
     // block main menu interaction when warning is open
     for (GameObject* go : menuObjects)
     {
         Collider* col = go->GetComponent<Collider>();
-        if (col) col->canInteract = !showOverwriteWarning;
+        if (col) col->canInteract = !showOverwriteWarning && !showExitConfirm;
     }
 
     if (AEInputCheckTriggered(AEVK_ESCAPE) && showOverwriteWarning)
         showOverwriteWarning = false;
 
     if (!AudioMenu::GetInstance().IsOpen())UpdateGameObjects(menuObjects);
+
     if (showOverwriteWarning)
         UpdateGameObjects(warningObjects);
+
+    if (showExitConfirm)
+        UpdateGameObjects(exitConfirmObjects);
 }
 
 void MainMenu_Draw()
@@ -218,6 +250,8 @@ void MainMenu_Draw()
     if (showOverwriteWarning)
         RenderGameObjects(warningObjects);
 
+    if (showExitConfirm)
+        RenderGameObjects(exitConfirmObjects);
     // fade manager render must always be last
     FadeManager::GetInstance().Render();
 }
@@ -233,4 +267,9 @@ void MainMenu_Free()
     warningObjects.clear();
 
     showOverwriteWarning = false;
+
+    FreeGameObjects(exitConfirmObjects);
+    for (GameObject* go : exitConfirmObjects) delete go;
+    exitConfirmObjects.clear();
+    showExitConfirm = false;
 }
