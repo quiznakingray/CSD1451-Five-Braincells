@@ -80,9 +80,9 @@ void AudioManager::Init()
 
     LoadAllAudio(); // load all audio files
 
-    SetMasterVolume(GetMasterVolume());
-    SetMusicVolume(GetMusicVolume());
-    SetSFXVolume(GetSFXVolume());
+    //SetMasterVolume(GetMasterVolume());
+    //SetMusicVolume(GetMusicVolume());
+    //SetSFXVolume(GetSFXVolume());
 }
 
 void AudioManager::Update()
