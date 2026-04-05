@@ -65,6 +65,15 @@ void EndMenu::Update()
         GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::MENU);
         GameStateManager::GetInstance().gamePaused = false;
     }
+
+    int totalSeconds = static_cast<int>(PlayerStats::GetInstance().GetTotalSeconds());
+    int minutes = totalSeconds / 60;
+    int seconds = totalSeconds % 60;
+    int timeBonus = won ? max(0, 1000 - totalSeconds) : 0;
+
+    score = PlayerStats::GetInstance().killCount * 100
+        - PlayerStats::GetInstance().deathCount * 50
+        + timeBonus;
 }
 
 void EndMenu::Render()
@@ -112,22 +121,25 @@ void EndMenu::Render()
     AEGfxSetColorToAdd(0, 0, 0, 0);
 
     // --- Title ---
-    AEGfxPrint(TextManager::pFont, "YOU WIN!",
-        -0.15f, 0.45f, 1.4f, 1.0f, 1.f, 1.0f, 1.0f);
+    if (won)
+        AEGfxPrint(TextManager::pFont, "YOU WIN!",
+            -0.15f, 0.45f, 1.4f, 0.0f, 1.0f, 0.0f, 1.0f);
+    else
+        AEGfxPrint(TextManager::pFont, "YOU LOST!",
+            -0.18f, 0.45f, 1.4f, 1.0f, 0.0f, 0.0f, 1.0f);
+
 
     // --- Stats ---
     char scoreText[50], timeText[50], deathText[50], killCount[50];
+
     int totalSeconds = static_cast<int>(PlayerStats::GetInstance().GetTotalSeconds());
     int minutes = totalSeconds / 60;
     int seconds = totalSeconds % 60;
-    int timeBonus = max(0, 1000 - totalSeconds);
-
-    score = PlayerStats::GetInstance().killCount * 100
-        - PlayerStats::GetInstance().deathCount * 50
-        + timeBonus;
-
     sprintf_s(scoreText, "Score: %d", score);
-    sprintf_s(timeText, "Time: %d:%02d", minutes, seconds);
+    if (won)
+        sprintf_s(timeText, "Time: %d:%02d", minutes, seconds);
+    else
+        sprintf_s(timeText, "Time: DNF");
     sprintf_s(deathText, "Deaths: %d", PlayerStats::GetInstance().deathCount);
     sprintf_s(killCount, "Kills: %d", PlayerStats::GetInstance().killCount);
 

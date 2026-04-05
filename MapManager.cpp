@@ -1172,13 +1172,7 @@ void GoalTile::Init() {
     collider->OnTriggerOver = [this](Collider* other, int) {
         if (Player* player = dynamic_cast<Player*>(other->owner))
         {
-            if (current == GAME_STATE_TYPE::LEVEL3)
-            {
-                interactionTextBox->SetText("You Win!");
-            }
-            else {
-                interactionTextBox->SetText("[F] Enter");
-            }
+            interactionTextBox->SetText("[F] Enter");
             if (AEInputCheckTriggered(AEVK_F))
             {
                 AudioManager::GetInstance().PlaySFX("goalEnter");
@@ -1195,6 +1189,7 @@ void GoalTile::Init() {
                     break;
                 case GAME_STATE_TYPE::LEVEL3:
                     // put end menu here
+					EndMenu::GetInstance().won = true;
 					EndMenu::GetInstance().isActive = true;
 					GameStateManager::GetInstance().gamePaused = true;
                     break;

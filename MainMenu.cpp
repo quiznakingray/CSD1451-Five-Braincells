@@ -72,6 +72,22 @@ void MainMenu_Init()
     //titleText->SetText("Just Two Guys");
     //titleText->size = 2.f;
     //AddGameObjectToVector(title, menuObjects);
+  
+    // highscore
+    SaveManager::GetInstance().LoadPlayerData();
+    int highScore = SaveManager::GetInstance().playerSaveData.highScore;
+    char scoreBuffer[32];
+    sprintf_s(scoreBuffer, "HIGH SCORE: %d", highScore);
+
+    GameObject* scoreObj = new GameObject(400.f, 50.f, cx, startY + gap, 1, 0, true);
+    scoreObj->AddComponent(new Sprite())->meshColor = 0x00000000;
+    Text* scoreText = scoreObj->AddComponent(new Text());
+    scoreText->inWorldSpace = false;
+	scoreText->size = 1.5f;
+    scoreText->SetText(scoreBuffer);
+    scoreText->SetColor({ 1.f, 0.8f, 0.f, 1.0f }); 
+    AddGameObjectToVector(scoreObj, menuObjects);
+
 
 	GameObject* bg = new GameObject(winW, winH, 0, 0, 0, 0, true);
 	Sprite* bgSprite = bg->AddComponent(new Sprite());

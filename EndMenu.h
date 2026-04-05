@@ -14,6 +14,7 @@ struct EndMenu
     EndMenu& operator=(const EndMenu&) = delete;
 
     bool  isActive = false;
+	bool  won = false;
     int   score = 0;
     float timeTaken = 0.0f;
     int   deathCounter = 0;

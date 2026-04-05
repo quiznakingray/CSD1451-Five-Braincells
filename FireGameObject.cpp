@@ -7,14 +7,14 @@
 static std::vector<FireGameObject*> firePool;
 void FireGameObject::Init()
 {
-	//float randScale = MapManager::GetInstance().tileSize / 2.0f + AERandFloat() * MapManager::GetInstance().tileSize;
-	scale = {100, 100};
+	float randScale = MapManager::GetInstance().tileSize / 2.0f + AERandFloat() * MapManager::GetInstance().tileSize;
+	scale = {randScale, randScale};
 	Sprite* s = new Sprite();
 	s->textureFileName = "Assets/SpriteSheets/Fire.png";
 	s->spriteSheet = Sprite::SpriteSheet(1, 7);
 	s->spriteSheet.isSpriteSheet = true;
 	s->opacity = 0.75f;
-
+	s->offset = { 0.f, randScale * 0.5f - MapManager::tileSize * 0.5f };
 
 	fireAnim = new Animation(s);
 	fireAnim->loopAnimation = true;
