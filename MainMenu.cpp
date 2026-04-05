@@ -179,7 +179,7 @@ void MainMenu_Init()
 
     InitGameObjects(warningObjects);
 
-    if (SaveManager::GetInstance().HasSaveData()) {
+    if (SaveManager::GetInstance().HasAudioData()) {
         SaveManager::GetInstance().LoadAudioData();
     }
     //AudioManager::GetInstance().PlayMusic("mainMenu");

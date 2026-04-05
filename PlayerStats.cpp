@@ -170,8 +170,8 @@ PLAYER_TYPE PlayerStats::GetPlayerType()
 
 void PlayerStats::ResetAll()
 {
-    health = 5;
-    maxHealth = 5;
+    health = 3;
+    maxHealth = 3;
     damage = 1;
     proficiency = 0.0f;
     speedMult = 1.0f;

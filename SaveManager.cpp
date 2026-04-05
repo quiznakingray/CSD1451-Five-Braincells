@@ -195,6 +195,12 @@ bool SaveManager::HasSaveData()
     std::ifstream file("Assets/Saves/playerSave.dat");
     return file.is_open();
 }
+
+bool SaveManager::HasAudioData() {
+    std::ifstream file("Assets/Saves/audioSave.dat");
+    return file.is_open();
+}
+
 void SaveManager::LoadAll()
 {
     // Read everything from disk first

@@ -1,10 +1,14 @@
 ﻿#include "AudioMenu.h"
 #include "CameraSystem.h"
+#include "SaveManager.h"
 #include <iostream>
 
 void AudioMenu::Toggle()
 {
     isOpen = !isOpen;
+    if (!isOpen) {
+        SaveManager::GetInstance().SaveAudioData();
+    }
 }
 
 bool AudioMenu::IsOpen() const
@@ -158,8 +162,8 @@ void AudioMenu::Update()
     // Update music volume based on music slider
     if (currMusic != prevMusic)
     {
-        AudioManager::GetInstance().SetMusicVolume(currMusic / 100.0f);
-        prevMusic = currMusic;
+        AudioManager::GetInstance().GetInstance().SetMusicVolume(currMusic / 100.0f);
+        prevMusic = currMusic; 
     }
 
     // Update sfx volume based on sfx slider

@@ -59,6 +59,7 @@ void EndMenu::Update()
     if (tryAgainBtn.isHovered && AEInputCheckTriggered(AEVK_LBUTTON))
     {
         isActive = false;
+        PlayerStats::GetInstance().ResetAll();
         LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
         FadeManager::GetInstance().BeginFadeOut(GAME_STATE_TYPE::LOADING);
         GameStateManager::GetInstance().gamePaused = false;

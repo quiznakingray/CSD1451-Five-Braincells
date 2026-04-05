@@ -110,6 +110,7 @@ struct SaveManager : public Singleton<SaveManager>
     void SaveAll();
     void LoadAll();
     bool HasSaveData();
+    bool HasAudioData();
     void ResetSave();
 };
 
