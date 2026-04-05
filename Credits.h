@@ -1,4 +1,8 @@
-
+//---------------------------------------------------------
+// author:    Choy Phui Mun & Ang Zi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 struct CreditsMenu
 {
 	static void Credits_Init();

@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun 
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef INPUT_MANAGER_H
 #define INPUT_MANAGER_H
 

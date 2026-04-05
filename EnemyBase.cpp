@@ -1,4 +1,9 @@
-﻿#include "EnemyBase.h"
+﻿//---------------------------------------------------------
+// author:    Nadyrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+#include "EnemyBase.h"
 
 // Initialize enemy with proper stats
 void InitEnemyBase(EnemyBase& enemy, EnemyType type)

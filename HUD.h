@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef HUD_H
 #define HUD_H
 

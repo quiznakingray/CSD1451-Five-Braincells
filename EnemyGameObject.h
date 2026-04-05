@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Nadyrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef ENEMY_GAME_OBJECT_H
 #define ENEMY_GAME_OBJECT_H
 

@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Ang Zi Jun & Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef PARTICLE_EFFECTS_H
 #define PARTICLE_EFFECTS_H
 

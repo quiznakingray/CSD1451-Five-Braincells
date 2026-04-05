@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Ang Zi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "TextManager.h"
 #include "AEEngine.h"
 

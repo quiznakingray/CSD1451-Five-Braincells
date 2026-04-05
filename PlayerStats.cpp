@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Chua Qi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "PlayerStats.h"
 #include "SaveManager.h"
 #include "AudioManager.h"

@@ -1,3 +1,9 @@
+
+//---------------------------------------------------------
+// author:    Kon Xin Yi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "CooldownTimer.h"
 
 #pragma region Timer

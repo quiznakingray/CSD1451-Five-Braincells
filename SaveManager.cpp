@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Kon Xin Yi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "SaveManager.h"
 #include "MapManager.h"
 #include "EnemyManager.h"

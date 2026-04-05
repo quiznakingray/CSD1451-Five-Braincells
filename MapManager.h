@@ -1,4 +1,9 @@
-﻿#ifndef MAP_MANAGER_H 
+﻿//---------------------------------------------------------
+// author:    Kon Xin Yi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+#ifndef MAP_MANAGER_H 
 #define MAP_MANAGER_H
 
 #include "AEEngine.h"

@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Kon Xin Yi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "FadeManager.h"
 
 void FadeManager::BuildFadeQuad()

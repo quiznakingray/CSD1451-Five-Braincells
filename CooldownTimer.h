@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Kon Xin Yi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #pragma once
 #include "AEEngine.h"
 struct CooldownTimer

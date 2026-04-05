@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Nadyrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "UIButton.h"
 #include "AudioManager.h"
 

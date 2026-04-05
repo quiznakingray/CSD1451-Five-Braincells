@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "AEEngine.h"
 #include "PlayerGameObject.h"
 #include "MapManager.h"

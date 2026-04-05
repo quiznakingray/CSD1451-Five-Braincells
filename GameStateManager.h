@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Kon Xin Yi & Ang Zi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef GAME_STATE_MANAGER
 #define GAME_STATE_MANAGER
 

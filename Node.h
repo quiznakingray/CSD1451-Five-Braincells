@@ -1,4 +1,9 @@
-﻿#ifndef NODE_H
+﻿//---------------------------------------------------------
+// author:    Nadyrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+#ifndef NODE_H
 #define NODE_H
 
 #include "AEEngine.h"

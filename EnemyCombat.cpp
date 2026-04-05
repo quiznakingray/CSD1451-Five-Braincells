@@ -1,4 +1,9 @@
-﻿#include "EnemyCombat.h"
+﻿//---------------------------------------------------------
+// author:    Nadyrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+#include "EnemyCombat.h"
 #include "PlayerGameObject.h"
 #include "PlayerStats.h"
 #include <iostream>

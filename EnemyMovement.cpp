@@ -1,4 +1,9 @@
-﻿#include "EnemyMovement.h"
+﻿//---------------------------------------------------------
+// author:    Nadyrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+#include "EnemyMovement.h"
 #include "EnemyGameObject.h"
 #include <algorithm>
 #include <cmath>

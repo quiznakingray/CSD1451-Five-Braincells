@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Nadyrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef UI_SLIDER_H
 #define UI_SLIDER_H
 

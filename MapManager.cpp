@@ -1,4 +1,9 @@
-﻿#include "MapManager.h"
+﻿//---------------------------------------------------------
+// author:    Kon Xin Yi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+#include "MapManager.h"
 #include "SpriteManager.h"
 #include "PlayerGameObject.h"
 #include "PlayerManager.h"

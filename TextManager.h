@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Ang Zi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef TEXT_MANAGER_H
 #define TEXT_MANAGER_H
 

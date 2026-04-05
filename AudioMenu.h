@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Nadyrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef AUDIO_MENU_H
 #define AUDIO_MENU_H
 
@@ -5,6 +10,8 @@
 #include "UISlider.h"
 #include "SingletonTemplate.h"
 
+
+/// Audio menu to adjust master, music, and sfx volumes
 class AudioMenu : public Singleton<AudioMenu>
 {
 public:
@@ -13,7 +20,7 @@ public:
     void Render();
     void Free();
 
-    void Toggle();
+	void Toggle(); // toggle audio menu on/off
     bool IsOpen() const;
 
 private:

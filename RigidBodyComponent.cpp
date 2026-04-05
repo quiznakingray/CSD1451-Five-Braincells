@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "RigidBodyComponent.h"
 #include "PhysicsManager.h"
 #include "GameObjectManager.h"

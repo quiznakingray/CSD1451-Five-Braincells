@@ -131,15 +131,12 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="PlayerGameObject.cpp" />
     <ClCompile Include="PlayerManager.cpp" />
     <ClCompile Include="PlayerStats.cpp" />
-    <ClCompile Include="PowerUps.cpp" />
     <ClCompile Include="RigidBodyComponent.cpp" />
     <ClCompile Include="SaveManager.cpp" />
-    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SplashScreen.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="TextComponent.cpp" />
     <ClCompile Include="TextManager.cpp" />
-    <ClCompile Include="UI.cpp" />
     <ClCompile Include="UiButton.cpp" />
     <ClCompile Include="UiSlider.cpp" />
   </ItemGroup>
@@ -177,16 +174,13 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="PlayerGameObject.h" />
     <ClInclude Include="PlayerManager.h" />
     <ClInclude Include="PlayerStats.h" />
-    <ClInclude Include="PowerUps.h" />
     <ClInclude Include="RigidBodyComponent.h" />
     <ClInclude Include="SaveManager.h" />
-    <ClInclude Include="Settings.h" />
     <ClInclude Include="SingletonTemplate.h" />
     <ClInclude Include="SplashScreen.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="TextComponent.h" />
     <ClInclude Include="TextManager.h" />
-    <ClInclude Include="UI.h" />
     <ClInclude Include="UiButton.h" />
     <ClInclude Include="UiSlider.h" />
     <ClInclude Include="AEVec3.h" />

@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef  PLAYER_GAME_OBJECT_H
 #define  PLAYER_GAME_OBJECT_H
 

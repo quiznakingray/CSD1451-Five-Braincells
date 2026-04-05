@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:   Kon Xin Yi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #pragma once
 
 template<typename T>

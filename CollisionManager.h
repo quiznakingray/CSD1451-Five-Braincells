@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef COLLISION_MANAGER_H
 #define COLLISION_MANAGER_H
 
@@ -7,12 +12,12 @@
 #include "AEVec3.h"
 #include "ComponentBase.h"
 
-
+// Enum to specify collider type
 enum class COLLIDER_TYPE {
 	BOX_COLLIDER,
 	CIRCLE_COLLIDER
 };
-
+// Bitmask enum to specify collision sides
 enum COLLISION_SIDE {
 	NONE = 0,
 	TOP = 1 << 0,  // 0001
@@ -35,8 +40,8 @@ struct Collider : ComponentBase {
 	AEVec2 center{};
 	AEVec2 size{};
 
-	bool canCollide = true;
-	bool canInteract = false;
+	bool canCollide = true; // whether this collider should check for collisions
+	bool canInteract = false; // whether this collider should check for mouse interactions
 
 	bool isTrigger = false;
 	bool isHovering = false;
@@ -70,6 +75,7 @@ struct Collider : ComponentBase {
 		type = c_type;
 	}
 
+	// Helper functions to get position and scale
 	AEVec3 GetPos();
 	AEVec2 GetPos2D();
 	AEVec2 GetScale();
@@ -94,7 +100,7 @@ struct Collider : ComponentBase {
 };
 
 
-//bool CheckBoxCollision(AEVec2 obj1Pos, AEVec2 obj2Pos, AEVec2 obj1Size, AEVec2 obj2Size);
+// Collision checking functions
 int  GetAllCollisionSides(AEVec2 aPos, AEVec2 bPos, AEVec2 aScale, AEVec2 bScale);
 bool BoxToCircleCollision(AEVec2 boxPos, AEVec2 circlePos, AEVec2 boxScale, AEVec2 circleScale);
 bool CircleToCircleCollision(AEVec2 aPos, AEVec2 bPos, AEVec2 aScale, AEVec2 bScale);

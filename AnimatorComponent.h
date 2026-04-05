@@ -1,3 +1,9 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+
 #ifndef ANIMATOR_COMPONENT
 #define ANIMATOR_COMPONENT
 #include "AEEngine.h"
@@ -16,16 +22,17 @@ struct Animation {
 	void Free();
 };
 
+// Animator component to handle sprite animations
 struct Animator : ComponentBase{
 	Animation* currentAnimation = nullptr;
-	Animation * nextAnimation = nullptr;
+	Animation* nextAnimation = nullptr; // next animation to transition to after current finishes (if not looping)
 
 	f32 animationTimer = 0.0f;
 
 	Animator(Animation* curr = nullptr) : currentAnimation(curr){
 	}
 	~Animator();
-	void PlayAnimation(Animation* a);
+	void PlayAnimation(Animation* a); 
 	
 
 	void Init() override;

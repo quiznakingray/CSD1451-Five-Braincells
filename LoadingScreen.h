@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Kon Xin Yi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef LOADINGSCREEN_H
 #define LOADINGSCREEN_H
 #include "GameStateManager.h"

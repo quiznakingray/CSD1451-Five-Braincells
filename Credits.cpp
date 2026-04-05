@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun & Ang Zi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "Credits.h"
 #include "GameStateManager.h"
 #include "TextManager.h"

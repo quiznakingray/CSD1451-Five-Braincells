@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Chua Qi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef PLAYER_STATS_H
 #define PLAYER_STATS_H
 #include <iostream>

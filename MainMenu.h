@@ -1,4 +1,8 @@
-//using Coordinate Systems, Text Rendering, and Input Handling from moodle.
+//---------------------------------------------------------
+// author:    Ang Zi Jun & Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 
 #ifndef MAIN_MENU_HPP
 #define MAIN_MENU_HPP

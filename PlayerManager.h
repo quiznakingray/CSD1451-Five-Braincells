@@ -1,4 +1,9 @@
 #ifndef PLAYER_MANAGER_H
+//---------------------------------------------------------
+// author:    Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #define PLAYER_MANAGER_H
 
 #include "SingletonTemplate.h"

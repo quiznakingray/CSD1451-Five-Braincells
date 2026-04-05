@@ -1,4 +1,9 @@
-﻿#include "UISlider.h"
+﻿//---------------------------------------------------------
+// author:    Naydrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+#include "UISlider.h"
 
 float UISlider::NormalizeScreenX(float px) const
 {

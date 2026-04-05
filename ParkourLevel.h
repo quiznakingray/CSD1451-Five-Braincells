@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Kon Xin Yi & Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef PARKOUT_LEVEL
 #define PARKOUT_LEVEL
 

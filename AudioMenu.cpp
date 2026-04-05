@@ -1,4 +1,9 @@
-﻿#include "AudioMenu.h"
+﻿//---------------------------------------------------------
+// author:    Nadyrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+#include "AudioMenu.h"
 #include "CameraSystem.h"
 #include "SaveManager.h"
 #include <iostream>

@@ -1,6 +1,11 @@
 #ifndef RIGID_BODY_COMPONENT
 #define RIGID_BODY_COMPONENT
 
+//---------------------------------------------------------
+// author:    Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "AEEngine.h"
 #include "ComponentBase.h"
 

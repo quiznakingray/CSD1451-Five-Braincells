@@ -1,4 +1,9 @@
-﻿#include "MainMenu.h"
+﻿//---------------------------------------------------------
+// author:    Ang Zi Jun & Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+#include "MainMenu.h"
 #include "GameStateManager.h"
 #include "AudioManager.h"
 #include "AudioMenu.h"

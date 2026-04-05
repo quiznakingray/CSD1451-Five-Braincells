@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Kon Xin Yi & Ang Zi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "GameStateManager.h"
 #include "ParkourLevel.h"
 #include "MainMenu.h"

@@ -1,3 +1,9 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun & Ang Zi Jun & Nadyrah Tarmidi & Kon Xin Yi & Chua Qi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
+
 // ---------------------------------------------------------------------------
 // includes
 #include <crtdbg.h> // To check for memory leaks

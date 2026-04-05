@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun & Ang Zi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #include "EndMenu.h"
 #include "AEEngine.h"
 #include "GameStateManager.h"

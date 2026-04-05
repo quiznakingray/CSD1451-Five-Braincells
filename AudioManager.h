@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Nadyrah Tarmidi
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef AUDIO_MANAGER_H
 #define AUDIO_MANAGER_H
 
@@ -14,6 +19,7 @@ public:
     void Update();
     void Exit();
 
+	//set volumes based on audio menu sliders
     void SetMasterVolume(float v);
     void SetMusicVolume(float v);
     void SetSFXVolume(float v);
@@ -23,6 +29,7 @@ public:
     float GetMusicVolume() const;
     float GetSFXVolume() const;
 
+	// Play audio by name
     void PlaySFX(const std::string& name);
     void PlayMusic(const std::string& name, bool loop = true);
 

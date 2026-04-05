@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun & Ang Zi Jun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef END_MENU_H
 #define END_MENU_H
 

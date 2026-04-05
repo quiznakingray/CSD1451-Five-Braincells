@@ -1,3 +1,8 @@
+//---------------------------------------------------------
+// author:    Choy Phui Mun
+//
+// Copyright 2026 DigiPen, All rights reserved.
+//---------------------------------------------------------
 #ifndef PHYSICS_MANAGER
 #define PHYSICS_MANAGER
 #include "AEEngine.h"
