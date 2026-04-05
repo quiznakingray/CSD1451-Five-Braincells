@@ -60,17 +60,17 @@ void ParkourLevel::Init()
 	EndMenu::GetInstance().Init();
 	
 
-	if (SaveManager::GetInstance().toContinue)
+	if (SaveManager::GetInstance().toContinue &&
+		!SaveManager::GetInstance().playerSaveData.preserveOnLoad)
 	{
-		// always load player when continuing from main menu
 		PlayerManager::GetInstance().Load();
-
-		MapManager::GetInstance().LoadMapState();
-		EnemyManager::GetInstance().LoadEnemyStates();
-		SaveManager::GetInstance().toContinue = false;
 	}
 
-	
+	if (SaveManager::GetInstance().toContinue)
+	{
+		MapManager::GetInstance().LoadMapState();
+		SaveManager::GetInstance().toContinue = false;
+	}
 	// HUD
 	HUD::GetInstance().Init();
 
