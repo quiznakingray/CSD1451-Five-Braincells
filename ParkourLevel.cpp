@@ -15,7 +15,7 @@
 #include "FadeManager.h"
 #include "ParticleEffects.h"
 
-
+GameObject* gameBg;
 std::vector<GameObject*> levelGameObjectVector{};
 ParticleSystem fireRainOverlay;
 
@@ -29,6 +29,12 @@ void ParkourLevel::Init()
 {
 	// Clears game background
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
+
+	gameBg = new GameObject((float)AEGfxGetWindowWidth(), (float) AEGfxGetWindowHeight(), 0, 0, 0 , 0, true);
+	Sprite* s = gameBg->AddComponent(new Sprite());
+	s->textureFileName = "Assets/Environment/level_bg.png";
+	gameBg->Init();
+
 	switch (current) {
 	case GAME_STATE_TYPE::LEVEL1:
 		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL1);
@@ -88,6 +94,7 @@ void ParkourLevel::Init()
 
 void ParkourLevel::Update()
 {
+	gameBg->Update();
 	double dt = AEFrameRateControllerGetFrameTime();
 	InputManager::GetInstance().Update();
 
@@ -104,8 +111,8 @@ void ParkourLevel::Update()
 		return;
 	}
 	
-	fireRainOverlay.CreateFireRain(AEGfxGetWindowWidth(), AEGfxGetWindowHeight());
-	fireRainOverlay.Update(dt);
+	fireRainOverlay.CreateFireRain((float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight());
+	fireRainOverlay.Update(static_cast<float>(dt));
 
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
@@ -113,7 +120,8 @@ void ParkourLevel::Update()
 
 void ParkourLevel::Render()
 {
-	AEGfxSetBackgroundColor(0.6f, 0.8f, 0.85f);
+	gameBg->Render();
+	//AEGfxSetBackgroundColor(0.6f, 0.8f, 0.85f);
 	MapManager::GetInstance().DrawMapSprite();
 	RenderFire();
 	PlayerManager::GetInstance().Render();
@@ -137,6 +145,9 @@ void ParkourLevel::Free()
 	// Clean up game objects
 	//AEGfxSetCamPosition(0.f, 0.f);
 	//FreeGameObjects(levelGameObjectVector);
+	gameBg->Free();
+	delete gameBg;
+
 	for (auto* obj : levelGameObjectVector) {
 		// skip players PlayerManager owns and deletes them
 		if (obj == PlayerManager::GetInstance().meleePlayer) continue;

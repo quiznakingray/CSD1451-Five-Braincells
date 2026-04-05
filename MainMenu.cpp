@@ -60,8 +60,8 @@ void MainMenu_Init()
     float winH = (float)AEGfxGetWindowHeight();
     float cx = 0.f;
     float btnW = 400.f, btnH = 60.f;
-    float startY = 100.f;
-    float gap = 100.f;
+    float startY = -50.f;
+    float gap = 70.f;
 
     bool hasSave = SaveManager::GetInstance().HasSaveData();
 
@@ -95,7 +95,7 @@ void MainMenu_Init()
 
     GameObject* bg = new GameObject(winW, winH, 0, 0, 0, 0, true);
     Sprite* bgSprite = bg->AddComponent(new Sprite());
-    bgSprite->textureFileName = "Assets/Environment/bg_grasslands.png";
+    bgSprite->textureFileName = "Assets/Environment/main_menu_bg.png";
     AddGameObjectToVector(bg, menuObjects);
 
     // NEW GAME

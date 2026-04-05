@@ -71,8 +71,6 @@ void EndMenu::Update()
     }
 
     int totalSeconds = static_cast<int>(PlayerStats::GetInstance().GetTotalSeconds());
-    int minutes = totalSeconds / 60;
-    int seconds = totalSeconds % 60;
     int timeBonus = won ? max(0, 1000 - totalSeconds) : 0;
 
     score = PlayerStats::GetInstance().killCount * 100

@@ -1238,7 +1238,7 @@ void CheckpointTile::Init() {
 
 void CheckpointTile::Update()
 {
-	float dt = AEFrameRateControllerGetFrameTime();
+	float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
     Tile::Update();
 	checkpointParticles.Update(dt);
 }
