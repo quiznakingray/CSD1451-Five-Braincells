@@ -45,6 +45,11 @@ void SaveManager::SetPreservePlayerOnLoad(bool preserve)
     playerSaveData.preserveOnLoad = preserve;
 }
 
+void SaveManager::SavePlayerHealth(int health) {
+    playerSaveData.health = health;
+    SavePlayerData();
+}
+
 void SaveManager::SaveDeathCount(int count)
 {
     playerSaveData.deathCount = count;

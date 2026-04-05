@@ -229,7 +229,7 @@ void ConfirmationMenu::Init()
         if (isRestartConfirm)
         {
             // Restart: reload the current level through the loading screen
-            LoadingScreen::targetState = previous;
+            LoadingScreen::targetState = current;
             GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
         }
         else

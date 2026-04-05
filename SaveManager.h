@@ -96,6 +96,7 @@ struct SaveManager : public Singleton<SaveManager>
     void SavePlayerData();
     void LoadPlayerData();
     void SetPreservePlayerOnLoad(bool preserve);
+    void SavePlayerHealth(int health);
     void SaveDeathCount(int count);
     void SavePlayerTime(float seconds);
     void SaveKillCount(int count);
