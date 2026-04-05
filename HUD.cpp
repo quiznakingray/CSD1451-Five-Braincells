@@ -307,7 +307,7 @@ void HUD::Init()
 
 	Text* reloadText = deathReloadBtn->AddComponent(new Text());
 	reloadText->inWorldSpace = false;
-	reloadText->SetText("RELOAD SAVE");
+	reloadText->SetText("RELOAD");
 	AddGameObjectToVector(deathReloadBtn, deathHUDGameObject);
 
 	// MAIN MENU button
