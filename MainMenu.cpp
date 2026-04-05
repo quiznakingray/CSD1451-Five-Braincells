@@ -179,6 +179,9 @@ void MainMenu_Init()
 
     InitGameObjects(warningObjects);
 
+    if (SaveManager::GetInstance().HasSaveData()) {
+        SaveManager::GetInstance().LoadAudioData();
+    }
     //AudioManager::GetInstance().PlayMusic("mainMenu");
 }
 
