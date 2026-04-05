@@ -2,6 +2,7 @@
 #include "GameStateManager.h"
 #include "TextManager.h"
 #include "AEEngine.h"
+#include "FadeManager.h"
 
 static AEGfxVertexList* pMesh;
 static AEGfxTexture* pBackground;
@@ -26,10 +27,17 @@ void ControlsMenu::Controls_Init()
     pBackground = AEGfxTextureLoad("Assets/Environment/bg_castle.png"); // change path
 
     backBtn = { 0.f, 390.f, 200.f, 55.f, false };
+
+    FadeManager::GetInstance().BeginFadeIn();
 }
 
 void ControlsMenu::Controls_Update()
 {
+    FadeManager::GetInstance().Update();
+
+    // Block button input while a fade is already in progress
+    if (FadeManager::GetInstance().IsFading()) return;
+
     s32 mx, my;
     AEInputGetCursorPosition(&mx, &my);
     float halfW = AEGfxGetWindowWidth() * 0.5f;
@@ -155,6 +163,9 @@ void ControlsMenu::Controls_Draw()
     AEGfxGetPrintSize(TextManager::pFont, "BACK", 1.0f, &tw, &th);
     AEGfxPrint(TextManager::pFont, "BACK",
         nx - tw * 0.5f, ny - th * 0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+
+    // fade manager render must always be last
+    FadeManager::GetInstance().Render();
 }
 
 void ControlsMenu::Controls_Free()

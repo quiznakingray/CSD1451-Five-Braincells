@@ -12,6 +12,7 @@
 #include "PauseMenu.h"
 #include "EndMenu.h"
 #include "FireGameObject.h"
+#include "FadeManager.h"
 
 
 std::vector<GameObject*> levelGameObjectVector{};
@@ -40,7 +41,7 @@ void ParkourLevel::Init()
 		MapManager::GetInstance().InitMap("Assets/Maps/Map_Level_01.csv", GAME_STATE_TYPE::LEVEL1);
 		break;
 	}
-	
+
 	MapManager::GetInstance().AddTilesToGameObjectVector(levelGameObjectVector);
 
 	PlayerManager::GetInstance().Init();
@@ -59,10 +60,7 @@ void ParkourLevel::Init()
 
 	InitGameObjects(levelGameObjectVector);
 
-
 	EndMenu::GetInstance().Init();
-	
-
 
 	if (SaveManager::GetInstance().toContinue)
 	{
@@ -79,6 +77,9 @@ void ParkourLevel::Init()
 
 	// Pause
 	PauseMenu::GetInstance().Init();
+
+	// Fade in from black when the level starts
+	FadeManager::GetInstance().BeginFadeIn();
 }
 
 void ParkourLevel::Update()
@@ -86,19 +87,19 @@ void ParkourLevel::Update()
 	double dt = AEFrameRateControllerGetFrameTime();
 	InputManager::GetInstance().Update();
 
+	FadeManager::GetInstance().Update();
+
 	HUD::GetInstance().Update(dt);
 	if (GameStateManager::GetInstance().gamePaused) {
 		if (GameStateManager::GetInstance().showPauseMenu) {
 
 			PauseMenu::GetInstance().Update();
-			
+
 		}
 		EndMenu::GetInstance().Update();
 		return;
 	}
 	
-
-
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
 }
@@ -118,6 +119,9 @@ void ParkourLevel::Render()
 	//if (EndMenu::GetInstance().isActive) {
 		//EndMenu::GetInstance().Render();
 	//}
+	
+	// fade manager render must always be last
+	FadeManager::GetInstance().Render();
 }
 
 void ParkourLevel::Free()
@@ -141,7 +145,6 @@ void ParkourLevel::Free()
 		//	}
 		//}
 		//if (isArrow) continue;
-
 
 		if (dynamic_cast<Tile*>(obj)) continue;
 		obj->Free();
