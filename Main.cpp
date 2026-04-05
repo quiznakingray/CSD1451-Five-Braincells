@@ -53,7 +53,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	AudioMenu::GetInstance().Init();
 	TextManager::Init();
 	// Changing the window title
-	AESysSetWindowTitle("My New Demo!");
+	AESysSetWindowTitle("Just Two Guys");
 
 
 	printf("Hello LEVEL1\n");
