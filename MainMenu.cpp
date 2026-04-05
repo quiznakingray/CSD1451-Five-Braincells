@@ -125,27 +125,27 @@ void MainMenu_Init()
 
     // --- WARNING PANEL ---
     // Dark backdrop
-    GameObject* warnBG = new GameObject(500.f, 350.f, cx, 0.f, 2, 0, true);
-    warnBG->AddComponent(new Sprite())->meshColor = 0xEE111111;
+    GameObject* warnBG = new GameObject(1100.f, 500.f, cx, 0.f, 0, 0, true);
+    warnBG->AddComponent(new Sprite())->textureFileName = "Assets/TEMP_Sprites/button_idle.png";
     AddGameObjectToVector(warnBG, warningObjects);
 
     // Warning text
-    GameObject* warnTitle = new GameObject(460.f, 60.f, cx, 120.f, 2, 0, true);
-    warnTitle->AddComponent(new Sprite())->meshColor = 0x00000000;
+    GameObject* warnTitle = new GameObject(460.f, 60.f, cx, 120.f, 0, 0, true);
+    //warnTitle->AddComponent(new Sprite())->meshColor = 0x00000000;
     Text* warnTitleText = warnTitle->AddComponent(new Text());
     warnTitleText->inWorldSpace = false;
     warnTitleText->SetText("SAVE DATA EXISTS!");
     AddGameObjectToVector(warnTitle, warningObjects);
 
-    GameObject* warnMsg = new GameObject(460.f, 80.f, cx, 20.f, 2, 0, true);
-    warnMsg->AddComponent(new Sprite())->meshColor = 0x00000000;
+    GameObject* warnMsg = new GameObject(460.f, 80.f, cx, 20.f, 0, 0, true);
+    //warnMsg->AddComponent(new Sprite())->meshColor = 0x00000000;
     Text* warnMsgText = warnMsg->AddComponent(new Text());
     warnMsgText->inWorldSpace = false;
     warnMsgText->SetText("Starting a new game will erase your existing progress.");
     AddGameObjectToVector(warnMsg, warningObjects);
 
     // YES OVERWRITE
-    MakeButton(200.f, 55.f, cx - 120.f, -80.f, "YES, OVERWRITE", warningObjects, []() {
+    MakeButton(300.f, 55.f, cx - 200.f, -80.f, "YES, OVERWRITE", warningObjects, []() {
         SaveManager::GetInstance().ResetSave();
         LoadingScreen::targetState = GAME_STATE_TYPE::LEVEL1;
         GameStateManager::GetInstance().ChangeState(GAME_STATE_TYPE::LOADING);
@@ -153,7 +153,7 @@ void MainMenu_Init()
         });
 
     // CANCEL
-    MakeButton(200.f, 55.f, cx + 120.f, -80.f, "CANCEL", warningObjects, []() {
+    MakeButton(300.f, 55.f, cx + 200.f, -80.f, "CANCEL", warningObjects, []() {
         showOverwriteWarning = false;
         });
 
