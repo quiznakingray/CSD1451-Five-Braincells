@@ -27,6 +27,7 @@ public:
     void PlayMusic(const std::string& name, bool loop = true);
 
 private:
+    std::string currentMusic = "";
     friend class Singleton<AudioManager>;
 
     AudioManager();

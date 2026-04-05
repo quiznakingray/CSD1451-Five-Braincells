@@ -19,8 +19,7 @@ void AudioManager::LoadAllAudio()
     struct MusicFile { const char* key; const char* path; };
     MusicFile musicFiles[] = {
         {"mainMenu", "Assets/Sounds/mainMenu.wav"},
-        {"level1", "Assets/Sounds/level1.wav"},
-        {"level2", "Assets/Sounds/level2.wav"}
+        {"level", "Assets/Sounds/levelAmbience.wav"}
     };
 
     // Load all music audio
@@ -52,7 +51,7 @@ void AudioManager::LoadAllAudio()
         // WHAT WE MAY WANT
         { "walk", "Assets/Sounds/walk.wav" },
         { "jump", "Assets/Sounds/jump.wav" }, // DONT HAVE
-        { "land", "Assets/Sounds/land.wav" }, // NOT DONE
+        { "land", "Assets/Sounds/land.wav" },
         { "aimBow", "Assets/Sounds/aimBow.wav" },
         { "shootArrow", "Assets/Sounds/shootArrow.wav" },
         { "shieldOn", "Assets/Sounds/shieldOn.wav" }, // DONT HAVE
@@ -165,6 +164,18 @@ void AudioManager::PlaySFX(const std::string& name)
 
 void AudioManager::PlayMusic(const std::string& name, bool loop)
 {
+    // If same music already playing, do nothing
+    if (currentMusic == name)
+        return;
+
+    // Stop all currently playing music in the music group
+    if (AEAudioIsValidGroup(musicGroup))
+        AEAudioStopGroup(musicGroup);
+
+    // Play new music
     if (music.count(name))
+    {
         AEAudioPlay(music[name], musicGroup, musicVolume * masterVolume, 1.0f, loop ? -1 : 0);
+        currentMusic = name;
+    }
 }

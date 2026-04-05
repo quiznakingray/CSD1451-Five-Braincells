@@ -376,6 +376,20 @@ void Player::Update(){
 	}
 	hurtParticles.Update(dt);
 
+	bool isOnGround = rb->onCollider;
+
+	// Detect from air to ground
+	if (!wasOnGround && isOnGround)
+	{
+		if (rb->velocity.y < -50.0f)
+		{
+			AudioManager::GetInstance().PlaySFX("land");
+		}
+	}
+
+	// Store state for next frame
+	wasOnGround = isOnGround;
+
 	GameObject::Update();
 
 	//damage number 

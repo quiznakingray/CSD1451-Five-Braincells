@@ -20,6 +20,11 @@ void GameStateManager::Initialize(GAME_STATE_TYPE type)
 void GameStateManager::ChangeState(GAME_STATE_TYPE type)
 {
 	next = type;
+
+	if (type == GAME_STATE_TYPE::MENU)
+	{
+		AudioManager::GetInstance().PlayMusic("mainMenu");
+	}
 }
 
 GAME_STATE_TYPE GameStateManager::GetCurrentState() {
