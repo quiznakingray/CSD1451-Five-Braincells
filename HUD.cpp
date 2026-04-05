@@ -180,14 +180,15 @@ void HUD::Init()
 		//bar bg
 		GameObject* barBG = new GameObject(healthBarScale.x, healthBarScale.y, posX, healthBarStartPos.y, 1, 0, true);
 		Sprite* barBGSprite = barBG->AddComponent(new Sprite());
-		barBGSprite->meshColor = 0xFF640707;
+		barBGSprite->textureFileName = "Assets/SpriteSheets/heartBG.png";
+		barBGSprite->opacity = 0.5f;
 		healthBarsBG.push_back(barBG);
 		AddGameObjectToVector(barBG, HUDGameObjects);
 
 		// bar
 		GameObject* bar = new GameObject(healthBarScale.x, healthBarScale.y, posX, healthBarStartPos.y, 1, 0, true);
 		Sprite* sBar = bar->AddComponent(new Sprite());
-		sBar->meshColor = 0xFFdb0b0b;
+		sBar->textureFileName = "Assets/SpriteSheets/heart.png";
 		healthBars.push_back(bar);
 
 		AddGameObjectToVector(bar, HUDGameObjects);

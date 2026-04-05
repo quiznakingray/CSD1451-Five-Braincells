@@ -54,12 +54,13 @@ void PlayerStats::ReducePlayerHealth(int amount)
     {
         AudioManager::GetInstance().PlaySFX("playerDie");
         IncreaseDeathCounter();
+		health = PlayerStats::GetInstance().maxHealth; // reset health on death
         SaveManager::GetInstance().SavePlayerTime(totalSeconds);
         
-        //if (deathCount >= 10)
-        //{
+        if (deathCount >= 10)
+        {
             HUD::GetInstance().ShowDeathPanel();
-        //}
+        }
     }
 }
 
