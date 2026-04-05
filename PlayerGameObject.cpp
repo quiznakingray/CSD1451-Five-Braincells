@@ -758,6 +758,7 @@ void RangePlayer::PlayerInput()
 
 	if (AEInputCheckCurr(AEVK_Q))
 	{
+		ApplyDeceleration();
 		inAimingAnim = true;
 		if (AEInputCheckTriggered(AEVK_LBUTTON))
 		{
