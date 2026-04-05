@@ -16,6 +16,7 @@ struct EndMenu
     bool  isActive = false;
 	bool  won = false;
     int   score = 0;
+    int   minScore = 100;
     float timeTaken = 0.0f;
     int   deathCounter = 0;
 
