@@ -521,7 +521,7 @@ Tile* MapManager::InitTile(std::string cell, size_t col, size_t row)
         break;
     }
 
-    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMYMELEE) {
+    if (currID == TILE_ID::PLAYER || currID == TILE_ID::EMPTY || currID == TILE_ID::ENEMYMELEE || currID == TILE_ID::EMPTYWITHFIRE) {
         return newTile;
     }
 

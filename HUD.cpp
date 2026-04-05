@@ -259,7 +259,7 @@ void HUD::Init()
 	float panelX = 0.f, panelY = 0.f; // screen centre
 
 	// Dark backdrop
-	GameObject* deathBG = new GameObject(AEGfxGetWindowWidth(), AEGfxGetWindowHeight(), panelX, panelY, 2, 0, true);
+	GameObject* deathBG = new GameObject((float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight(), panelX, panelY, 2, 0, true);
 	deathBG->AddComponent(new Sprite())->meshColor = 0x77000000;
 	AddGameObjectToVector(deathBG, deathHUDGameObject);
 

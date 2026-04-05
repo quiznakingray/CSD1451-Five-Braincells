@@ -57,10 +57,10 @@ void PlayerStats::ReducePlayerHealth(int amount)
 		health = PlayerStats::GetInstance().maxHealth; // reset health on death
         SaveManager::GetInstance().SavePlayerTime(totalSeconds);
         
-        if (deathCount >= 10)
-        {
-            HUD::GetInstance().ShowDeathPanel();
-        }
+        //if (deathCount >= 10)
+        //{
+        //    HUD::GetInstance().ShowDeathPanel();
+        //}
     }
 }
 

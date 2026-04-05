@@ -11,6 +11,7 @@
 #include "HUD.h"
 #include "PauseMenu.h"
 #include "EndMenu.h"
+#include "FireGameObject.h"
 
 
 std::vector<GameObject*> levelGameObjectVector{};
@@ -53,6 +54,8 @@ void ParkourLevel::Init()
 
 	EnemyManager::GetInstance().Init(PlayerManager::GetInstance().meleePlayer, PlayerManager::GetInstance().rangedPlayer);
 	EnemyManager::GetInstance().SpawnEnemies(levelGameObjectVector);
+
+	SpawnFire(levelGameObjectVector);
 
 	InitGameObjects(levelGameObjectVector);
 
@@ -104,6 +107,7 @@ void ParkourLevel::Render()
 {
 	AEGfxSetBackgroundColor(0.6f, 0.8f, 0.85f);
 	MapManager::GetInstance().DrawMapSprite();
+	RenderFire();
 	PlayerManager::GetInstance().Render();
 	EnemyManager::GetInstance().RenderEnemies();
 	HUD::GetInstance().Render();
@@ -148,6 +152,7 @@ void ParkourLevel::Free()
 	HUD::GetInstance().Free();
 	PlayerManager::GetInstance().Free();
 	EnemyManager::GetInstance().FreeEnemies();
+	FreeFire();
 	CameraSystem::ResetCameraPosition();
 	//for (auto* obj : levelGameObjectVector)
 	//{

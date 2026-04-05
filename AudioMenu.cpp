@@ -220,7 +220,7 @@ void AudioMenu::Render()
 
 
         AEMtx33 scaleBg, transBg, finalBg;
-        AEMtx33Scale(&scaleBg, AEGfxGetWindowWidth(), AEGfxGetWindowHeight());
+        AEMtx33Scale(&scaleBg, (float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight());
         AEMtx33Trans(&transBg, panelX, panelY);
         AEMtx33Concat(&finalBg, &transBg, &scaleBg);
 

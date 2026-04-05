@@ -113,6 +113,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="EnemyGameObject.cpp" />
     <ClCompile Include="EnemyManager.cpp" />
     <ClCompile Include="EnemyMovement.cpp" />
+    <ClCompile Include="FireGameObject.cpp" />
     <ClCompile Include="GameObjectManager.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="CooldownTimer.cpp" />
@@ -156,6 +157,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="EnemyGameObject.h" />
     <ClInclude Include="EnemyManager.h" />
     <ClInclude Include="EnemyMovement.h" />
+    <ClInclude Include="FireGameObject.h" />
     <ClInclude Include="GameObjectManager.h" />
     <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="CooldownTimer.h" />
