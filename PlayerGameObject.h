@@ -48,7 +48,8 @@ struct Player : GameObject {
 	float hurtTimer = 0.0f;
 	float hurtDuration = 2.0f;
 	virtual void TakeDamage(int amount);
-
+	std::vector<std::pair<Text*, float>> hurtTexts;
+	float damageTextDuration = 1.f;
 	// ability timer & indicator
 	GameObject* abilityBarBG = nullptr;
 	GameObject* abilityBarFG = nullptr;

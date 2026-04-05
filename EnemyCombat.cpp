@@ -92,6 +92,8 @@ void EnemyTakeDamage(EnemyGameObject& enemy, int damage)
     t->center = { (-0.5f + AERandFloat() ) * enemy.scale.x  , 0};
     enemy.hurtTexts.push_back({ t, 0.f });
 
+	enemy.hitEffect.CreateEnemyStatic(enemy.pos.x, enemy.pos.y);
+
     std::cout << "[EnemyCombat] Enemy took " << damage << " dmg, health now " << enemy.base.stats.health << "\n";
     if (IsEnemyDead(enemy.base))
     {

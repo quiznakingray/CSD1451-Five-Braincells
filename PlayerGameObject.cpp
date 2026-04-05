@@ -369,10 +369,33 @@ void Player::Update(){
 			hurtDuration = 2.0f;
 		}
 	}
-	hurtParticles.CreateHitEffect(pos.x, pos.y);
+	if (gotHurt)
+	{
+		hurtParticles.CreateHitEffect(pos.x, pos.y);
+
+	}
 	hurtParticles.Update(dt);
 
 	GameObject::Update();
+
+	//damage number 
+
+	for (auto it = hurtTexts.begin(); it != hurtTexts.end();)
+	{
+		//float dt = static_cast<float>(AEFrameRateControllerGetFrameTime());
+		it->second += dt;
+
+		float offsetY = 80.f * it->second;
+		it->first->center = { it->first->center.x, offsetY };
+		it->first->SetColor({ 1.f, 0.f, 0.f, 1.f - (it->second / damageTextDuration) }); // fade out
+
+		if (it->second >= damageTextDuration)
+		{
+			RemoveComponent(it->first); // nulled out
+			it = hurtTexts.erase(it);
+		}
+		else ++it;
+	}
 	//std::cout << "Pos: " << pos.x << "   " << pos.y << "  Velocity: " << rb->velocity.x <<"  " << rb->velocity.y << std::endl;
 }
 
@@ -398,7 +421,11 @@ void Player::TakeDamage(int amount)
 {
 	gotHurt = true;
 	PlayerStats::GetInstance().ReducePlayerHealth(amount);
-
+	Text* t = AddComponent(new Text());
+	t->SetText("-" + std::to_string(amount));
+	t->SetColor(Color{ 1.f, 0.f, 0.f, 1.f }); // red color
+	t->center = { (-0.5f + AERandFloat()) * scale.x  , 0 };
+	hurtTexts.push_back({ t, 0.f });
 }
 
 
@@ -511,11 +538,11 @@ void MeleePlayer::Update()
 
 void MeleePlayer::Render()
 {
-	GameObject::Render();
 	if (inShieldAction)
 	{
 		RenderGameObjects(abilityBarObjects);
 	}
+	Player::Render();
 }
 
 void MeleePlayer::PlayerInput()
@@ -554,11 +581,11 @@ void MeleePlayer::PlayerInput()
 		shieldActive = false;
 
 		//// reset stamina when Q released
-		//if (!qHeld)
-		//{
+		if (shieldDepleted)
+		{
 			shieldTimer = 0.0f;
 			shieldDepleted = false;
-		//}
+		}
 		
 		inShieldAction = false;
 	}
@@ -867,7 +894,7 @@ void Arrow::Init()
 	rb->hasGravity = false;
 	isActive = false;
 
-	particlePool.Init(5);
+	particlePool.Init(15);
 
 	isEnemyProjectile = false;
 	damage = 1;

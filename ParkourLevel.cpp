@@ -12,9 +12,11 @@
 #include "PauseMenu.h"
 #include "EndMenu.h"
 #include "FireGameObject.h"
+#include "ParticleEffects.h"
 
 
 std::vector<GameObject*> levelGameObjectVector{};
+ParticleSystem fireRainOverlay;
 
 void ParkourLevel::Load()
 {
@@ -79,6 +81,8 @@ void ParkourLevel::Init()
 
 	// Pause
 	PauseMenu::GetInstance().Init();
+
+	fireRainOverlay.Init(30);
 }
 
 void ParkourLevel::Update()
@@ -97,7 +101,8 @@ void ParkourLevel::Update()
 		return;
 	}
 	
-
+	fireRainOverlay.CreateFireRain(AEGfxGetWindowWidth(), AEGfxGetWindowHeight());
+	fireRainOverlay.Update(dt);
 
 	PlayerManager::GetInstance().Update();
 	UpdateGameObjects(levelGameObjectVector);
@@ -110,6 +115,7 @@ void ParkourLevel::Render()
 	RenderFire();
 	PlayerManager::GetInstance().Render();
 	EnemyManager::GetInstance().RenderEnemies();
+	fireRainOverlay.Draw();
 	HUD::GetInstance().Render();
 	EndMenu::GetInstance().Render();
 	if (GameStateManager::GetInstance().showPauseMenu) {
@@ -149,6 +155,7 @@ void ParkourLevel::Free()
 	}
 	levelGameObjectVector.clear();
 	MapManager::GetInstance().FreeMap();
+	fireRainOverlay.Exit();
 	HUD::GetInstance().Free();
 	PlayerManager::GetInstance().Free();
 	EnemyManager::GetInstance().FreeEnemies();

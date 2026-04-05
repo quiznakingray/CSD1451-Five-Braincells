@@ -570,6 +570,7 @@ struct CrateTile : Tile {
 
 struct CheckpointTile : Tile {
 	bool isActivated = false;
+	ParticleSystem checkpointParticles;
 	CheckpointTile(TILE_ID currID_,
 		TILE_ID bgID_,
 		int currTag_,
@@ -582,6 +583,9 @@ struct CheckpointTile : Tile {
 		currSprite->textureFileName = "Assets/Environment/checkpoint.png";
 	}
 	void Init() override;
+	void Update() override;
+	void Render() override;
+	void Free() override;
 };
 
 struct HealthPickupTile : Tile {

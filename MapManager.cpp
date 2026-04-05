@@ -1210,6 +1210,7 @@ void GoalTile::Init() {
 
 void CheckpointTile::Init() {
     Tile::Init();
+    checkpointParticles.Init(5, true);
     canArrowPass = true;
     collider->isTrigger = true;
     collider->OnTriggerEnter = [this](Collider* other, int) {
@@ -1220,6 +1221,7 @@ void CheckpointTile::Init() {
             {
                 isActivated = true;
                 AudioManager::GetInstance().PlaySFX("checkpoint");
+                checkpointParticles.CreateCheckpointExplosion(pos.x, pos.y);
             }
             this->interactionTextBox->isActive = true;
             interactionTextBox->SetText("Saved!");
@@ -1232,6 +1234,26 @@ void CheckpointTile::Init() {
             this->interactionTextBox->isActive = false;
         }
         };
+}
+
+void CheckpointTile::Update()
+{
+	float dt = AEFrameRateControllerGetFrameTime();
+    Tile::Update();
+	checkpointParticles.Update(dt);
+}
+
+void CheckpointTile::Render()
+{
+    Tile::Render();
+    if (isActivated)
+		checkpointParticles.Draw();
+}
+
+void CheckpointTile::Free()
+{
+    Tile::Free();
+	checkpointParticles.Exit();
 }
 
 void CrateTile::Init()

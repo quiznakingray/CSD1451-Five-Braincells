@@ -8,6 +8,7 @@
 #include "AnimatorComponent.h"
 #include "MapManager.h"
 #include "AEVec3.h"
+#include "ParticleEffects.h"
 
 struct EnemyGameObject : GameObject {
     bool isGrounded = false;
@@ -18,8 +19,11 @@ struct EnemyGameObject : GameObject {
     EnemyBase base;
     EnemyMovement movement;
     RigidBody* rb = nullptr;
+    
+	//take dmg 
     Text* healthText = nullptr;
     std::vector<std::pair<Text*, float>> hurtTexts;
+	ParticleSystem hitEffect;
 
     Animator* animator = nullptr;
     Animation* patrolAnim = nullptr;

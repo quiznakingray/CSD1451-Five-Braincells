@@ -107,6 +107,7 @@ void EnemyGameObject::Init(EnemyType type, Tile* spawnTile) {
 
     base.isAlive = true;
     InitHealthBar();
+	hitEffect.Init(10); 
     GameObject::Init();
 }
 
@@ -204,6 +205,9 @@ void EnemyGameObject::Update() {
 
     if (isOnCamera)
         HandleWalkSFX(dt);
+
+	//particle effect update
+	hitEffect.Update(dt);
 }
 
 void EnemyGameObject::Patrol() {
@@ -322,6 +326,7 @@ void EnemyGameObject::Render() {
     if (base.projectile) base.projectile->Render();
     RenderGameObjects(healthBarObjects);
     GameObject::Render();
+	hitEffect.Draw();
 }
 
 void EnemyGameObject::Free()
@@ -332,6 +337,7 @@ void EnemyGameObject::Free()
         delete base.projectile;
 		base.projectile = nullptr;
     }
+	hitEffect.Exit();
 	GameObject::Free();
 }
 
