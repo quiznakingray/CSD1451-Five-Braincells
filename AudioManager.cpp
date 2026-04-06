@@ -23,8 +23,8 @@ void AudioManager::LoadAllAudio()
     // Store all music audio
     struct MusicFile { const char* key; const char* path; };
     MusicFile musicFiles[] = {
-        {"mainMenu", "Assets/Sounds/mainMenu.wav"},
-        {"level", "Assets/Sounds/levelAmbience.wav"}
+        {"mainMenu", "Assets/Sounds/mainMenu.mp3"},
+        {"level", "Assets/Sounds/levelAmbience.mp3"}
     };
 
     // Load all music audio
@@ -36,36 +36,36 @@ void AudioManager::LoadAllAudio()
     // Store all sfx audio
     struct SFXFile { const char* key; const char* path; };
     SFXFile sfxFiles[] = {
-        {"leverSwitch", "Assets/Sounds/leverSwitch.wav"},
-        { "buttonSwitch", "Assets/Sounds/buttonSwitch.wav" },
-        { "crateLanding", "Assets/Sounds/crateLanding.wav" },
-        { "playerHurt", "Assets/Sounds/playerHurt.wav" },
-        { "playerDie", "Assets/Sounds/playerDie.wav" },
+        {"leverSwitch", "Assets/Sounds/leverSwitch.mp3"},
+        { "buttonSwitch", "Assets/Sounds/buttonSwitch.mp3" },
+        { "crateLanding", "Assets/Sounds/crateLanding.mp3" },
+        { "playerHurt", "Assets/Sounds/playerHurt.mp3" },
+        { "playerDie", "Assets/Sounds/playerDie.mp3" },
 
         // WHAT WE HAVE
-        { "laserOn", "Assets/Sounds/laserOn.wav" },
-        { "shieldHit", "Assets/Sounds/shieldHit.wav" },
-        { "uiButtonClick", "Assets/Sounds/uiButtonClick.wav" },
-        { "itemPickup", "Assets/Sounds/itemPickup.wav" },
-        { "enemyDie", "Assets/Sounds/enemyDie.wav" },
-        { "minibossDie", "Assets/Sounds/minibossDie.wav" },
-        { "goalEnter", "Assets/Sounds/goalEnter.wav" },
-        { "arrowHit", "Assets/Sounds/arrowHit.wav" },
-        { "gateTrigger", "Assets/Sounds/gateTrigger.wav" },
+        { "laserOn", "Assets/Sounds/laserOn.mp3" },
+        { "shieldHit", "Assets/Sounds/shieldHit.mp3" },
+        { "uiButtonClick", "Assets/Sounds/uiButtonClick.mp3" },
+        { "itemPickup", "Assets/Sounds/itemPickup.mp3" },
+        { "enemyDie", "Assets/Sounds/enemyDie.mp3" },
+        { "minibossDie", "Assets/Sounds/minibossDie.mp3" },
+        { "goalEnter", "Assets/Sounds/goalEnter.mp3" },
+        { "arrowHit", "Assets/Sounds/arrowHit.mp3" },
+        { "gateTrigger", "Assets/Sounds/gateTrigger.mp3" },
 
         // WHAT WE MAY WANT
-        { "walk", "Assets/Sounds/walk.wav" },
-        { "jump", "Assets/Sounds/jump.wav" }, // DONT HAVE
-        { "land", "Assets/Sounds/land.wav" },
-        { "aimBow", "Assets/Sounds/aimBow.wav" },
-        { "shootArrow", "Assets/Sounds/shootArrow.wav" },
-        { "shieldOn", "Assets/Sounds/shieldOn.wav" }, // DONT HAVE
-        { "checkpoint", "Assets/Sounds/checkpoint.wav" },
-        { "win", "Assets/Sounds/win.wav" }, // DONT HAVE
-        { "lose", "Assets/Sounds/lose.wav" }, // DONT HAVE
-        { "zap", "Assets/Sounds/zap.wav" },
-        { "wheels", "Assets/Sounds/wheelsShort.wav" },
-        { "cratePickUp", "Assets/Sounds/cratePickUp.wav" }
+        { "walk", "Assets/Sounds/walk.mp3" },
+        { "jump", "Assets/Sounds/jump.mp3" }, // DONT HAVE
+        { "land", "Assets/Sounds/land.mp3" },
+        { "aimBow", "Assets/Sounds/aimBow.mp3" },
+        { "shootArrow", "Assets/Sounds/shootArrow.mp3" },
+        { "shieldOn", "Assets/Sounds/shieldOn.mp3" }, // DONT HAVE
+        { "checkpoint", "Assets/Sounds/checkpoint.mp3" },
+        { "win", "Assets/Sounds/win.mp3" }, // DONT HAVE
+        { "lose", "Assets/Sounds/lose.mp3" }, // DONT HAVE
+        { "zap", "Assets/Sounds/zap.mp3" },
+        { "wheels", "Assets/Sounds/wheelsShort.mp3" },
+        { "cratePickUp", "Assets/Sounds/cratePickUp.mp3" }
     };
 
     // Load all sfx audio
